@@ -1,3 +1,3 @@
 # mainboard
 
-PyCubed mainboard adaptation for Foras Promineo mission
+PyCubed mainboard adaptation for Sierra Lobo usage
