@@ -1,0 +1,8 @@
+Website for the main board
+    https://pycubed.org/
+
+Link to how to update the circuit python on the main board
+    https://pycubed.org/Updating-PyCubed-cbc8b47a677549ed98fc5b23b5a04fac
+
+Good resource on python
+    https://www.tutorialspoint.com/python/index.htm
