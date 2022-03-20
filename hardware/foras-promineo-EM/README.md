@@ -1,3 +1,6 @@
+# THIS IS SUPERCEEDED BY foras-promineo-FM 
+# THERE ARE HARDWARE BUGS THAT WILL BE FIXED IN THAT VERSION
+
 # mainboard-hw
 Sierra Lobo's PyCubed mainboard adaptation
 

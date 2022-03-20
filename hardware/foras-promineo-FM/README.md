@@ -1,4 +1,4 @@
-# mainboard-hw
+# mainboard-hw (DESIGN IN PROGRESS, DO NOT FAB)
 Sierra Lobo's PyCubed mainboard adaptation
 
 
@@ -14,4 +14,4 @@ Sierra Lobo's PyCubed mainboard adaptation
 8. changed RF trace width to comply with a SH260 (polyimide) board 2oz/1oz PCBway stackup
 ## wishlist:
 - move EPS stuff to batteryboard. This would relieve board density and allow for things like more avionics / breakouts / headers to be re-added.
-- re-layout/route board for an even 10/10 or 8/8 mil trace/space. for cost, reliability, and DFM gains
+- add mux to AIN5 for more analog inputs

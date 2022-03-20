@@ -63,8 +63,8 @@ try:
     mux = pca9543.PCA9543(i2c1, mux_addr)
     mux.set_ch0()
     gyro = iam20380.IAM20380(i2c1, gyro_addr)
-    test = gyro.fs_sel()
-    gyro.fs_sel(test)
+    test = gyro.fs_sel
+    gyro.fs_sel = test
     print('[START][GYRO]')
 except Exception as e:
     print('[ERROR][IMU]', e)
