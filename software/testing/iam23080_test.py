@@ -59,12 +59,15 @@ mux_addr = 0x70
 gyro_addr = 0x69
 accel_addr = 0x30
 mag_addr = 0x15
-try:
-    mux = pca9543.PCA9543(i2c1, mux_addr)
-    mux.set_ch0()
-    gyro = iam20380.IAM20380(i2c1, gyro_addr)
-    test = gyro.fs_sel
-    gyro.fs_sel = test
-    print('[START][GYRO]')
-except Exception as e:
-    print('[ERROR][IMU]', e)
+mux = pca9543.PCA9543(i2c1, mux_addr)
+mux.set_ch0()
+
+gyro = iam20380.IAM20380(i2c1, gyro_addr)
+gyro.low_power()
+x = 1
+while (x < 1000):
+    print(gyro.x)
+    x+=1
+    time.sleep(1)
+
+print('[END]')
