@@ -1140,7 +1140,7 @@
     )
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 157.48 57.15 180)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 157.48 57.15 180) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00001c775628)
     (property "Reference" "R33" (id 0) (at 157.48 58.674 0)
@@ -1162,7 +1162,7 @@
     (pin "2" (uuid bdebb592-16f4-4dd2-8833-9c498802560b))
   )
 
-  (symbol (lib_id "mainboard:DFLS130L") (at 58.42 35.56 90)
+  (symbol (lib_id "mainboard:DFLS130L") (at 58.42 35.56 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00002b50be9f)
     (property "Reference" "D4" (id 0) (at 55.88 33.02 90)
@@ -1196,7 +1196,7 @@
     (pin "C" (uuid b782e64f-24c5-4240-95d2-dc6733cf07a1))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 50.8 48.26 270)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 50.8 48.26 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000352d39f6)
     (property "Reference" "R25" (id 0) (at 49.0982 46.7106 90)
@@ -1218,7 +1218,7 @@
     (pin "2" (uuid fb0cff91-8679-408f-8364-929599931d62))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 152.4 72.39 0)
+  (symbol (lib_id "mainboard:GND") (at 152.4 72.39 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00003890f70b)
     (property "Reference" "#GND056" (id 0) (at 152.4 72.39 0)
@@ -1236,7 +1236,7 @@
     (pin "1" (uuid edaea530-f6e3-411b-af6e-71319fb9aeec))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 152.4 62.23 270)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 152.4 62.23 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000593af3fc)
     (property "Reference" "R28" (id 0) (at 153.924 62.23 0)
@@ -1258,7 +1258,7 @@
     (pin "2" (uuid a8fddae8-6b84-4c55-a266-5efd2094d753))
   )
 
-  (symbol (lib_id "mainboard:NDS8434") (at 190.5 38.1 0)
+  (symbol (lib_id "mainboard:NDS8434") (at 190.5 38.1 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005cf3e857)
     (property "Reference" "Q20" (id 0) (at 182.88 26.67 0)
@@ -1298,7 +1298,7 @@
     (pin "8" (uuid 5f3f7917-1fbb-4ed5-a55d-5d9912244dfd))
   )
 
-  (symbol (lib_id "mainboard:NDS8434") (at 190.5 62.23 0)
+  (symbol (lib_id "mainboard:NDS8434") (at 190.5 62.23 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005cf41ed7)
     (property "Reference" "Q21" (id 0) (at 182.88 74.93 0)
@@ -1373,7 +1373,7 @@
     (pin "3" (uuid a9a36a75-420d-49ce-9062-e6b204c29358))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 152.4 38.1 270)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 152.4 38.1 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000710310b2)
     (property "Reference" "R27" (id 0) (at 153.924 38.1 0)
@@ -1395,7 +1395,7 @@
     (pin "2" (uuid 69f15af5-2522-4330-bf49-f9d7ee7744be))
   )
 
-  (symbol (lib_id "mainboard:IRLML2803TRPBF") (at 165.1 64.77 270)
+  (symbol (lib_id "mainboard:IRLML2803TRPBF") (at 165.1 64.77 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000079442ea3)
     (property "Reference" "Q5" (id 0) (at 158.75 68.58 90)
@@ -1430,7 +1430,7 @@
     (pin "3" (uuid aea4a2c7-36ea-4a13-baef-ef8b36d2a863))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 157.48 33.02 180)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 157.48 33.02 180) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00007e6356e8)
     (property "Reference" "R32" (id 0) (at 157.48 34.544 0)
@@ -1452,7 +1452,7 @@
     (pin "2" (uuid ece7f29f-b824-435c-9c7b-cb43cd5ab28f))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 170.18 35.56 90)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 170.18 35.56 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000094142453)
     (property "Reference" "R37" (id 0) (at 168.656 35.56 0)
@@ -1474,7 +1474,7 @@
     (pin "2" (uuid b652b9b2-cdd7-457e-b9e2-7f6f9787db45))
   )
 
-  (symbol (lib_id "mainboard:RESISTOR0603") (at 170.18 59.69 90)
+  (symbol (lib_id "mainboard:RESISTOR0603") (at 170.18 59.69 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000abc3816a)
     (property "Reference" "R38" (id 0) (at 168.656 59.69 0)
@@ -1496,7 +1496,7 @@
     (pin "2" (uuid ca8ef2a7-8b02-459c-9c13-496cb985bd63))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 104.14 40.64 0)
+  (symbol (lib_id "mainboard:GND") (at 104.14 40.64 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000d027d65f)
     (property "Reference" "#GND052" (id 0) (at 104.14 40.64 0)
@@ -1514,7 +1514,7 @@
     (pin "1" (uuid 839030c4-e869-45c6-95cf-9e2a490f8454))
   )
 
-  (symbol (lib_id "mainboard:PE014005") (at 81.28 33.02 0)
+  (symbol (lib_id "mainboard:PE014005") (at 81.28 33.02 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000f0d9879e)
     (property "Reference" "U16" (id 0) (at 79.0956 23.9014 0)
@@ -1551,7 +1551,7 @@
     (pin "5" (uuid 2b2ac609-6ccd-4193-83aa-53e6ee0b35bc))
   )
 
-  (symbol (lib_id "mainboard:IRLML2803TRPBF") (at 165.1 40.64 270)
+  (symbol (lib_id "mainboard:IRLML2803TRPBF") (at 165.1 40.64 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000f75d19b8)
     (property "Reference" "Q4" (id 0) (at 161.29 44.45 90)
@@ -1586,7 +1586,7 @@
     (pin "3" (uuid 9083f655-5a58-4b7a-9ae9-5736a88fdadc))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 152.4 45.72 0)
+  (symbol (lib_id "mainboard:GND") (at 152.4 45.72 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000f8638a93)
     (property "Reference" "#GND055" (id 0) (at 152.4 45.72 0)
@@ -1604,7 +1604,7 @@
     (pin "1" (uuid ebb3e73c-c17a-4098-83d6-da8e3691b412))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 58.42 58.42 0)
+  (symbol (lib_id "mainboard:GND") (at 58.42 58.42 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000ff2a2d77)
     (property "Reference" "#GND049" (id 0) (at 58.42 58.42 0)

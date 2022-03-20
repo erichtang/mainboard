@@ -1232,7 +1232,7 @@
     (uuid f8dfbcec-1704-46b0-8ba3-862aa1011c94)
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 176.53 64.77 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 176.53 64.77 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00006194e864)
     (property "Reference" "R211" (id 0) (at 178.2572 63.6016 0)
@@ -1251,7 +1251,7 @@
     (pin "2" (uuid 80be4cad-d7ac-4728-ad5d-fbcd02fe4045))
   )
 
-  (symbol (lib_id "mainboard-rescue:USB_B_Micro-Connector-mainboard-rescue") (at 100.33 52.07 0)
+  (symbol (lib_id "mainboard-rescue:USB_B_Micro-Connector-mainboard-rescue") (at 100.33 52.07 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061de65dd)
     (property "Reference" "J200" (id 0) (at 101.7778 40.2082 0))
@@ -1270,7 +1270,7 @@
     (pin "6" (uuid 2979b883-a014-4a68-a9a7-e680f7ecf353))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 90.17 68.58 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 90.17 68.58 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061de9cdf)
     (property "Reference" "R201" (id 0) (at 91.8972 67.4116 0)
@@ -1289,7 +1289,7 @@
     (pin "2" (uuid 74016409-cc9c-4f6f-b06a-2f9fd13145ef))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 80.01 68.58 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 80.01 68.58 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dea389)
     (property "Reference" "C205" (id 0) (at 82.931 67.4116 0)
@@ -1308,7 +1308,7 @@
     (pin "2" (uuid fa092757-d02c-4d9e-8e32-e98fa7fcfddd))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 68.58 68.58 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 68.58 68.58 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dea932)
     (property "Reference" "C204" (id 0) (at 71.501 67.4116 0)
@@ -1327,7 +1327,7 @@
     (pin "2" (uuid a6b26d49-3511-4379-b51c-29b09d1a74f5))
   )
 
-  (symbol (lib_id "mainboard-rescue:Varistor-Device-mainboard-rescue") (at 110.49 63.5 0)
+  (symbol (lib_id "mainboard-rescue:Varistor-Device-mainboard-rescue") (at 110.49 63.5 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061ded196)
     (property "Reference" "Z200" (id 0) (at 113.1062 62.3316 0)
@@ -1346,7 +1346,7 @@
     (pin "2" (uuid 87f0a26c-3662-45cc-bdf9-14171e87784f))
   )
 
-  (symbol (lib_id "mainboard-rescue:Varistor-Device-mainboard-rescue") (at 132.08 63.5 0)
+  (symbol (lib_id "mainboard-rescue:Varistor-Device-mainboard-rescue") (at 132.08 63.5 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061ded8e3)
     (property "Reference" "Z201" (id 0) (at 134.6962 62.3316 0)
@@ -1365,7 +1365,7 @@
     (pin "2" (uuid 3c226030-d888-4584-a8d1-26267a332f34))
   )
 
-  (symbol (lib_id "mainboard-rescue:AP2161W-Power_Management-mainboard-rescue") (at 185.42 49.53 0)
+  (symbol (lib_id "mainboard-rescue:AP2161W-Power_Management-mainboard-rescue") (at 185.42 49.53 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061def277)
     (property "Reference" "U200" (id 0) (at 185.42 40.2082 0))
@@ -1383,7 +1383,7 @@
     (pin "5" (uuid 676dea48-0023-4cd1-a945-6994803a4f1b))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 207.01 50.8 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 207.01 50.8 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061df17fb)
     (property "Reference" "R200" (id 0) (at 208.7372 49.6316 0)
@@ -1402,7 +1402,7 @@
     (pin "2" (uuid 82d633c1-1fb1-4e7d-ae80-5de8e1fc1bf5))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 240.03 60.96 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 240.03 60.96 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061df4655)
     (property "Reference" "C202" (id 0) (at 242.951 59.7916 0)
@@ -1421,7 +1421,7 @@
     (pin "2" (uuid 39c4e0a0-bf4a-4a70-8602-0df444eb3d47))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 102.87 99.06 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 102.87 99.06 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dfdb16)
     (property "Reference" "R202" (id 0) (at 104.5972 97.8916 0)
@@ -1440,7 +1440,7 @@
     (pin "2" (uuid 16b351c2-7878-4424-9b7b-038450f6f06d))
   )
 
-  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 102.87 109.22 90)
+  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 102.87 109.22 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dfe643)
     (property "Reference" "D200" (id 0) (at 104.902 108.0516 90)
@@ -1459,7 +1459,7 @@
     (pin "2" (uuid 04d9f6bb-aa27-4e03-8d66-7e2e5ba4ef24))
   )
 
-  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 100.33 120.65 0)
+  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 100.33 120.65 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061dfecc7)
     (property "Reference" "Q200" (id 0) (at 105.1814 119.4816 0)
@@ -1479,7 +1479,7 @@
     (pin "3" (uuid 8f0ccd08-8d6d-413c-9eb6-0f29fb10329e))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 88.9 120.65 270)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 88.9 120.65 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e03a36)
     (property "Reference" "R206" (id 0) (at 88.9 115.443 90))
@@ -1494,7 +1494,7 @@
     (pin "2" (uuid be2f735e-1952-419a-aaa7-6c24ccbd2da3))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 151.13 99.06 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 151.13 99.06 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e053c1)
     (property "Reference" "R203" (id 0) (at 152.8572 97.8916 0)
@@ -1513,7 +1513,7 @@
     (pin "2" (uuid 53f362cd-4477-4027-b607-1c76a4f38fd0))
   )
 
-  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 151.13 109.22 90)
+  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 151.13 109.22 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e053cb)
     (property "Reference" "D201" (id 0) (at 153.162 108.0516 90)
@@ -1532,7 +1532,7 @@
     (pin "2" (uuid 1d9e386a-d455-4280-add6-9d52cdfa9347))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 137.16 120.65 270)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 137.16 120.65 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e053e3)
     (property "Reference" "R207" (id 0) (at 137.16 115.443 90))
@@ -1547,7 +1547,7 @@
     (pin "2" (uuid 5d82267f-7f20-47a4-a8e9-292ef2587c06))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 199.39 99.06 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 199.39 99.06 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e0dc62)
     (property "Reference" "R204" (id 0) (at 201.1172 97.8916 0)
@@ -1566,7 +1566,7 @@
     (pin "2" (uuid ff6b0c3b-41c7-4a26-be7e-4f54d0a3dc4f))
   )
 
-  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 199.39 109.22 90)
+  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 199.39 109.22 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e0dc6c)
     (property "Reference" "D202" (id 0) (at 201.422 108.0516 90)
@@ -1585,7 +1585,7 @@
     (pin "2" (uuid 9357e94a-8e92-4c46-9ae8-5a3e23cb1944))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 185.42 120.65 270)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 185.42 120.65 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e0dc84)
     (property "Reference" "R208" (id 0) (at 185.42 115.443 90))
@@ -1600,7 +1600,7 @@
     (pin "2" (uuid 013e2ea2-2cba-4a6b-aef8-92f7a96a7565))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 248.92 99.06 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 248.92 99.06 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e12996)
     (property "Reference" "R205" (id 0) (at 250.6472 97.8916 0)
@@ -1619,7 +1619,7 @@
     (pin "2" (uuid bc23f10a-5949-4037-aea0-084e3ec408e2))
   )
 
-  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 248.92 109.22 90)
+  (symbol (lib_id "mainboard-rescue:D-Device-mainboard-rescue") (at 248.92 109.22 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e129a0)
     (property "Reference" "D203" (id 0) (at 250.952 108.0516 90)
@@ -1638,7 +1638,7 @@
     (pin "2" (uuid dc7f285c-50f4-4255-9d31-46b0910b2447))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 234.95 120.65 270)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 234.95 120.65 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e129b8)
     (property "Reference" "R209" (id 0) (at 234.95 115.443 90))
@@ -1653,7 +1653,7 @@
     (pin "2" (uuid 9de4c4e7-85b6-4e4c-91a9-3ec355661a79))
   )
 
-  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 148.59 120.65 0)
+  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 148.59 120.65 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1c573)
     (property "Reference" "Q201" (id 0) (at 153.4414 119.4816 0)
@@ -1673,7 +1673,7 @@
     (pin "3" (uuid 6a041de7-61d5-4e3d-9fe5-4b61b3feea68))
   )
 
-  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 196.85 120.65 0)
+  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 196.85 120.65 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1dc0b)
     (property "Reference" "Q202" (id 0) (at 201.7014 119.4816 0)
@@ -1693,7 +1693,7 @@
     (pin "3" (uuid 091a86af-ab80-483b-a61d-6926f0810cca))
   )
 
-  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 246.38 120.65 0)
+  (symbol (lib_id "mainboard-rescue:Q_NPN_BEC-Device-mainboard-rescue") (at 246.38 120.65 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e1f560)
     (property "Reference" "Q203" (id 0) (at 251.2314 119.4816 0)
@@ -1713,7 +1713,7 @@
     (pin "3" (uuid e8743a2a-90b5-4dff-bf20-6eb4544d0cb0))
   )
 
-  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 101.6 90)
+  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 101.6 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e2eaaa)
     (property "Reference" "H200" (id 0) (at 29.1338 97.917 90))
@@ -1729,7 +1729,7 @@
     (pin "1" (uuid 66c89329-6661-46fd-b4c5-7db91af0050f))
   )
 
-  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 111.76 90)
+  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 111.76 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e2f911)
     (property "Reference" "H201" (id 0) (at 29.1338 108.077 90))
@@ -1745,7 +1745,7 @@
     (pin "1" (uuid 8f134597-538d-4e55-873c-1774c4043b87))
   )
 
-  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 121.92 90)
+  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 121.92 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e30f5d)
     (property "Reference" "H202" (id 0) (at 29.1338 118.237 90))
@@ -1761,7 +1761,7 @@
     (pin "1" (uuid 47d0860c-eb0d-4c77-8442-c3da49eb6ef5))
   )
 
-  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 132.08 90)
+  (symbol (lib_id "mainboard-rescue:MountingHole_Pad-Mechanical-mainboard-rescue") (at 29.21 132.08 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e30f71)
     (property "Reference" "H203" (id 0) (at 29.1338 128.397 90))
@@ -1777,7 +1777,7 @@
     (pin "1" (uuid e0c10216-f61d-4f0e-a250-76f73198a0a4))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 252.73 60.96 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 252.73 60.96 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061e3c8b9)
     (property "Reference" "C203" (id 0) (at 255.651 59.7916 0)
@@ -1796,7 +1796,7 @@
     (pin "2" (uuid 3ccca98e-04e5-433b-9e84-3a607506f39c))
   )
 
-  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 100.33 168.91 0)
+  (symbol (lib_id "mainboard-rescue:R_US-Device-mainboard-rescue") (at 100.33 168.91 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061f1e119)
     (property "Reference" "R210" (id 0) (at 102.0572 167.7416 0)
@@ -1815,7 +1815,7 @@
     (pin "2" (uuid 414e75da-9fda-4a2f-9990-d2c9bbd5bb3c))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 101.6 270)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 101.6 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061fb2ca5)
     (property "Reference" "C206" (id 0) (at 41.91 95.1992 90))
@@ -1830,7 +1830,7 @@
     (pin "2" (uuid 35abcfd2-fb3f-41cb-b179-fb65724a1bdc))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 111.76 270)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 111.76 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061fb32f6)
     (property "Reference" "C207" (id 0) (at 41.91 105.3592 90))
@@ -1845,7 +1845,7 @@
     (pin "2" (uuid 8141f226-6f0a-4ee4-acaa-39a5ea41233f))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 121.92 270)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 121.92 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061fb5a5f)
     (property "Reference" "C208" (id 0) (at 41.91 115.5192 90))
@@ -1860,7 +1860,7 @@
     (pin "2" (uuid 74f02007-9731-4eff-9be3-aabf477d54a5))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 132.08 270)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 41.91 132.08 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061fb81d1)
     (property "Reference" "C209" (id 0) (at 41.91 125.6792 90))
@@ -1875,7 +1875,7 @@
     (pin "2" (uuid d15b0205-0e4b-4a0f-8bae-e840bf6ec948))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 154.94 63.5 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 154.94 63.5 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000062088ae2)
     (property "Reference" "C200" (id 0) (at 157.861 62.3316 0)
@@ -1894,7 +1894,7 @@
     (pin "2" (uuid b91d1fe8-c1a1-4ed9-8840-4f0b7401554c))
   )
 
-  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 165.1 63.5 0)
+  (symbol (lib_id "mainboard-rescue:C-Device-mainboard-rescue") (at 165.1 63.5 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000620936c3)
     (property "Reference" "C201" (id 0) (at 168.021 62.3316 0)
@@ -1913,7 +1913,7 @@
     (pin "2" (uuid 21fe10be-3cf8-4db7-acda-bb2c13241b2a))
   )
 
-  (symbol (lib_id "mainboard-rescue:SW_Push-Switch-mainboard-rescue") (at 114.3 173.99 0)
+  (symbol (lib_id "mainboard-rescue:SW_Push-Switch-mainboard-rescue") (at 114.3 173.99 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000620b03e0)
     (property "Reference" "SW200" (id 0) (at 114.3 166.751 0))

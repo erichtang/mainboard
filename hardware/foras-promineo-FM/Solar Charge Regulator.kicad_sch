@@ -892,7 +892,7 @@
     (pin "2" (uuid e977014b-4de5-4ed2-a432-4741f5740109))
   )
 
-  (symbol (lib_id "mainboard:3.3V") (at 73.66 109.22 0)
+  (symbol (lib_id "mainboard:3.3V") (at 73.66 109.22 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000061ac9571)
     (property "Reference" "#P+0201" (id 0) (at 73.66 109.22 0)

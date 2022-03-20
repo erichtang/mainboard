@@ -509,6 +509,33 @@
     (path "/00000000-0000-0000-0000-00005cec5dde/00000000-0000-0000-0000-000063a5f516"
       (reference "#PWR0106") (unit 1) (value "GNDREF") (footprint "")
     )
+    (path "/00000000-0000-0000-0000-00006186d6ec/188aa786-1bc2-4066-87cd-851b6a702ac3"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/41c2bc1e-ac91-4197-be47-f9bdeb81e77f"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/46c67b37-6153-488a-a334-a481f6953ade"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/5835061d-1261-4cd3-afba-80dc432db0e0"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/7a16075e-5c60-4ae6-9a0b-e5cfba68f631"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/82d6489b-3405-47a2-8a0a-59c6d462f28f"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/a0db62d8-916c-4761-bdf1-7bc5c0872593"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/baf73072-2de1-4afe-9fa2-35bc5ffd99ba"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/c1286881-da90-44cb-adea-91476462fb38"
+      (reference "#PWR?") (unit 1) (value "GNDREF") (footprint "")
+    )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-000026b7fe90"
       (reference "#SUPPLY01") (unit 1) (value "3.3V") (footprint "")
     )
@@ -881,12 +908,6 @@
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061e129a0"
       (reference "D203") (unit 1) (value "ORANGE") (footprint "SLI-Blank-Card:APA2107x")
     )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061ac4e58"
-      (reference "D204") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061cc7cfa"
-      (reference "D205") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061bec01c"
       (reference "D206") (unit 1) (value "V4PAL45HM3_A/I") (footprint "mainboard-SLI:SMPA")
     )
@@ -898,15 +919,6 @@
     )
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b201c4"
       (reference "D209") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/2dfb73ba-1add-4708-8ddc-02d30293467f"
-      (reference "D?") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/353d05cb-c4bd-4b6f-813b-31272d359a83"
-      (reference "D?") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/911ba0a0-55ba-4ba7-bbac-794ba7a9fcfb"
-      (reference "D?") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061e2eaaa"
       (reference "H200") (unit 1) (value "MountingHole_Pad") (footprint "SLI-Backplane-Blank-Card-KiCad:125mil_hole")
@@ -1073,9 +1085,6 @@
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061e1f560"
       (reference "Q203") (unit 1) (value "BC847BM3T5G") (footprint "Package_TO_SOT_SMD:SOT-723")
     )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d4ddc2"
-      (reference "Q204") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
-    )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061e8a943"
       (reference "Q205") (unit 1) (value "MMBT4401-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
     )
@@ -1087,9 +1096,6 @@
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061907576"
       (reference "Q208") (unit 1) (value "IRF7458") (footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061eaa421"
-      (reference "Q210") (unit 1) (value "MMBT4401-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061afb4d6"
       (reference "Q211") (unit 1) (value "IRF7404") (footprint "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm")
@@ -1108,6 +1114,15 @@
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000063c1e7a2/00000000-0000-0000-0000-000061b1e399"
       (reference "Q222") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/4d5f403c-2454-4c64-a1ef-761bb0070182"
+      (reference "Q?") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/73193357-030f-4668-b750-ce34919adcc7"
+      (reference "Q?") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/7f593df1-612a-4b04-9c89-413e01495896"
+      (reference "Q?") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-00005cf0d321"
       (reference "R1") (unit 1) (value "316K") (footprint "Resistor_SMD:R_0603_1608Metric")
@@ -1376,32 +1391,26 @@
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-00006194e864"
       (reference "R211") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0402_1005Metric")
     )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061db5bba"
-      (reference "R212") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
-    )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061e59d5d"
-      (reference "R213") (unit 1) (value "4.7k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R213") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000063159c5d"
-      (reference "R214") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
-    )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-00006208223e"
-      (reference "R215") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R214") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-0000629ccb24"
-      (reference "R216") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R216") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061eaa416"
-      (reference "R218") (unit 1) (value "4.7k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R218") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000062c29364"
-      (reference "R219") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R219") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061e4a9dd"
-      (reference "R220") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R220") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000062394f19"
-      (reference "R221") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R221") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000062382e1e/00000000-0000-0000-0000-000061add72f"
       (reference "R224") (unit 1) (value "523k") (footprint "Resistor_SMD:R_0603_1608Metric")
@@ -1442,11 +1451,8 @@
     (path "/00000000-0000-0000-0000-000061a43b3f/00000000-0000-0000-0000-000061a2609b"
       (reference "R240") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-0000636dc983"
-      (reference "R247") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
-    )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-00006261e828"
-      (reference "R248") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+      (reference "R248") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000063c1e7a2/00000000-0000-0000-0000-000061add72f"
       (reference "R251") (unit 1) (value "523k") (footprint "Resistor_SMD:R_0603_1608Metric")
@@ -1481,8 +1487,17 @@
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b04b96"
       (reference "R262") (unit 1) (value "412k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
-    (path "/00000000-0000-0000-0000-00006186d6ec/b3ef473b-4036-40ac-8539-90111500f691"
+    (path "/00000000-0000-0000-0000-00006186d6ec/578c8761-b1b4-46dc-affe-690e0720f243"
       (reference "R?") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/7535912a-30d6-4b12-8100-a91db83aa0c5"
+      (reference "R?") (unit 1) (value "100k") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/a743a82f-3321-4c33-9397-716948aa6e48"
+      (reference "R?") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+    )
+    (path "/00000000-0000-0000-0000-00006186d6ec/b96f3290-40ca-430f-8c45-2b8346cf44d7"
+      (reference "R?") (unit 1) (value "2.2Meg") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-00005cf0d299"
       (reference "SW1") (unit 1) (value "KMR231NG LFS") (footprint "mainboard:BTN_KMR2_4.6X2.8")

@@ -74,7 +74,7 @@
         (effects (font (size 1.27 1.27)) hide)
       )
       (symbol "Conn_Coaxial-Connector-mainboard-rescue_0_1"
-        (arc (start -1.778 -0.508) (mid 0.2311 -1.8066) (end 1.778 0)
+        (arc (start -1.778 -0.508) (mid 0.222 -1.808) (end 1.778 0)
           (stroke (width 0.254) (type default) (color 0 0 0 0))
           (fill (type none))
         )
@@ -98,7 +98,7 @@
           (stroke (width 0.2032) (type default) (color 0 0 0 0))
           (fill (type none))
         )
-        (arc (start 1.778 0) (mid 0.2099 1.8101) (end -1.778 0.508)
+        (arc (start 1.778 0) (mid 0.222 1.8083) (end -1.778 0.508)
           (stroke (width 0.254) (type default) (color 0 0 0 0))
           (fill (type none))
         )
@@ -1648,7 +1648,7 @@
     )
   )
 
-  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 240.03 109.22 0)
+  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 240.03 109.22 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000038a56a55)
     (property "Reference" "R24" (id 0) (at 236.22 107.7214 0)
@@ -1670,7 +1670,7 @@
     (pin "2" (uuid 2b7a93ab-0cc5-4fcd-afa6-5eceb37487b8))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 261.62 87.63 0)
+  (symbol (lib_id "mainboard:GND") (at 261.62 87.63 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005123c17d)
     (property "Reference" "#GND044" (id 0) (at 261.62 87.63 0)
@@ -1837,7 +1837,7 @@
     (pin "9" (uuid 5e8bc1ff-70b4-4314-82ab-f08455862b0e))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 83.82 154.94 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 83.82 154.94 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005d460268)
     (property "Reference" "#GND0103" (id 0) (at 83.82 154.94 0)
@@ -1920,7 +1920,7 @@
     (pin "2" (uuid 87af42d1-8c08-4c94-898a-c911fecf609d))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 156.21 195.58 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 156.21 195.58 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005d738978)
     (property "Reference" "#GND0105" (id 0) (at 156.21 195.58 0)
@@ -1975,7 +1975,7 @@
     (pin "9" (uuid d6b60ba2-e900-45a7-8a28-a0f50cbb4716))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 115.57 190.5 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 115.57 190.5 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005d74b366)
     (property "Reference" "#GND0106" (id 0) (at 115.57 190.5 0)
@@ -1993,7 +1993,7 @@
     (pin "1" (uuid 447ab6f1-2688-420f-9418-9d08e00f625f))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 149.86 154.94 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 149.86 154.94 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005d75c601)
     (property "Reference" "#GND0107" (id 0) (at 149.86 154.94 0)
@@ -2043,7 +2043,7 @@
     (pin "9" (uuid 3a9d0b00-96d7-4fd0-bdc5-d104420acca5))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 34.29 187.96 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 34.29 187.96 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005dbb3b91)
     (property "Reference" "#GND0110" (id 0) (at 34.29 187.96 0)
@@ -2061,7 +2061,7 @@
     (pin "1" (uuid c88315ed-90ca-4f89-974d-2651227d86cc))
   )
 
-  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 102.87 134.62 270)
+  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 102.87 134.62 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005e052cbf)
     (property "Reference" "R43" (id 0) (at 101.1428 133.2738 90)
@@ -2083,7 +2083,7 @@
     (pin "2" (uuid ebf9946a-b124-43d5-be3c-7d67cb81276b))
   )
 
-  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 22.86 134.62 270)
+  (symbol (lib_id "mainboard:10KOHM-1_10W-1%(0603)0603") (at 22.86 134.62 270) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00005e073ebc)
     (property "Reference" "R5" (id 0) (at 21.1328 133.2738 90)
@@ -2105,7 +2105,7 @@
     (pin "2" (uuid 9135240f-6bc1-46d2-8af7-b0f318b3866c))
   )
 
-  (symbol (lib_id "mainboard:3.3V") (at 102.87 127 0)
+  (symbol (lib_id "mainboard:3.3V") (at 102.87 127 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00006091097d)
     (property "Reference" "#SUPPLY0104" (id 0) (at 102.87 127 0)
@@ -2123,7 +2123,7 @@
     (pin "1" (uuid f61f10b3-7454-4f1e-bcb8-96e9d8c7e006))
   )
 
-  (symbol (lib_id "mainboard:3.3V") (at 22.86 127 0)
+  (symbol (lib_id "mainboard:3.3V") (at 22.86 127 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00006091151b)
     (property "Reference" "#SUPPLY0109" (id 0) (at 22.86 127 0)
@@ -2141,7 +2141,7 @@
     (pin "1" (uuid 4f2dfec6-a6f4-4218-8c0d-d2e58a75937d))
   )
 
-  (symbol (lib_id "mainboard-rescue:C_Small-Device-mainboard-rescue") (at 45.72 124.46 90)
+  (symbol (lib_id "mainboard-rescue:C_Small-Device-mainboard-rescue") (at 45.72 124.46 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000060dab7e8)
     (property "Reference" "C44" (id 0) (at 45.72 118.6434 90))
@@ -2159,7 +2159,7 @@
     (pin "2" (uuid 3b4cf256-46be-450a-b8f9-0847521f9e38))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 43.18 127 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 43.18 127 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000060daec8a)
     (property "Reference" "#GND036" (id 0) (at 43.18 127 0)
@@ -2177,7 +2177,7 @@
     (pin "1" (uuid fbda4446-065c-4475-a831-fcd6bf6cd6cc))
   )
 
-  (symbol (lib_id "mainboard-rescue:C_Small-Device-mainboard-rescue") (at 125.73 124.46 90)
+  (symbol (lib_id "mainboard-rescue:C_Small-Device-mainboard-rescue") (at 125.73 124.46 90) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000060fc9c34)
     (property "Reference" "C46" (id 0) (at 125.73 118.6434 90))
@@ -2198,7 +2198,7 @@
     (pin "2" (uuid f8a50728-b09a-48a2-951a-793420470913))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 123.19 127 0) (mirror y)
+  (symbol (lib_id "mainboard:GND") (at 123.19 127 0) (mirror y) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000060fc9c3a)
     (property "Reference" "#GND038" (id 0) (at 123.19 127 0)
@@ -2216,7 +2216,7 @@
     (pin "1" (uuid f47fd781-31ed-4541-aec9-daee8caa01af))
   )
 
-  (symbol (lib_id "mainboard:EP2W+") (at 241.3 69.85 0)
+  (symbol (lib_id "mainboard:EP2W+") (at 241.3 69.85 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00006d2aeaa6)
     (property "Reference" "U13" (id 0) (at 231.14 59.69 0)
@@ -2281,7 +2281,7 @@
     (pin "EP" (uuid 2dff4ab2-4326-4c34-a507-1c9795fb8da4))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 179.07 102.87 0)
+  (symbol (lib_id "mainboard:GND") (at 179.07 102.87 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-00007a046983)
     (property "Reference" "#GND042" (id 0) (at 179.07 102.87 0)
@@ -2299,7 +2299,7 @@
     (pin "1" (uuid ded9cc79-4616-4f98-b669-ce874e13f2f1))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 184.15 130.81 0)
+  (symbol (lib_id "mainboard:GND") (at 184.15 130.81 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-000087f2849f)
     (property "Reference" "#GND043" (id 0) (at 184.15 130.81 0)
@@ -2317,7 +2317,7 @@
     (pin "1" (uuid d31c448d-03d7-488d-a7f6-e61c9f37b4cf))
   )
 
-  (symbol (lib_id "mainboard:GND") (at 234.95 102.87 0)
+  (symbol (lib_id "mainboard:GND") (at 234.95 102.87 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000a043859c)
     (property "Reference" "#GND047" (id 0) (at 234.95 102.87 0)
@@ -2335,7 +2335,7 @@
     (pin "1" (uuid a3f3a5f0-ea56-4dc9-8024-9aa610171369))
   )
 
-  (symbol (lib_id "mainboard:S1216V8") (at 201.93 110.49 0)
+  (symbol (lib_id "mainboard:S1216V8") (at 201.93 110.49 0) (unit 1)
     (in_bom yes) (on_board yes)
     (uuid 00000000-0000-0000-0000-0000f6f52858)
     (property "Reference" "U14" (id 0) (at 189.23 130.81 0)
