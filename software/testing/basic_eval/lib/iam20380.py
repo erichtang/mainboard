@@ -4,9 +4,6 @@
 #
 # C. Hillis 3/22
 
-from curses import setupterm
-from multiprocessing.sharedctypes import Value
-from sys import settrace
 from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_bits import ROBits, RWBits
@@ -198,7 +195,7 @@ class IAM20380:
         self._gavg_cfg(value)
 
     #maybe move this to a get/set, since the struct should save this?
-    def _temperature(self):
+    def read_temp(self):
         #merge bytes
         high = self._temp_out[0]
         low = self._temp_out[1]
@@ -207,7 +204,7 @@ class IAM20380:
         temp_temp = ((temp_temp-25)/326.8)+25 #this formula is from the datsheeet but looks completely b o g u s
         return temp_temp
 
-    def _read_gyro(self, gyro): #IDK if this will work
+    def read_gyro(self, gyro): #IDK if this will work
         #merge bytes from class variabe passed
         high = gyro[0]
         low = gyro[1]
@@ -215,4 +212,11 @@ class IAM20380:
         # convert to DPS
         temp_gyro = temp_gyro * (131/2^(self._fs_sel)) #full scale selection alters the sensitivity like this
         return temp_gyro
+
+    def high_preformance_mode(self):
+        #high sample rate, high accuracy, filtered
+    def sleep_mode(self):
+        #sleep mode
+    def low_power_mode(self):
+        #slower sampling rate, no filtering
 
