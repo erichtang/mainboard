@@ -9,7 +9,6 @@ from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_bits import ROBits, RWBits
 from adafruit_register.i2c_bit import ROBit, RWBit
 from adafruit_register.i2c_struct import UnaryStruct
-from adafruit_register.i2c_struct_array import StructArray
 
 # Register Map
 #SELF_TEST_X_GYRO    = const(0x00)
@@ -51,110 +50,48 @@ WHO_AM_I            = const(0x75)
 ##PWR_MGMT_1_DEFAULT  = const(0x40)
 WHO_AM_I_DEFAULT    = const(0xB5) 
 
-# Initilization Defaults Set By Me
-# DEFAULT_DPLF_CONFIG_VALUE   = const(0x03)  #startup in 1kHz sampling w/ -3db LPF @ 41Hz
-# DEFAULT_SMPLRT_DIV_VALUE    = const(0xFF) #startup w/ slowest sample_rate, 3.9Hz
-# DEFAULT_GYRO_CYCLE_VALUE    = const(0x01) #startup in low power mode
-# DEFAULT_G_AVGCFG_VALUE      = const(0x00) #IDK what this really does but it is fine at 0
-# DEFAULT_DATA_RDY_INT_VALUE  = const(0x00)
-# DEFAULT_SLEEP_VALUE         = const(0x01) #default in sleep mode
-# DEFAULT_RST_VALUE           = const(0x00)
-
 class IAM20380:
-    # Class Variables (specific register values I want to manipulate) (NOT ALL REGISTERS AND FUNCTIONS ARE IMPLEMENTED)
 
-    # Sample-Rate Divider
+    # Class Variables (NOT ALL REGISTERS AND FUNCTIONS ARE IMPLEMENTED)
     _smplrt_div_data = UnaryStruct(SMPLRT_DIV, "<B")
-
-    # CONFIG register
-    #_fifo_mode = RWBit(CONFIG, 6)
-    #_ext_sync_set = RWBits(3, CONFIG, 3)
     _dlpf_cfg = RWBits(3, CONFIG, 0)
-    
-    # GYRO_CONFIG register
-    #_xg_st = RWBit(GYRO_CONFIG, 7)
-    #_yg_st = RWBit(GYRO_CONFIG, 6)
-    #_zg_st = RWBit(GYRO_CONFIG, 5)
     _fs_sel = RWBits(2, GYRO_CONFIG, 3)
     _fchoice_b = RWBits(2, GYRO_CONFIG, 0)
-
-    # LP_MODE_CFG Register
     _gyro_cycle = RWBit(LP_MODE_CFG, 7)
     _gavg_cfg = RWBits(3, LP_MODE_CFG, 4)
-    
-    # TEMP_OUT_x Registers
     _temp_h = UnaryStruct(TEMP_OUT_H, "<B")
     _temp_l = UnaryStruct(TEMP_OUT_L, "<B")
-
-    # GYRO_xOUT_x Registers 
-        #could probably make this simpler, but not a problem right now i.e. added x to one register address instead of saving a bunch of consts
-        # but would python know that ARM assy. trick?
     _gyro_xout_h = UnaryStruct(GYRO_XOUT_H, "<B")
     _gyro_xout_l = UnaryStruct(GYRO_XOUT_L, "<B")
     _gyro_yout_h = UnaryStruct(GYRO_YOUT_H, "<B")
     _gyro_yout_l = UnaryStruct(GYRO_YOUT_L, "<B")
     _gyro_zout_h = UnaryStruct(GYRO_ZOUT_H, "<B")
     _gyro_zout_l = UnaryStruct(GYRO_ZOUT_H, "<B")
-
-    # USER_CTRL Register
-    #_fifo_en = RWBit(USER_CTRL, 6)
-    #_i2c_if_dis # not implemented # this is an i2c driver lol
-    #_fifo_rst = RWBit(USER_CTRL, 2)
     _sig_cond_rst = RWBit(USER_CTRL, 0)
-
-    # PWR_MGMT_1 Register
     _device_reset = RWBit(PWR_MGMT_1, 7)
     _sleep = RWBit(PWR_MGMT_1, 6)
-    #_gyro_standby = RWBit(PWR_MGMT_1, 4)
-    #_temp_dis = RWBit(PWR_MGMT_1, 3)
     _clksel = RWBits(3, PWR_MGMT_1, 0)
-
-    # PWR_MGMT_2 Register
-    #_stby_xg = RWBit(PWR_MGMT_2, 2)
-    #_stby_yg = RWBit(PWR_MGMT_2, 1)
-    #_stby_zg = RWBit(PWR_MGMT_2, 0)
-
-    # WHO_AM_I register
-    _who_am_i = ROBits(4, WHO_AM_I, 0) #only reading first 4 bits, default value is 0x5, dont want a whole unary struct to read a nibble once
+    _who_am_i = ROBits(4, WHO_AM_I, 0)
     
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
         test = self._who_am_i
         if not test == 5: print("[ERROR][IAM20380][BAD WHO_AM_I VALUE]")
-        self.low_power()
+        self.sleep()
 
     def high_preformance(self):#high preformance mode
-        # reset device
         self.rst()
-        # set CONFIG
         self.dlpf_cfg = 4 #set to 20Hz LPF 1kHz sampling rate, if there is a 20Hz oscillation on this, there is a problm.
-        # set GYRO_CONFIG
         self.fs_sel = 0
         self.fchoice_b = 0
-        # set LP_MODE_CFG
-            #nothing
-        # set USER_CTRL
-            #nothing
-        # set PWR_MGMT_1
-        self._sleep = 0 #initially 1
-        # set PWR_MGMT_2
-            #nothing
+        self._sleep = 0
     
     def low_power(self):
-        #reset device
         self.rst()
-        # set CONFIG
-        # set GYRO_CONFIG
         self.fs_sel = 0
-        # set LP_MODE_CFG
-        self.gyro_cycle = 1
+        self.gyro_cycle = 1 #add what this means
         self.gavg_cfg = 7
-        # set USER_CTRL
-            #nothing
-        # set PWR_MGMT_1
-        self.sleep = 0 #initially 1
-        # set PWR_MGMT_2
-            #nothing
+        self.sleep = 0 
 
     def sleep(self):
         self.rst()
