@@ -22,8 +22,10 @@ import digitalio
 
 # Hardware Specific Libs
 import neopixel  # RGB LED
-import iam20380
 import pca9543
+import iam20380
+import mmc5983
+import mxc6655
 
 from micropython import const
 
@@ -63,10 +65,16 @@ mux = pca9543.PCA9543(i2c1, mux_addr)
 mux.set_ch0()
 
 gyro = iam20380.IAM20380(i2c1, gyro_addr)
-gyro.low_power()
+magm = mmc5983.MMC5983(i2c1, mag_addr)
+accel = mxc6655.MXC6655(i2c1, accel_addr)
 x = 1
 while (x < 1000):
-    print(gyro.x)
+    gyro_m = gyro.read()
+    magm_m = magm.read()
+    accel_m = accel.read()
+    print ("[GYRO]",gyro_m)
+    print ("[MAG]",magm_m)
+    print ("[ACCEL]",accel_m)
     x+=1
     time.sleep(1)
 
