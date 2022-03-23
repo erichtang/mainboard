@@ -84,13 +84,19 @@ class IAM20380:
         self.ON()
 
     def ON(self):
-        self.rst()
+        #self.rst()
         self._smplrt_div = 99 # 100Hz sampling, sampling rate = 1kHz/(1+smplrt_div)
-        self._dlpf_cfg = 4 #set to 20Hz LPF 1kHz sampling rate. if there is a 20Hz oscillation on this, there is a problm.
+        #print(self._smplrt_div)
+        self._dlpf_cfg = 4 #set to 20Hz LPF 1kHz sampling rate. if there is a 20Hz oscillation on this, there is a problm
+        #print(self._dlpf_cfg)
         self._fs_sel = 0 #+/- 250dps
+        #print(self._fs_sel)
         self._fchoice_b = 0 #dlpf NOT bypassed
+        #print(self._fchoice_b)
         self._drdy_int_en = 1
+        #print(self._drdy_int_en)
         self._sleep = 0 #it is intiallized as 1
+        #print(self._sleep)
     
     # def low_power(self):
     #     self.rst()
@@ -110,26 +116,30 @@ class IAM20380:
 
     def read(self):
         data_good_flag = False #is set to true if measurement goes thru
-        if(self._drdy_int == True):
-            x = (self._gyro_xout_h << 8) + self._gyro_xout_l
-            y = (self._gyro_yout_h << 8) + self._gyro_yout_l
-            z = (self._gyro_zout_h << 8) + self._gyro_zout_l
-            out = [x,y,z]
-            data_good_flag = True
+        #if(self._drdy_int == True): we arent polling this fast enough for it to matter
+        x = (self._gyro_xout_h << 8) + self._gyro_xout_l
+        y = (self._gyro_yout_h << 8) + self._gyro_yout_l
+        z = (self._gyro_zout_h << 8) + self._gyro_zout_l
+        out = [x,y,z]
+        data_good_flag = True
         #raw to dps data massaging
-        for meas in out:
+        for meas in range(len(out)):
+            if (out[meas]>>15==1):
+                out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
             out[meas] = out[meas]/131 # 131LSB/dps , hardcoded in sensitivty, sorry future self
             #no idea to know what the sign of this is?
                 #put 16b twos comp code here ?
                 # or put null offset code here?
-        if (data_good_flag == True):
-            return(out)
-        else:
-            return(None)
+        return(out)
+        #else:
+            #return(None)
 
-    def temp(self):
+    def temp(self): # @25degc it reads 0
         temp = (self._temp_h << 8) + (self._temp_l) # merge registers
-        temp = ((temp - 25)/326.8)+25
+        #this is in twos comp when the datasheets says it isnt LOL
+        if(temp>>15==1):
+            temp = ((temp ^ 0xFFFF) + 1) * (-1)
+        temp = (temp/326.8)+25 #this looks wrong??
         return(temp)
 
     # @property

@@ -18,8 +18,6 @@ _STATUS=bytearray(1)
 
 class PCA9543:
     def __init__(self, i2c_bus, addr):
-        
-        print('test')
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
         #if (self.read(self) != 0x00):
             #print('[ERROR][PCA9543 @ {addr}][BAD STATUS READ]')

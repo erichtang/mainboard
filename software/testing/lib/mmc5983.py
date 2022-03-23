@@ -23,14 +23,13 @@ XYZOUT              = const(0x06) #Xout[1:0], Yout[1:0], Zout[1:0]
 TOUT                = const(0x07)
 STATUS              = const(0x08)
 INTERNAL_CONTROL_0  = const(0x09)
-INTERNAL_CONTROL_1  = const(0x09)
-INTERNAL_CONTROL_2  = const(0x09)
-INTERNAL_CONTROL_3  = const(0x09)
-PRODUCT_ID_1        = const(0x0A)
+INTERNAL_CONTROL_1  = const(0x0A)
+INTERNAL_CONTROL_2  = const(0x0B)
+INTERNAL_CONTROL_3  = const(0x0C)
+PRODUCT_ID_1        = const(0x2F)
 
 class MMC5983:
 
-    # Class Variables (NOT ALL REGISTERS AND FUNCTIONS ARE IMPLEMENTED)
     _xout0 = UnaryStruct(XOUT0, "<B")
     _xout1 = UnaryStruct(XOUT1, "<B")
     _yout0 = UnaryStruct(YOUT0, "<B")
@@ -39,11 +38,12 @@ class MMC5983:
     _zout1 = UnaryStruct(ZOUT1, "<B")
     _xyzout = UnaryStruct(XYZOUT, "<B")
     _tout = UnaryStruct(TOUT, "<B")
-    _meas_m_done = ROBit(STATUS, 0)
-    _meas_t_done = ROBit(STATUS, 1)
-    _otp_rd_done = ROBit(STATUS, 4)
+    _meas_m_done = RWBit(STATUS, 0)
+    _meas_t_done = RWBit(STATUS, 1)
+    _otp_rd_done = RWBit(STATUS, 4)
     _tm_m = RWBit(INTERNAL_CONTROL_0, 0)
     _tm_t = RWBit(INTERNAL_CONTROL_0, 1)
+    _int_meas_done_en = RWBit(INTERNAL_CONTROL_0, 2)
     _auto_sr_en = RWBit(INTERNAL_CONTROL_0, 5)
     _bw = RWBits(2, INTERNAL_CONTROL_1, 0)
     _inhibit = RWBits(3, INTERNAL_CONTROL_1, 2)
@@ -59,25 +59,32 @@ class MMC5983:
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
         test = self._p_id
-        if not test == 3 : print("[ERROR][IAM20380][BAD P_ID VALUE]")
+        if not test == 3 : print("[ERROR][MMC5983][BAD P_ID VALUE]", test)
         self.ON()
 
     def ON(self):
-        self.reset()
-        #check opt bit not nessesary, 
-        #settings
-        self._inhibit = 0 #disables inhibits
-        self._bw = 0 #100Hz BW,  measurement time 8ms
-        self._cm_freq = 5 #100Hz continuous measurements -- w/ 8ms measurement time
-        self._cmm_en = True
-        self._prd_set = 1 #every 25 measurements the device will set/reset the coils
-        self._en_prd_set = True
+        #self.reset()
+        if(self._otp_rd_done==True): #WHY CANT YOU READ BACK CORRECT VALUES FROM THE INTERNAL_CONTROL_x REGISTERS?? BUT WRITES APPEAR TO BE WORKING? 
+            self._inhibit = 0 #disables inhibits
+            #print("inhib", self._inhibit)
+            self._bw = 0 #100Hz BW,  measurement time 8ms
+            #print("bw", self._bw)
+            self._cmfreq = 5 #100Hz continuous measurements -- w/ 8ms measurement time
+            #print("cm_freq", self._cm_freq)
+            self._cmm_en = True
+            #print("cmm_en", self._cmm_en)
+            self.prd_set = 1 #every 25 measurements the device will set/reset the coils
+            #print("prd_set", self._prd_set)
+            self._en_prd_set = True
+            #print("en_prd", self._en_prd_set)
+            self._int_meas_done_en = True
+            #print("en meas done", self._int_meas_done_en)
         
     def OFF(self):
         #self.reset()
-        self._inhibit = 7 #inhibits the magnetometers
+        self.inhibit = 7 #inhibits the magnetometers
         self.cmm_en = False #auto measurements off
-        self._en_prd_set = False # auto set/reset is off just in case 
+        self.en_prd_set = False # auto set/reset is off just in case 
 
     def reset(self):
         self._reset = True
@@ -85,22 +92,30 @@ class MMC5983:
 
     def read(self):
         good_data_flag = False
+        #print(self._otp_rd_done)
+        #check = self._otp_rd_done
         if(self._otp_rd_done == True):
-            if(self._meas_t_done == True): #may not need this consitional since it is auto updating at 100Hz
+            self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
+            #print(self._meas_m_done)
+            if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
                 x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
+                #print(x_raw)
                 y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
+                #print(y_raw)
                 z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
+                #print(z_raw)
                 out = [x_raw, y_raw, z_raw]
-                self._meas_t_done = True # writing 1 resets this interrupt
+                #print(out)
+                self.meas_t_done = True # writing 1 resets this interrupt
                 good_data_flag = True
-        for meas in out:
-            out[meas] = ((meas-131072)/16.384)# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1G/1000mG, unsigned,  null offset is 131072
-        if(good_data_flag == True):
-            return(out)
+                for meas in range(len(out)):
+                    out[meas] = ((out[meas]-131072)/16384/10000)# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
+                return(out)
         else:
             return(None)
 
     def temp(self): #datasheet says 0.8degC per cnt, -75degC offset
+        self._tm_t = True
         temp = (self._tout * 0.8) - 75
         return(temp)
 
@@ -187,5 +202,19 @@ class MMC5983:
     # @en_prd_set.setter
     # def en_prd_set(self, value):
     #     self._en_prd_set = value
+
+    # @property
+    # def otp_rd_done(self):
+    #     return(self._otp_rd_done)
+    # @otp_rd_done.setter
+    # def otp_rd_done(self, value):
+    #     self._otp_rd_done = value
+    
+    # @property
+    # def meas_m_done(self):
+    #     return(self._meas_m_done)
+    # @meas_m_done.setter
+    # def meas_m_done(self, value):
+    #     self._otp_rd_done = value
 
     #def selftest(self): #self tests magnetic sensors for saturation, not impllemented
