@@ -64,16 +64,15 @@ class MMC5983:
 
     def ON(self):
         #self.reset()
-        if(self._otp_rd_done==True): #WHY CANT YOU READ BACK CORRECT VALUES FROM THE INTERNAL_CONTROL_x REGISTERS?? BUT WRITES APPEAR TO BE WORKING? 
+        if(self._otp_rd_done==True):
             self._inhibit = 0 #disables inhibits
-            #print("inhib", self._inhibit)
             self._bw = 0 #100Hz BW,  measurement time 8ms
             #print("bw", self._bw)
             self._cmfreq = 5 #100Hz continuous measurements -- w/ 8ms measurement time
             #print("cm_freq", self._cm_freq)
             self._cmm_en = True
             #print("cmm_en", self._cmm_en)
-            self.prd_set = 1 #every 25 measurements the device will set/reset the coils
+            self.prd_set = 6 #every 1000 measurements the device will set/reset the coils (~10sec)
             #print("prd_set", self._prd_set)
             self._en_prd_set = True
             #print("en_prd", self._en_prd_set)
@@ -94,23 +93,23 @@ class MMC5983:
         good_data_flag = False
         #print(self._otp_rd_done)
         #check = self._otp_rd_done
-        if(self._otp_rd_done == True):
-            self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
-            #print(self._meas_m_done)
-            if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
-                x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
-                #print(x_raw)
-                y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
-                #print(y_raw)
-                z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
-                #print(z_raw)
-                out = [x_raw, y_raw, z_raw]
-                #print(out)
-                self.meas_t_done = True # writing 1 resets this interrupt
-                good_data_flag = True
-                for meas in range(len(out)):
-                    out[meas] = ((out[meas]-131072)/16384/10000)# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
-                return(out)
+        #if(self._otp_rd_done == True):
+        self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
+        #print(self._meas_m_done)
+        if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
+            x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
+            #print(x_raw)
+            y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
+            #print(y_raw)
+            z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
+            #print(z_raw)
+            out = [x_raw, y_raw, z_raw]
+            #print(out)
+            self.meas_t_done = True # writing 1 resets this interrupt
+            good_data_flag = True
+            for meas in range(len(out)):
+                out[meas] = ((out[meas]-131072)/16384/10000)# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
+            return(out)
         else:
             return(None)
 

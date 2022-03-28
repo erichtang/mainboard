@@ -118,7 +118,7 @@ try:
     gps = adafruit_gps.GPS(uart1, debug=True) # Enable debugging to see raw GPS output
 
     last_print = time.monotonic()
-    gps.update()
+    print(gps.update())
 
     current = time.monotonic()
     if current - last_print >= 1.0:
