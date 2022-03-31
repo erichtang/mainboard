@@ -10,6 +10,7 @@ Fork'd by Marek Brodke, C. Hillis
 """
 
 # Common CircuitPython Libs
+from syslog import LOG_DAEMON
 import board, microcontroller
 import busio, time, sys
 from storage import mount,umount,VfsFat
@@ -22,7 +23,8 @@ import bmx160 # IMU -- remove this
 import neopixel # RGB LED
 import bq25883 # USB Charger
 import adm1176 # Power Monitor
-# Add IMU lib
+import pycubed_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
+import adafruit_gps #need to play with gps reading procedure. 
 #from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver $$ this is completely different now
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
@@ -71,7 +73,9 @@ class Satellite:
         self.vlowbatt=6.0 #adjust this value
         self.send_buff = memoryview(SEND_BUFF)
         self.debug=True
+
         """
+        # I think this needs to be moved down lower in the init -- looking into this
         # ------------------------------------------ Start Section v
        
         # something that I set that indicates how much time in minutes to wait until starting transmitting
@@ -109,11 +113,15 @@ class Satellite:
 
         # ------------------------------------------ End Section ^
         """
+
         self.micro=microcontroller
 
         # table that stores whether or not a device is active or not
         self.hardware = {
-                        'IMU':    False,
+                        'IMU':    False, #edit this one, maybe have each IMU device be it's own bool? i.e.
+                        #'IMUx': {
+                        #   'Gyro1' : False, ......}
+                        # but that would make this table a-lot messier. maybe have it be -false on signle device failure, and deal w/ this being false regardless?
                         'Radio1': False,
                         'Radio2': False,
                         'SDcard': False,
@@ -133,12 +141,13 @@ class Satellite:
         # Define battery voltage
         self._vbatt = AnalogIn(board.BATTERY)
         """ LOOK into this CH 
-        # Define MPPT charge current measurement
+        # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively
         ################################################# look at this with revised solar charger CH 12/14
         self._ichrg = AnalogIn(board.L1PROG)
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
         """
+
         # Define SPI,I2C,UART
         # for devices on the board, IMU, mt drivers etc,
         self.i2c1  = busio.I2C(board.SCL,board.SDA)
@@ -147,22 +156,19 @@ class Satellite:
         self.uart2 = busio.UART(board.TX2,board.RX2)
         self.uart3 = busio.UART(board.TX3,board.RX3)
         self.uart4 = busio.UART(board.TX4,board.RX4)
-        """ Figure out why marek added this
+
+        #Figure out why marek added this
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
             # Baud rate depends on the card, 4MHz should be safe
             _sd = sdcardio.SDCard(self.spi, board.SD_CS, baudrate=4000000)
             _vfs = VfsFat(_sd)
-            # mounting the sd to the virtual file system
             mount(_vfs, "/sd")
             self.fs=_vfs
-            
-            # adding the path to the visible directory tree
             sys.path.append("/sd")
-            
-            # setting the SDcard row of the hardware table to true
             self.hardware['SDcard'] = True
-
+            self.logfile="/sd/log.txt"
+            """
             # ------------------------------------------ Start Section v
 
             # setting the directory where all generated data is stored
@@ -178,9 +184,10 @@ class Satellite:
             self.buffer = smart_buffer(self.storage_directory + "buf")
 
             # ------------------------------------------ End Section ^
+            """
         except Exception as e:
-            self.log('[ERROR][SD Card]:' + str(e))
-
+            if self.debug: print('[ERROR][SD Card]',e)
+        """
         # so you can tell the difference between boots in the log file
         self.log("----BOOT----")
         # ------------------------------------------ Start Section v
@@ -194,12 +201,13 @@ class Satellite:
 
         # ------------------------------------------ End Section ^
         """
+        # Define filesystem stuff
+        self.logfile="/log.txt"
+
         # Define GPS
         self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
         self.en_gps.switch_to_output()
 
-        # Define filesystem stuff -- why did marek delete this
-        self.logfile="/log.txt"
         # Define radio
         _rf_cs1 = digitalio.DigitalInOut(board.RF1_CS)
         _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
@@ -211,18 +219,6 @@ class Satellite:
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
 
-        # Initialize SD card (always init SD before anything else on spi bus) -- why did marek move this section?
-        try:
-            # Baud rate depends on the card, 4MHz should be safe
-            _sd = sdcardio.SDCard(self.spi, board.SD_CS, baudrate=4000000)
-            _vfs = VfsFat(_sd)
-            mount(_vfs, "/sd")
-            self.fs=_vfs
-            sys.path.append("/sd")
-            self.hardware['SDcard'] = True
-            self.logfile="/sd/log.txt"
-        except Exception as e:
-            if self.debug: print('[ERROR][SD Card]',e)
         """
         # ------------------------------------------ Start Section v
 
@@ -276,6 +272,7 @@ class Satellite:
             if self.debug: print('[ERROR][Power Monitor]',e)
 
         # Initialize IMU
+        # Edit this for SLI imu changes, this will just error out every time.
         try:
             self.IMU = bmx160.BMX160_I2C(self.i2c1)
             self.hardware['IMU'] = True
@@ -284,13 +281,14 @@ class Satellite:
 
         # Initialize GPS
         try:
-            self.gps = GPS(self.uart,debug=False) # still powered off!
+            self.gps = adafruit_gps.GPS(self.uart1,debug=self.debug) # still powered off! #needs to be turned on somewhere else? -CH
             self.gps.timeout_handler=self.timeout_handler
             self.hardware['GPS'] = True
         except Exception as e:
             if self.debug: print('[ERROR][GPS]',e)
 
         # Initialize radio #1 - UHF
+        # Edit this for our mission spec. CH
         try:
             self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
                 433.0,code_rate=8,baudrate=1320000)
@@ -310,7 +308,7 @@ class Satellite:
     def reinit(self,dev):
         dev=dev.lower()
         if   dev=='gps':
-            self.gps.__init__(self.uart,debug=False)
+            self.gps.__init__(self.uart,debug=self.debug)
         elif dev=='pwr':
             self.pwr.__init__(self.i2c1)
         elif dev=='usb':
@@ -415,7 +413,8 @@ class Satellite:
         else:
             print('[WARNING] Power monitor not initialized')
             self.log('[WARNING] Power monitor not initialized')
-    """  FIX this CH
+
+    """  FIX this CH -- need to add charge current measurement on MB
     def charge_current(self):
         
         LTC4121 solar charging IC with charge current monitoring
@@ -445,7 +444,10 @@ class Satellite:
                 pass
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
+
     """ FIX THIS CH
+    # USB debugging is implemented via print statements
+    # maybe edit this to make a debug_log file, separate from the log file which would document non-debug system activities?
     # ------------------------------------------ Start Section modified by Marek Brodke on 11/24/2021, 12/8/2021 v
 
     # writes a message to the log file
@@ -458,9 +460,22 @@ class Satellite:
         else: # if debugging usb is connected
             print(msg)
 
-
     # ------------------------------------------ End Section ^
     """
+    
+    """
+    # Debug data printed thru usb AND a log file -- change this to the pycubed way
+    # defaults to do both, but can be called to only do one.
+    # doesn't do anything if self.debug = False
+    def debug_data(self, msg, log=True, print=True):
+        if self.debug:
+            if log: 
+                with open(self.logfile, "a+") as f: # opening the log file for appending
+                    f.write('{}, {}\n'.format(int(time.monotonic()),msg)) # appending the time and message to file
+            if print:
+                    print('{}, {}\n'.format(msg)) # appending the time and message to file
+    """
+
     def print_file(self,filedir=None,binary=False):
         if filedir==None:
             return
@@ -488,6 +503,7 @@ class Satellite:
         """
         Configure the hardware for minimum or normal power consumption
         Add custom modes for mission-specific control
+        needs edited. CH
         """
         if 'min' in mode:
             self.RGB = (0,0,0)
