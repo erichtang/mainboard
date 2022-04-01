@@ -22,3 +22,4 @@ _f={
 
 def co(msg,color='gray',fmt='normal'):
     return _h+_f[fmt]+';3'+_c[color]+'m'+msg+_e
+

@@ -18,7 +18,7 @@ cubesat.tasko=tasko
 # Dict to store scheduled objects by name
 cubesat.scheduled_tasks={}
 
-print('Loading Tasks...',end='')
+print('Loading Tasks...',end='\n')
 
 """ Unsure of the significance of this. The cubesat already logs thru cubesat.log?
 I do see use for saving camera data, but per documentation that should be saved in it's subsequent task or the pycubed.py file.
@@ -37,7 +37,7 @@ for file in os.listdir('Tasks'):
     file=file[:-3]
 
     # ignore these files
-    if file in ("template_task", "test", "check_batteries", "game_manager", "check_batteries", "attitude_control", "beacon_task"): ## added more tasks to ignore. MB, CH
+    if file in ("template_task", "test", "check_batteries", "game_manager", "check_batteries", "attitude_control", "beacon_task", "communication"): ## added more tasks to ignore. MB, CH
         continue
 
     print(f"importing {file}")

@@ -7,10 +7,17 @@ Library Repo:
 * Author(s): Max Holliday,
 Fork'd by Marek Brodke, C. Hillis
 
+To-Do
+    1. Get IMU up and running, in this lib and it's own lib
+    2. move template_task.debug to a lib so it can be used here too (ONLY FOR INIT)
+    3. Invesitage purpose/use of merek's code for SD
+    4. have proper things print to debug and log files
+    5. 
+
 """
 
 # Common CircuitPython Libs
-from syslog import LOG_DAEMON
+#from syslog import LOG_DAEMON -- look into this
 import board, microcontroller
 import busio, time, sys
 from storage import mount,umount,VfsFat
@@ -69,13 +76,13 @@ class Satellite:
         self.BOOTTIME= const(time.time())
         self.data_cache={}
         self.filenumbers={}
-        #marek removed these?
-        self.vlowbatt=6.0 #adjust this value
+        
+        self.vlowbatt=6.0 #adjust this value--------------------------------------------------------------------------------------------------------------------------------------
         self.send_buff = memoryview(SEND_BUFF)
-        self.debug=True
+        self.debug=True # set to false for flight?
 
         """
-        # I think this needs to be moved down lower in the init -- looking into this
+        # I think this needs to be moved down lower in the init -- looking into this, also pycubed has commands already implemented, IDK why marek tried to implement his own. looking into this
         # ------------------------------------------ Start Section v
        
         # something that I set that indicates how much time in minutes to wait until starting transmitting
@@ -137,12 +144,12 @@ class Satellite:
         self._relayA.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
         self._resetReg = digitalio.DigitalInOut(board.VBUS_RST)
         self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
+        
 
         # Define battery voltage
         self._vbatt = AnalogIn(board.BATTERY)
         """ LOOK into this CH 
-        # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively
-        ################################################# look at this with revised solar charger CH 12/14
+        # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
         self._ichrg = AnalogIn(board.L1PROG)
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
@@ -157,7 +164,24 @@ class Satellite:
         self.uart3 = busio.UART(board.TX3,board.RX3)
         self.uart4 = busio.UART(board.TX4,board.RX4)
 
-        #Figure out why marek added this
+        # Define filesystem stuff
+        self.logfile="/log.txt"
+
+        # Define GPS
+        self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
+        self.en_gps.switch_to_output()
+
+        # Define radio
+        _rf_cs1 = digitalio.DigitalInOut(board.RF1_CS)
+        _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
+        self.enable_rf = digitalio.DigitalInOut(board.EN_RF)
+        self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
+        # self.enable_rf.switch_to_output(value=False) # if U21
+        self.enable_rf.switch_to_output(value=True) # if U7
+        _rf_cs1.switch_to_output(value=True)
+        _rf_rst1.switch_to_output(value=True)
+        self.radio1_DIO0.switch_to_input()
+
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
             # Baud rate depends on the card, 4MHz should be safe
@@ -178,78 +202,37 @@ class Satellite:
             self.logfile = self.storage_directory + "log.txt"
 
             #setting the user's file name /sd/user_file_name
-            self.user_file_name = self.storage_directory + self.user_file_name
+            #self.user_file_name = self.storage_directory + self.user_file_name
 
             # creating a big_buffer that the satellite can use for large file transfers
-            self.buffer = smart_buffer(self.storage_directory + "buf")
+            #self.buffer = smart_buffer(self.storage_directory + "buf")
 
             # ------------------------------------------ End Section ^
             """
+            self.log('[INIT][SD]')
         except Exception as e:
-            if self.debug: print('[ERROR][SD Card]',e)
-        """
+            self.log('[ERROR][SD Card]',e)
+        
         # so you can tell the difference between boots in the log file
         self.log("----BOOT----")
-        # ------------------------------------------ Start Section v
 
+        """
         # initializing connection to the camera
         try:
             self.cam_port = busio.UART(board.SDA2, board.SCL2, timeout=0.05, baudrate=115200)
 
         except Exception as e:
             self.log('[ERROR][CONNECTION_TO_CAMERA]',e)
-
-        # ------------------------------------------ End Section ^
         """
-        # Define filesystem stuff
-        self.logfile="/log.txt"
-
-        # Define GPS
-        self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
-        self.en_gps.switch_to_output()
-
-        # Define radio
-        _rf_cs1 = digitalio.DigitalInOut(board.RF1_CS)
-        _rf_rst1 = digitalio.DigitalInOut(board.RF1_RST)
-        self.enable_rf = digitalio.DigitalInOut(board.EN_RF)
-        self.radio1_DIO0=digitalio.DigitalInOut(board.RF1_IO0)
-        # self.enable_rf.switch_to_output(value=False) # if U21
-        self.enable_rf.switch_to_output(value=True) # if U7
-        _rf_cs1.switch_to_output(value=True)
-        _rf_rst1.switch_to_output(value=True)
-        self.radio1_DIO0.switch_to_input()
-
-        """
-        # ------------------------------------------ Start Section v
-
-        # initializing magneto torquer driver board connection 
-        try:
-            # initializing the driver board at the address 0x58 on the i2c bus
-            if not self.simulation:
-                pass
-                #self.driver_x = mt_driver(0x58, self.i2c1)
-                #self.driver_y = mt_driver(0x59, self.i2c1)
-                #self.driver_z = mt_driver(0x60, self.i2c1)
-            else:
-                self.driver_x = mt_driver_simulated(0x58, self.send_result_of_simulation)
-                self.driver_y = mt_driver_simulated(0x59, self.send_result_of_simulation)
-                self.driver_z = mt_driver_simulated(0x60, self.send_result_of_simulation)
-
-            self.hardware['MTDRIVERS'] = True
         
-        except Exception as e:
-            self.error_encountered = True
-            self.log('[WARNING][MT_DRIVER]:' + str(e))
-
-        # ------------------------------------------ End Section ^
-        """
         # Initialize Neopixel
         try:
             self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB)
             self.neopixel[0] = (0,0,0)
             self.hardware['Neopixel'] = True
+            self.log('[INIT][Neopixel]')
         except Exception as e:
-            if self.debug: print('[WARNING][Neopixel]',e)
+            self.log('[WARNING][Neopixel]' + str(e))
 
         # Initialize USB charger
         try:
@@ -260,32 +243,36 @@ class Satellite:
             self.usb.charging_current=8 #400mA
             self.usb_charging=False
             self.hardware['USB'] = True
+            self.log('[INIT][USB Charger]')
         except Exception as e:
-            if self.debug: print('[ERROR][USB Charger]',e)
+            self.log('[ERROR][USB Charger]'+ str(e))
 
         # Initialize Power Monitor
         try:
             self.pwr = adm1176.ADM1176(self.i2c1)
             self.pwr.sense_resistor = 1
             self.hardware['PWR'] = True
+            self.log('[INIT][Power Monitor]')
         except Exception as e:
-            if self.debug: print('[ERROR][Power Monitor]',e)
+            self.log('[ERROR][Power Monitor]' + str(e))
 
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
         try:
             self.IMU = bmx160.BMX160_I2C(self.i2c1)
             self.hardware['IMU'] = True
+            self.log('[INIT][IMU]')
         except Exception as e:
-            if self.debug: print('[ERROR][IMU]',e)
+            self.log('[ERROR][IMU]' + str(e))
 
         # Initialize GPS
         try:
             self.gps = adafruit_gps.GPS(self.uart1,debug=self.debug) # still powered off! #needs to be turned on somewhere else? -CH
             self.gps.timeout_handler=self.timeout_handler
             self.hardware['GPS'] = True
+            self.log('[INIT][GPS]')
         except Exception as e:
-            if self.debug: print('[ERROR][GPS]',e)
+            self.log('[ERROR][GPS]' + str(e))
 
         # Initialize radio #1 - UHF
         # Edit this for our mission spec. CH
@@ -299,8 +286,9 @@ class Satellite:
             self.radio1.ack_delay=0.2
             self.radio1.sleep()
             self.hardware['Radio1'] = True
+            self.log('[INIT][Radio 1 - LoRa]')
         except Exception as e:
-            if self.debug: print('[ERROR][RADIO 1]',e)
+            self.log('[ERROR][Radio 1 - LoRa]' + str(e))
 
         # set PyCubed power mode
         self.power_mode = 'normal'
@@ -316,8 +304,7 @@ class Satellite:
         elif dev=='imu':
             self.IMU.__init__(self.i2c1)
         else:
-            self.log('Invalid Device? ->' + dev)
-            print('Invalid Device? ->',dev)
+            self.log('Invalid Device? ->' + str(dev))
     """ look into fixing this. CH
     @property
     def acceleration(self):
@@ -361,11 +348,12 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                print('[WARNING]',e)
+                self.log('[WARNING]' + str(e))
 
     @property
     def charge_batteries(self):
         if self.hardware['USB']:
+            self.log('[USB Charging][f{}]'.format(self.usb_charging))
             return self.usb_charging
     @charge_batteries.setter
     def charge_batteries(self,value):
@@ -391,10 +379,9 @@ class Satellite:
             try:
                 return self.pwr.read()[0] # volts
             except Exception as e:
-                print('[WARNING][PWR Monitor]',e)
+                self.log('[WARNING][PWR Monitor]' + str(e))
         else:
-            print('[WARNING] Power monitor not initialized')
-            self.log('[WARNING] Power monitor not initialized')
+            self.log('[WARNING][Power monitor not initialized]')
 
     @property
     def current_draw(self):
@@ -409,9 +396,8 @@ class Satellite:
                     idraw+=self.pwr.read()[1]
                 return (idraw/50)*1000 # mA
             except Exception as e:
-                print('[WARNING][PWR Monitor]',e)
+                self.log('[WARNING][PWR Monitor]' + str(e))
         else:
-            print('[WARNING] Power monitor not initialized')
             self.log('[WARNING] Power monitor not initialized')
 
     """  FIX this CH -- need to add charge current measurement on MB
@@ -439,47 +425,24 @@ class Satellite:
                 self.spi.deinit()
                 time.sleep(3)
             except Exception as e:
-                print('vbus reset error?', e)
                 self.log('vbus reset error?' + str(e))
                 pass
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
 
-    """ FIX THIS CH
-    # USB debugging is implemented via print statements
-    # maybe edit this to make a debug_log file, separate from the log file which would document non-debug system activities?
-    # ------------------------------------------ Start Section modified by Marek Brodke on 11/24/2021, 12/8/2021 v
-
     # writes a message to the log file
+    # also prints it thru USB, can comment that line out if desired
     def log(self, msg):
-        if not self.connected: # if debugging usb is not connected
-            with open(self.logfile, "a+") as f: # opening the log file for appending
+        if self.hardware['SDcard']:
+            with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
-                f.write('{}, {}\n'.format(t,msg)) # appending the time and message to file
-
-        else: # if debugging usb is connected
-            print(msg)
-
-    # ------------------------------------------ End Section ^
-    """
-    
-    """
-    # Debug data printed thru usb AND a log file -- change this to the pycubed way
-    # defaults to do both, but can be called to only do one.
-    # doesn't do anything if self.debug = False
-    def debug_data(self, msg, log=True, print=True):
-        if self.debug:
-            if log: 
-                with open(self.logfile, "a+") as f: # opening the log file for appending
-                    f.write('{}, {}\n'.format(int(time.monotonic()),msg)) # appending the time and message to file
-            if print:
-                    print('{}, {}\n'.format(msg)) # appending the time and message to file
-    """
+                f.write('{}, {}\n'.format(t,msg))
+        if self.debug:print(msg)
 
     def print_file(self,filedir=None,binary=False):
         if filedir==None:
             return
-        print('\n--- Printing File: {} ---'.format(filedir))
+        self.log('\n--- Printing File: {} ---'.format(filedir))
         if binary:
             with open(filedir, "rb") as file:
                 print(file.read())
@@ -490,7 +453,7 @@ class Satellite:
                     print(line.strip())
 
     def timeout_handler(self):
-        print('Incrementing timeout register')
+        self.log('Incrementing timeout register')
         if (self.micro.nvm[_TOUTS] + 1) >= 255:
             self.micro.nvm[_TOUTS]=0
             # soft reset
@@ -505,6 +468,7 @@ class Satellite:
         Add custom modes for mission-specific control
         needs edited. CH
         """
+        self.log('[POWERMODE][f{}]'.format(mode))
         if 'min' in mode:
             self.RGB = (0,0,0)
             self.neopixel.brightness=0
