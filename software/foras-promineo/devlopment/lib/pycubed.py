@@ -36,7 +36,7 @@ import adafruit_gps #need to play with gps reading procedure.
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
 # Common CircuitPython Libs
-from os import listdir, stat, statvfs, mkdir, chdir, 
+from os import listdir, stat, statvfs, mkdir, chdir
 from os import remove, rmdir, getcwd #marek added
 from bitflags import bitFlag,multiBitFlag,multiByte
 from micropython import const
@@ -259,7 +259,7 @@ class Satellite:
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
         try:
-            self.IMU = bmx160.BMX160_I2C(self.i2c1)
+            self.IMU = imu.IMU() ###
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
