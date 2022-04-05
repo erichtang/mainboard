@@ -54,7 +54,7 @@ class MXC6655:
             print("[ERROR][MXC6655][BAD WHO_AM_I VALUE]")
         self.ON()
     
-    def OFF(self):
+    def SLEEP(self):
         self._pd = True
 
     def ON(self): #no power adjustment paramaters for this chip, just on or off.

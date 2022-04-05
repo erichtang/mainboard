@@ -26,11 +26,10 @@ import digitalio, sdcardio, pwmio, tasko#, supervisor #marek added supervisor?
 
 # Hardware Specific Libs
 import pycubed_rfm9x # Radio
-import bmx160 # IMU -- remove this
 import neopixel # RGB LED
 import bq25883 # USB Charger
 import adm1176 # Power Monitor
-import pycubed_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
+import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
 #from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver $$ this is completely different now
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
@@ -259,7 +258,7 @@ class Satellite:
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
         try:
-            self.IMU = imu.IMU() ###
+            self.imu = sli_imu.IMU(self.i2c1, self.log)
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:

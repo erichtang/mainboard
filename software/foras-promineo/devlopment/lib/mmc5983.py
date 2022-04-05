@@ -5,7 +5,6 @@
 #
 # C. Hillis 3/22
 
-from time import sleep #look into getting around 
 from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
 from adafruit_register.i2c_bits import ROBits, RWBits
@@ -79,15 +78,15 @@ class MMC5983:
             self._int_meas_done_en = True
             #print("en meas done", self._int_meas_done_en)
         
-    def OFF(self):
+    def SLEEP(self):
         #self.reset()
         self.inhibit = 7 #inhibits the magnetometers
         self.cmm_en = False #auto measurements off
         self.en_prd_set = False # auto set/reset is off just in case 
 
+    #function calling this needs to be aware of this taking 10ms
     def reset(self):
         self._reset = True
-        sleep(0.01) # i dont really like a 10ms sleep here bit if it is what must be done it will be 
 
     def read(self):
         good_data_flag = False
