@@ -1,10 +1,17 @@
+"""
+NOT DONE
+this task needs edited to preform differently when a battery pack is attached vs when it isn't.
+working through this right now.
+ch 4/6
+"""
+
 from Tasks.template_task import Task
 import time
 
 class task(Task):
     priority = 1
     frequency = 1/10
-    name = 'battery_checker'
+    name = 'battery_task'
 
     # time allotted until a lower power timeout can initiated
     timeout = 3600

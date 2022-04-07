@@ -31,6 +31,8 @@ import bq25883 # USB Charger
 import adm1176 # Power Monitor
 import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
+import foras_promineo_pib
+import foras_promineo_payload
 #from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver $$ this is completely different now
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
@@ -78,7 +80,8 @@ class Satellite:
         
         self.vlowbatt=6.0 #adjust this value--------------------------------------------------------------------------------------------------------------------------------------
         self.send_buff = memoryview(SEND_BUFF)
-        self.debug=True # set to false for flight?
+
+        self.debug=True # set to false for flight, unless we want this printing to nothing
 
         """
         # I think this needs to be moved down lower in the init -- looking into this, also pycubed has commands already implemented, IDK why marek tried to implement his own. looking into this
@@ -120,14 +123,9 @@ class Satellite:
         # ------------------------------------------ End Section ^
         """
 
-        self.micro=microcontroller
-
         # table that stores whether or not a device is active or not
         self.hardware = {
                         'IMU':    False, #edit this one, maybe have each IMU device be it's own bool? i.e.
-                        #'IMUx': {
-                        #   'Gyro1' : False, ......}
-                        # but that would make this table a-lot messier. maybe have it be -false on signle device failure, and deal w/ this being false regardless?
                         'Radio1': False,
                         'Radio2': False,
                         'SDcard': False,
@@ -135,8 +133,11 @@ class Satellite:
                         'WDT':    False,
                         'USB':    False,
                         'PWR':    False,
-                        'MTDRIVERS': False,# marek added
-                        'CAMERA': False} #marek added, rename to payload?
+                        'PIB':    False,
+                        'PAYLOAD':False,
+                        #'MTDRIVERS': False,# marek added
+                        #'CAMERA': False #marek added, rename to payload?
+                        } 
 
         # Define burn wires:
         self._relayA = digitalio.DigitalInOut(board.RELAY_A)
@@ -258,7 +259,7 @@ class Satellite:
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
         try:
-            self.imu = sli_imu.IMU(self.i2c1, self.log)
+            self.imu = sli_imu.IMU(self, self.log)
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
@@ -289,6 +290,20 @@ class Satellite:
         except Exception as e:
             self.log('[ERROR][Radio 1 - LoRa]' + str(e))
 
+        # init pib
+        try:
+            self.log('PIB not impleneted sufficiently to do anything here')
+            self.pib = foras_promineo_pib.PIB(self)
+        except Exception as e:
+            self.log('[ERROR][PIB]' + str(e))
+
+        #init payload
+        try:
+            self.log('payload not impleneted sufficiently to do anything here')
+            self.payload = foras_promineo_payload.PAYLOAD(self)
+        except Exception as e:
+            self.log('[ERROR][PIB]' + str(e))
+
         # set PyCubed power mode
         self.power_mode = 'normal'
 
@@ -301,10 +316,17 @@ class Satellite:
         elif dev=='usb':
             self.usb.__init__(self.i2c1)
         elif dev=='imu':
-            self.IMU.__init__(self.i2c1)
+            self.imu.__init__(self.i2c1)
+        elif dev=='pib':
+            pass # implement!
+        elif dev=='payload':
+            pass # implement !
         else:
             self.log('Invalid Device? ->' + str(dev))
-    """ look into fixing this. CH
+
+    """ 
+    IMU data has moved to sli_imu.py lib. 
+    keeping this in until I figure out merek;s simulatoon stuff.
     @property
     def acceleration(self):
         if not self.simulation:
@@ -337,6 +359,7 @@ class Satellite:
         else:
             return self.query_for_simulation(b"temperature")
     """
+
     @property
     def RGB(self):
         return self.neopixel[0]
@@ -385,7 +408,7 @@ class Satellite:
     @property
     def current_draw(self):
         """
-        current draw from batteries
+        current draw FROM batteries -- current TO batteries needs implented yet in sw/hw.
         NOT accurate if powered via USB
         """
         if self.hardware['PWR']:
@@ -429,9 +452,10 @@ class Satellite:
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
 
-    # writes a message to the log file
-    # also prints it thru USB, can comment that line out if desired
     def log(self, msg):
+        # writes a message to the log file
+        # also prints it thru USB, can comment that line out if desired.
+        # change this to the msgpack format to save space? this appears to be a remnant of before msgpack was implemented.
         if self.hardware['SDcard']:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
@@ -476,10 +500,12 @@ class Satellite:
             if self.hardware['Radio2']:
                 self.radio2.sleep()
             self.enable_rf.value = False
-            if self.hardware['IMU']:
-                self.IMU.gyro_powermode  = 0x14 # suspend mode
-                self.IMU.accel_powermode = 0x10 # suspend mode
-                self.IMU.mag_powermode   = 0x18 # suspend mode
+            if self.hardware['IMU']: #EDIT THIS
+                self.imu.powermode('sleep')
+                #original pycubed code here but removing once powermode is implemented
+                #self.IMU.gyro_powermode  = 0x14 # suspend mode
+                #self.IMU.accel_powermode = 0x10 # suspend mode
+                #self.IMU.mag_powermode   = 0x18 # suspend mode
             if self.hardware['PWR']:
                 self.pwr.config('V_ONCE,I_ONCE')
             if self.hardware['GPS']:
@@ -496,6 +522,7 @@ class Satellite:
                 self.en_gps.value = True
             self.power_mode = 'normal'
             # don't forget to reconfigure radios, gps, etc...
+            # EDIT THIS TO DO ABOVE CH- 4/6
     """
     def new_file(self,substring,binary=False):
         '''

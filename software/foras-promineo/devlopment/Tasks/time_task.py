@@ -5,7 +5,7 @@ import time
 
 class task(Task):
     priority = 4
-    frequency = 1/20 # once every 20s
+    frequency = 1/60 # once every 60s
     name='time'
     color = 'white'
 

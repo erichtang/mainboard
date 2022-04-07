@@ -1,3 +1,8 @@
+"""
+NOT DONE
+this task is just a task that can test out functions in devlopment and other things
+changes frequently for what needs testing.
+"""
 from Tasks.template_task import Task
 import time
 
@@ -11,15 +16,9 @@ class task(Task):
 
     async def main_task(self):
         self.debug('test start: {}'.format(time.monotonic()))
-        """
-        read each IMU device
-        """
-        self.debug('\t GYRO0(dps): {}'.format(self.cubesat.imu.read('gyro0')))
-        self.debug('\t GYRO1(dps): {}'.format(self.cubesat.imu.read('gyro1')))
-        self.debug('\t MAG0(mG): {}'.format(self.cubesat.imu.read('mag0')))
-        self.debug('\t MAG1(mG): {}'.format(self.cubesat.imu.read('mag1')))
-        self.debug('\t ACCEL0(g): {}'.format(self.cubesat.imu.read('accel0')))
-        self.debug('\t ACCEL1(g): {}'.format(self.cubesat.imu.read('accel1')))
+        #print imu data
+        for imu_type in self.cubesat.data_cache['imu']:
+            self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
 
         #await self.cubesat.tasko.sleep(10)
         self.debug('test stop: {}'.format(time.monotonic()))

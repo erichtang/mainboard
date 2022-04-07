@@ -30,25 +30,20 @@ I2C bus    _____   ch0    _____
                           ‾‾‾‾‾‾
 """
 
-from micropython import const
-from adafruit_bus_device.i2c_device import I2CDevice
-
 import pca9543
 import iam20380
 import mxc6655
 import mmc5983
 
 class IMU():
-
-    def __init__(self, i2c, log, mux_addr=0x70, gyro_addr=0x69,mag_addr=0x30, accel_addr=0x15): #insert optional variables for ignoring devices?
+    #remove i2c paramater as it is self.cubesat.i2c1
+    def __init__(self, satellite, mux_addr=0x70, gyro_addr=0x69,mag_addr=0x30, accel_addr=0x15): #insert optional variables for ignoring devices?
         """
         Init routine
         """
-        #log function in the parent Satellite class 
-        self.log = log
+        super.__init__(satellite)
 
         #saving variables passed to the class
-        self.i2c = i2c
         self.mux_addr = mux_addr
         self.gyro_addr = gyro_addr
         self.accel_addr = accel_addr
@@ -78,7 +73,7 @@ class IMU():
         '''
         #initialize mux
         try:
-            self.mux = pca9543.PCA9543(i2c, mux_addr)
+            self.mux = pca9543.PCA9543(self.cubesat.i2c1, mux_addr)
             self.mux.set_ch0()
             self.mux.clear()
             self.hardware['MUX'] = True
@@ -94,19 +89,19 @@ class IMU():
         #ch0 devices init
         self.mux.set_ch0()
         try:
-            self.gyro0 = iam20380.IAM20380(i2c, gyro_addr)
+            self.gyro0 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
             self.hardware['GYRO0'] = True
             print('[INIT][IMU][GYRO0]')
         except Exception as e:
             self.log('[ERROR][IMU][GYRO0]' + str(e))
         try:
-            self.mag0 = mmc5983.MMC5983(i2c, mag_addr)
+            self.mag0 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG0'] = True
             print('[INIT][IMU][MAG0]')
         except Exception as e:
             self.log('[ERROR][IMU][MAG0]' + str(e))
         try:
-            self.accel0 = mxc6655.MXC6655(i2c, accel_addr)
+            self.accel0 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL0'] = True
             print('[INIT][IMU][ACCEL0]')
         except Exception as e:
@@ -114,19 +109,19 @@ class IMU():
         #ch1 devices init
         self.mux.set_ch1()
         try:
-            self.gyro1 = iam20380.IAM20380(i2c, gyro_addr)
+            self.gyro1 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
             self.hardware['GYRO1'] = True
             print('[INIT][IMU][GYRO1]')
         except Exception as e:
             self.log('[ERROR][IMU][GYRO1]' + str(e))
         try:
-            self.mag1 = mmc5983.MMC5983(i2c, mag_addr)
+            self.mag1 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG1'] = True
             print('[INIT][IMU][MAG1]')
         except Exception as e:
             self.log('[ERROR][IMU][MAG1]' + str(e))
         try: #accel 1 is DNP, so this may toss an error but is NBD
-            self.accel1 = mxc6655.MXC6655(i2c, accel_addr)
+            self.accel1 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL1'] = True
             print('[INIT][IMU][ACCEL1]')
         except Exception as e:
@@ -233,62 +228,92 @@ class IMU():
         if device is False in device table, it will return none.
     see read_temp for a aquiring temp of specific devices
     """
-    def read(self,device):
-        device=device.lower()
-        if   device=='mux' and self.hardware['MUX'] is True:
-            return self.mux.read()
-        elif device=='gyro0' and self.hardware['GYRO0'] is True:
+    @property
+    def gyro0(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['GRYO0']:
             self.mux.set_ch0()
-            return self.gyro0.read()
-        elif device=='gyro1' and self.hardware['GYRO1'] is True:
+            return self.gyro0.read() #dps
+    
+    @property
+    def gyro1(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['GRYO1']:
             self.mux.set_ch1()
-            return self.gyro1.read()
-        elif device=='mag0' and self.hardware['MAG0'] is True:
+            return self.gyro1.read() #dps
+                  
+    @property
+    def mag0(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
             self.mux.set_ch0()
-            return self.mag0.read()
-        elif device=='mag1' and self.hardware['MAG1'] is True:
+            return self.mag0.read() #mG CHANGE TO uT
+
+    @property
+    def mag1(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
             self.mux.set_ch1()
-            return self.mag1.read()
-        elif device=='accel0' and self.hardware['ACCEL0'] is True:
+            return self.mag1.read() #mG
+    
+    @property
+    def accel0(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
             self.mux.set_ch0()
-            return self.accel0.read()
-        elif device=='accel1' and self.hardware['ACCEL1'] is True:
+            return self.accel0.read() #g CHANGE TO m/s^2
+    
+    @property
+    def accel1(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
             self.mux.set_ch1()
-            return self.accel1.read()
-        else:
-            print('[imu rd] device: {} is off or does not exist!]'.format(str(device)))
-            return None
+            return self.accel1.read() #
 
     """
     returns specified device's temperature reading
         if device is False in device table, it will return none.
-        evaluate each device and use as needed, as the temp sensor for the IAM20380 is slightly off no matter what I try 
+        evaluate each device and use as needed, as the temp sensor for the IAM20380(gyro) is slightly off no matter what I try 
         -- and it isn't worth it to fine tune the paramater when I have 5 more temp sensors in the same area
-    see read_temp for a aquiring temp of specific devices
     """
-    def temp(self,device):
-        device=device.lower()
-        if   device=='mux' and self.hardware['MUX'] is True:
-            print("The mux doesn't have a temperature sensor you silly billy")
-            return None
-        elif device=='gyro0' and self.hardware['GYRO0'] is True:
+    @property
+    def gyro0_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['GRYO0']:
             self.mux.set_ch0()
             return self.gyro0.temp()
-        elif device=='gyro1' and self.hardware['GYRO1'] is True:
+    
+    @property
+    def gyro1_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['GRYO1']:
             self.mux.set_ch1()
             return self.gyro1.temp()
-        elif device=='mag0' and self.hardware['MAG0'] is True:
+                  
+    @property
+    def mag0_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
             self.mux.set_ch0()
             return self.mag0.temp()
-        elif device=='mag1' and self.hardware['MAG1'] is True:
+
+    @property
+    def mag1_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
             self.mux.set_ch1()
             return self.mag1.temp()
-        elif device=='accel0' and self.hardware['ACCEL0'] is True:
+    
+    @property
+    def accel0_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
             self.mux.set_ch0()
             return self.accel0.temp()
-        elif device=='accel1' and self.hardware['ACCEL1'] is True:
+    
+    @property
+    def accel1_t(self):
+        #if self.cubesat.simulation:
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
             self.mux.set_ch1()
             return self.accel1.temp()
-        else:
-            print('[ERROR][IMU][device is off or does not exist!]' + str(device))
-            return None
