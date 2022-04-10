@@ -83,7 +83,7 @@ class task(Task):
                                 try:
                                     if cmd_args is None:
                                         self.debug('running {} (no args)'.format(cdh.commands[cmd]))
-                                        self.cmd_dispatch[cdh.commands[cmd]](self)
+                                        self.cmd_dispatch[db_cdh.commands[cmd]](self)
                                     else:
                                         self.debug('running {} (with args: {})'.format(cdh.commands[cmd],cmd_args))
                                         self.cmd_dispatch[cdh.commands[cmd]](self,cmd_args)
