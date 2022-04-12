@@ -77,10 +77,9 @@ class Satellite:
         self.BOOTTIME= const(time.time())
         self.data_cache={}
         self.filenumbers={}
-        
+        self.micro = microcontroller
         self.vlowbatt=6.0 #adjust this value--------------------------------------------------------------------------------------------------------------------------------------
         self.send_buff = memoryview(SEND_BUFF)
-
         self.debug=True # set to false for flight, unless we want this printing to nothing
 
         """
@@ -258,12 +257,12 @@ class Satellite:
 
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
-        try:
-            self.imu = sli_imu.IMU(self, self.log)
-            self.hardware['IMU'] = True
-            self.log('[INIT][IMU]')
-        except Exception as e:
-            self.log('[ERROR][IMU]' + str(e))
+    #try:
+        self.imu = sli_imu.IMU(self)
+        self.hardware['IMU'] = True
+        self.log('[INIT][IMU]')
+    #except Exception as e:
+     #   self.log('[ERROR][IMU]' + str(e))
 
         # Initialize GPS
         try:
@@ -292,14 +291,14 @@ class Satellite:
 
         # init pib
         try:
-            self.log('PIB not impleneted sufficiently to do anything here')
+            self.log('[INIT][PIB]')
             self.pib = foras_promineo_pib.PIB(self)
         except Exception as e:
             self.log('[ERROR][PIB]' + str(e))
 
         #init payload
         try:
-            self.log('payload not impleneted sufficiently to do anything here')
+            self.log('[INIT][PAYLOAD]')
             self.payload = foras_promineo_payload.PAYLOAD(self)
         except Exception as e:
             self.log('[ERROR][PIB]' + str(e))
@@ -316,7 +315,7 @@ class Satellite:
         elif dev=='usb':
             self.usb.__init__(self.i2c1)
         elif dev=='imu':
-            self.imu.__init__(self.i2c1)
+            self.imu.__init__(self)
         elif dev=='pib':
             pass # implement!
         elif dev=='payload':
@@ -524,6 +523,7 @@ class Satellite:
             # don't forget to reconfigure radios, gps, etc...
             # EDIT THIS TO DO ABOVE CH- 4/6
     """
+    how/why did the new_file def get cut out below? Just pasted the original back in below.
     def new_file(self,substring,binary=False):
         '''
         substring something like '/data/DATA_'
@@ -534,6 +534,44 @@ class Satellite:
             ff=''
             n=0
     """
+
+    def new_file(self,substring,binary=False):
+        '''
+        substring something like '/data/DATA_'
+        directory is created on the SD!
+        int padded with zeros will be appended to the last found file
+        '''
+        if self.hardware['SDcard']:
+            ff=''
+            n=0
+            _folder=substring[:substring.rfind('/')+1]
+            _file=substring[substring.rfind('/')+1:]
+            print('Creating new file in directory: /sd{} with file prefix: {}'.format(_folder,_file))
+            try: chdir('/sd'+_folder)
+            except OSError:
+                print('Directory {} not found. Creating...'.format(_folder))
+                try: mkdir('/sd'+_folder)
+                except Exception as e:
+                    print(e)
+                    return None
+            for i in range(0xFFFF):
+                ff='/sd{}{}{:05}.txt'.format(_folder,_file,(n+i)%0xFFFF)
+                try:
+                    if n is not None:
+                        stat(ff)
+                except:
+                    n=(n+i)%0xFFFF
+                    # print('file number is',n)
+                    break
+            print('creating file...',ff)
+            if binary: b='ab'
+            else: b='a'
+            with open(ff,b) as f:
+                f.tell()
+            chdir('/')
+            return ff
+
+
     """ Figure out what is going on here
     # ------------------------------------------ Start Section
 

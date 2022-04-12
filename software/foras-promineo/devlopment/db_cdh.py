@@ -1,39 +1,35 @@
 import time
-import usb_cdc.data as db
+import usb_cdc
 
-commands = [
-    'no-op',
-    'hreset',
-    'shutdown',
-    'query',
-    'exec_cmd',
-]
+commands = {
+    b'no-op': 'no-op',
+}
 
 ########### commands without arguments ###########
 def noop(self):
-    db.write('no-op ACK')
+    usb_cdc.data.write('no-op ACK')
     pass
 
 def hreset(self):
-    db.write('Resetting')
+    usb_cdc.data.write('Resetting')
     try:
         self.cubesat.micro.on_next_reset(self.cubesat.micro.RunMode.NORMAL)
         self.cubesat.micro.reset()
     except:
-        db.write('Reset Failed')
+        usb_cdc.data.write('Reset Failed')
 
 ########### commands with arguments ###########
 
 def query(self,args):
-    db.write('query: {}'.format(args))
-    db.write(str(eval(args)))
+    usb_cdc.data.write('query: {}'.format(args))
+    usb_cdc.data.write(str(eval(args)))
 
 def exec_cmd(self,args):
-    db.write('exec: {}'.format(args))
+    usb_cdc.data.write('exec: {}'.format(args))
     try:
         exec(args)
     except Exception as e:
-        db.write('Execution failed... : {}'.format(e))
+        usb_cdc.data.write('Execution failed... : {}'.format(e))
 
 def get_imu_offset(write = False):
     # write offset detection here

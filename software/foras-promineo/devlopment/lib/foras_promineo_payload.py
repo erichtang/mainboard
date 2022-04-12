@@ -17,7 +17,7 @@ class payload():
         inherits superclass satellite from pycubed.py
         init's FP payload devices and any functionality for managing it.
         """
-        super.__init__(satellite)
+        self.cubesat = satellite
 
         self.hardware = {
             'openMV' : False,

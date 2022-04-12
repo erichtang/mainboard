@@ -18,7 +18,7 @@ class PIB():
         inherits superclass satellite from pycubed.py
         init's FP pib devices and any functionality for managing them.
         """
-        super.__init__(satellite)
+        self.cubesat = satellite
 
         self.hardware = {
             'io_expander' : False,

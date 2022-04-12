@@ -13,17 +13,17 @@ import time
 
 SEND_DATA = False # make sure you have an antenna attached!
 
-class Task:
+class task(Task):
 
     priority = 2
-    frequency = 2
+    frequency = 1/2 # during normal operation this would preform 2Hz, but is different for now.
     name = 'imu_sampler'
     color = 'green'
 
     # we want to initialize the data file only once upon boot
     # so perform our task init and use that as a chance to init the data files
     def __init__(self, satellite):
-        super.__init__(satellite)
+        super().__init__(satellite)
         self.data_file=self.cubesat.new_file('/data/imu',binary=True)
         self.cubesat = satellite
 
@@ -31,21 +31,21 @@ class Task:
 
         # take IMU readings
         readings = {
-            'timestamp' : (time.time()-self.cubesat.BOOTTIME), #time since boot of measurement
-            'gyro0'     : self.cubesat.imu.gyro0,
-            'gyro0_t'   : self.cubesat.imu.gyro0_t, #_t suffix means temperature
-            'gyro1'     : self.cubesat.imu.gyro1,
-            'gyro1_t'   : self.cubesat.imu.gyro1_t,
-            'mag0'      : self.cubesat.imu.mag0,
-            'mag0_t'    : self.cubesat.imu.mag0_t,
-            'mag1'      : self.cubesat.imu.mag1,
-            'mag1_t'    : self.cubesat.imu.mag1_t,
-            'accel0'    : self.cubesat.imu.accel0,
-            'accel0_t'  : self.cubesat.imu.accel0_t,
-            'accel1'    : self.cubesat.imu.accel1,
-            'accel1_t'  : self.cubesat.imu.accel1_t,
+            'gyro0_r'     : self.cubesat.imu.gyro0_r,
+            'gyro0_t'     : self.cubesat.imu.gyro0_t, #_t suffix means temperature
+            'gyro1_r'     : self.cubesat.imu.gyro1_r,
+            'gyro1_t'     : self.cubesat.imu.gyro1_t,
+            'mag0_r'      : self.cubesat.imu.mag0_r,
+            'mag0_t'      : self.cubesat.imu.mag0_t,
+            'mag1_r'      : self.cubesat.imu.mag1_r,
+            'mag1_t'      : self.cubesat.imu.mag1_t,
+            'accel0_r'    : self.cubesat.imu.accel0_r,
+            'accel0_t'    : self.cubesat.imu.accel0_t,
+            'accel1_r'    : self.cubesat.imu.accel1_r,
+            'accel1_t'    : self.cubesat.imu.accel1_t,
+            'timestamp'   : (time.time()-self.cubesat.BOOTTIME), #time since boot of measurement
         }
-        if self.cubesat.hardware['Payload']:
+        if self.cubesat.hardware['PAYLOAD']:
             #if self.cubesat.payload.hardware['imu']:
                 #append readings dict to add payload 
             pass
@@ -54,7 +54,7 @@ class Task:
         self.cubesat.data_cache.update({'imu':readings})
 
         # print the readings with some fancy formatting
-        self.debug('IMU readings (x,y,z)')
+        self.debug('IMU readings (x,y,z), dps, mG, g')
         for imu_type in self.cubesat.data_cache['imu']:
             self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
         pass
@@ -64,7 +64,8 @@ class Task:
             # save our readings using msgpack
             with open(self.data_file,'ab') as f:
                 msgpack.pack(readings,f)
-                print(stat(self.data_file[6])) # prints number of bytes the filesize is, it *should be 16*(number of dict keys)?
+                self.debug("Data File Size: {}".format(stat(self.data_file)[6])) # prints number of bytes the filesize is [it *is 16*(number of dict keys)] currently 215bytes
+
 
             # check if the file is getting bigger than we'd like
             '''
@@ -84,6 +85,9 @@ class Task:
                             print(chunk)
                             chunk = f.read(64)
                     print('finished\n')
+                """
+                data is already printed with line 57
+                edited out for now
                 else:
                     # print the unpacked data from the file
                     print('\nPrinting IMU data file: {}'.format(self.data_file))
@@ -93,6 +97,7 @@ class Task:
                             except: break
                     print('finished\n')
                 # increment our data file number
+                """
                 self.data_file=self.cubesat.new_file('/data/imu')
 
     
