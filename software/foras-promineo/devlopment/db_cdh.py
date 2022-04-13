@@ -1,10 +1,6 @@
 import time
 import usb_cdc
 
-commands = {
-    b'no-op': 'no-op',
-}
-
 ########### commands without arguments ###########
 def noop(self):
     usb_cdc.data.write('no-op ACK')
@@ -37,3 +33,20 @@ def get_imu_offset(write = False):
 
 def print_file (path):
     pass 
+
+########### helper functions for using usb_cdc.data ###########
+
+#writes a string to usb_cdc.data
+def write(msg):
+    usb_cdc.data.write(bytes(msg, 'utf-8'))
+
+#reads a string of usb_cdc.data.readline
+    #timeout for usb_cdc must be set, is currently set in usb_db_cdh.__init__
+def read():
+    msg = usb_cdc.data.readline()
+    msg.decode('utf-8')
+    msg.remove('\n', '\r') #do i need to scrub \n and \r?
+
+#takes a string of comma separated args and extracts each string between , to a list
+def args_extractor(args):
+    pass
