@@ -132,6 +132,7 @@ class Satellite:
                         'WDT':    False,
                         'USB':    False,
                         'PWR':    False,
+                        'CHRG_PWR':False,
                         'PIB':    False,
                         'PAYLOAD':False,
                         #'MTDRIVERS': False,# marek added
@@ -147,12 +148,15 @@ class Satellite:
 
         # Define battery voltage
         self._vbatt = AnalogIn(board.BATTERY)
-        """ LOOK into this CH 
+        # LOOK into this CH 
         # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
-        self._ichrg = AnalogIn(board.L1PROG)
+        #self._ichrg = AnalogIn(board.L1PROG) -- original code
+        self._ichrg = 0
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
-        """
+        self._chrg_shdn = digitalio.DigitalInOut(board.PB21)
+        self._chrd_shdn.switch_to_output
+        
 
         # Define SPI,I2C,UART
         # for devices on the board, IMU, mt drivers etc,
@@ -246,14 +250,23 @@ class Satellite:
         except Exception as e:
             self.log('[ERROR][USB Charger]'+ str(e))
 
-        # Initialize Power Monitor
+        # Initialize Power Monitor 1 -- current to bus
         try:
             self.pwr = adm1176.ADM1176(self.i2c1)
             self.pwr.sense_resistor = 1
-            self.hardware['PWR'] = True
+            self.hardware['PWR'] = True 
             self.log('[INIT][Power Monitor]')
         except Exception as e:
             self.log('[ERROR][Power Monitor]' + str(e))
+
+        # Initialize Power Monitor 2 -- current to batt
+        try:
+            self.chrg_pwr = adm1176.ADM1176(self.i2c1, addr=0x90)  #update address
+            self.chrg_pwr.sense_resistor = 1
+            self.hardware['CHRG_PWR'] = True
+            self.log('[INIT][CHRG Power Monitor]')
+        except Exception as e:
+            self.log('[ERROR][CHRG Power Monitor]' + str(e))
 
         # Initialize IMU
         # Edit this for SLI imu changes, this will just error out every time.
@@ -385,14 +398,11 @@ class Satellite:
 
     @property
     def battery_voltage(self):
-        #if not self.simulation: figure out what marek simulated
             _vbat=0
             for _ in range(50):
                 _vbat+=self._vbatt.value * 3.3 / 65536
             _voltage = (_vbat/50)*(316+110)/110 # 316/110 voltage divider
             return _voltage # volts
-        #else:
-            #self.query_for_simulation("battery_voltage")
 
     @property
     def system_voltage(self):
@@ -407,7 +417,7 @@ class Satellite:
     @property
     def current_draw(self):
         """
-        current draw FROM batteries -- current TO batteries needs implented yet in sw/hw.
+        current FROM battery node -- current TO batteries needs implented yet in sw/hw.
         NOT accurate if powered via USB
         """
         if self.hardware['PWR']:
@@ -421,22 +431,35 @@ class Satellite:
         else:
             self.log('[WARNING] Power monitor not initialized')
 
-    """  FIX this CH -- need to add charge current measurement on MB
+    # FIX this CH -- need to add charge current measurement on MB
+    @property
     def charge_current(self):
-        
-        LTC4121 solar charging IC with charge current monitoring
-        See Programming the Charge Current section
-        
-        _charge = 0
+        """
+        current TO battery node (adm1176 can not read -negative currents)
+        """
         if self.solar_charging:
-            _charge = self._ichrg.value * 3.3 / 65536
-            _charge = ((_charge*988)/3010)*1000
-        return _charge # mA
+            if self.hardware['CHRG_PWR']:
+                try:
+                    icharge=0
+                    for _ in range(50):
+                        icharge = self.chrg_pwr.read()[1]
+                        return(icharge/50)*1000 # mA
+                except Exception as e:
+                    self.log('[WARNING][CHRG PWR Monitor]' + str(e))
+            else:
+                self.log('[WARNING] CHRG Power monitor not initialized')
+        else:
+            return 0
     
+    @property
+    def batt_charge_current(self):
+        return self.charge_current - self.current_draw
+
+
     @property
     def solar_charging(self):
         return not self._chrg.value
-    """
+    
     @property
     def reset_vbus(self):
         # unmount SD card to avoid errors
@@ -507,6 +530,8 @@ class Satellite:
                 #self.IMU.mag_powermode   = 0x18 # suspend mode
             if self.hardware['PWR']:
                 self.pwr.config('V_ONCE,I_ONCE')
+            if self.hardware['CHRG_PWR']:
+                self.chrg_pwr.config('V_ONCE,I_ONCE')
             if self.hardware['GPS']:
                 self.en_gps.value = False
             self.power_mode = 'minimum'
@@ -517,6 +542,8 @@ class Satellite:
                 self.reinit('IMU')
             if self.hardware['PWR']:
                 self.pwr.config('V_CONT,I_CONT')
+            if self.hardware['CHRG_PWR']:
+                self.chrg_pwr.config('V_CONT,I_CONT')
             if self.hardware['GPS']:
                 self.en_gps.value = True
             self.power_mode = 'normal'
