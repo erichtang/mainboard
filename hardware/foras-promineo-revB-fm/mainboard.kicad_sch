@@ -157,11 +157,11 @@
     (path "/" (page "1"))
     (path "/00000000-0000-0000-0000-000061a43b3f" (page "2"))
     (path "/00000000-0000-0000-0000-00005cec5a72" (page "3"))
-    (path "/00000000-0000-0000-0000-00005ede7915" (page "4"))
     (path "/00000000-0000-0000-0000-00006186d6ec" (page "5"))
+    (path "/00000000-0000-0000-0000-00005ede7915" (page "4"))
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000063c1e7a2" (page "6"))
-    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c" (page "7"))
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000062382e1e" (page "8"))
+    (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c" (page "7"))
     (path "/00000000-0000-0000-0000-00005cec60eb" (page "9"))
     (path "/00000000-0000-0000-0000-00005cec5dde" (page "10"))
     (path "/00000000-0000-0000-0000-000061a94522" (page "11"))
@@ -458,6 +458,15 @@
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b07534"
       (reference "#GND0209") (unit 1) (value "GND") (footprint "")
     )
+    (path "/00000000-0000-0000-0000-000061a94522/08091382-352b-4da4-9bdc-ad35a8cf83da"
+      (reference "#GND?") (unit 1) (value "GND") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/4e02a2f4-ded5-4523-84d5-7eea448b01e5"
+      (reference "#GND?") (unit 1) (value "GND") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/529e3a22-8af5-4848-b972-7f5afe1a5819"
+      (reference "#GND?") (unit 1) (value "GND") (footprint "")
+    )
     (path "/00000000-0000-0000-0000-00005ede7915/00000000-0000-0000-0000-00005ee15e77"
       (reference "#P+07") (unit 1) (value "3.3V") (footprint "")
     )
@@ -490,6 +499,9 @@
     )
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061ac9571"
       (reference "#P+0201") (unit 1) (value "3.3V") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/0859eba4-7b28-4627-aa77-fa53be312a39"
+      (reference "#P+?") (unit 1) (value "3.3V") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00005cec5dde/00000000-0000-0000-0000-000063d788af"
       (reference "#PWR0101") (unit 1) (value "GNDREF") (footprint "")
@@ -889,6 +901,9 @@
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-000061de0d7e"
       (reference "C253") (unit 1) (value "0.1uF") (footprint "Capacitor_SMD:C_0603_1608Metric")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/d25cfbef-f989-46c1-8c3f-09ce367f634e"
+      (reference "C?") (unit 1) (value "3.3nF") (footprint "Capacitor_SMD:C_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-00005ddfcbc9"
       (reference "D1") (unit 1) (value "WS2812B") (footprint "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm")
@@ -1487,6 +1502,9 @@
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b04b96"
       (reference "R262") (unit 1) (value "412k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
+    (path "/00000000-0000-0000-0000-000061a94522/40a5f124-6cda-4dcf-901d-565336eaa493"
+      (reference "R?") (unit 1) (value "1K") (footprint "Resistor_SMD:R_0603_1608Metric")
+    )
     (path "/00000000-0000-0000-0000-00006186d6ec/578c8761-b1b4-46dc-affe-690e0720f243"
       (reference "R?") (unit 1) (value "2.2Meg") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
@@ -1498,6 +1516,12 @@
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/b96f3290-40ca-430f-8c45-2b8346cf44d7"
       (reference "R?") (unit 1) (value "2.2Meg") (footprint "")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/ee7ab7a8-d890-4b1c-914a-ce549d7fe046"
+      (reference "R?") (unit 1) (value "0.1") (footprint "Resistor_SMD:R_2512_6332Metric")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/fc944a53-3df2-48c3-860d-e126d50272ed"
+      (reference "R?") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-00005cf0d299"
       (reference "SW1") (unit 1) (value "KMR231NG LFS") (footprint "mainboard:BTN_KMR2_4.6X2.8")
@@ -1576,6 +1600,9 @@
     )
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061ab69ea"
       (reference "U211") (unit 1) (value "‎LT3652HVEMSE#TRPBF‎") (footprint "Package_SO:MSOP-12-1EP_3x4mm_P0.65mm_EP1.65x2.85mm_ThermalVias")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/bc92a559-3c69-4188-996d-72a6aebde9d2"
+      (reference "U?") (unit 1) (value "ADM1176-1ARMZ-R7") (footprint "mainboard:ADM1176-1ARMZ-R7")
     )
     (path "/00000000-0000-0000-0000-00005cec5a72/00000000-0000-0000-0000-00005d3985e2"
       (reference "Y1") (unit 1) (value "32.768kHz") (footprint "Crystal:Crystal_SMD_3215-2Pin_3.2x1.5mm")
