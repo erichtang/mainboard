@@ -112,6 +112,30 @@ class MMC5983:
         else:
             return(None)
 
+    def read_raw(self):
+        good_data_flag = False
+        #print(self._otp_rd_done)
+        #check = self._otp_rd_done
+        #if(self._otp_rd_done == True):
+        self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
+        #print(self._meas_m_done)
+        if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
+            x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
+            #print(x_raw)
+            y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
+            #print(y_raw)
+            z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
+            #print(z_raw)
+            out = [x_raw, y_raw, z_raw]
+            #print(out)
+            self.meas_t_done = True # writing 1 resets this interrupt
+            good_data_flag = True
+            for meas in range(len(out)):
+                out[meas] = ((out[meas]-131072))# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
+            return(out)
+        else:
+            return(None)
+
     def temp(self): #datasheet says 0.8degC per cnt, -75degC offset
         self._tm_t = True
         temp = (self._tout * 0.8) - 75

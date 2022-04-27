@@ -134,6 +134,17 @@ class IAM20380:
         #else:
             #return(None)
 
+    def read_raw(self):
+        x = (self._gyro_xout_h << 8) + self._gyro_xout_l
+        y = (self._gyro_yout_h << 8) + self._gyro_yout_l
+        z = (self._gyro_zout_h << 8) + self._gyro_zout_l
+        out = [x,y,z]
+        for meas in range(len(out)): #changing from 16b 2's comp to a regular int, unscaled
+            if (out[meas]>>15==1):
+                out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
+        return(out)
+
+
     def temp(self): # @25degc it reads 0
         temp = (self._temp_h << 8) + (self._temp_l) # merge registers
         #this is in twos comp when the datasheets says it isnt LOL

@@ -8,11 +8,7 @@ Library Repo:
 Fork'd by Marek Brodke, C. Hillis
 
 To-Do
-    1. Get IMU up and running, in this lib and it's own lib
-    2. move template_task.debug to a lib so it can be used here too (ONLY FOR INIT)
-    3. Invesitage purpose/use of merek's code for SD
-    4. have proper things print to debug and log files
-    5. 
+    1. Update me!
 
 """
 

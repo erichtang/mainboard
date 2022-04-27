@@ -22,12 +22,11 @@ class task(Task):
     schedule_later = True
 
     db_cmd_dispatch = {
-        #ota command copies
         'no-op':        db_cdh.noop,
         'hreset':       db_cdh.hreset,
         'query':        db_cdh.query,
         'exec_cmd':     db_cdh.exec_cmd,
-        # new, db only commands
+        # new
         'get_imu_offset': db_cdh.get_imu_offset,
         'write':        db_cdh.write
     }
@@ -37,11 +36,14 @@ class task(Task):
         super().__init__(satellite)
         usb_cdc.data.reset_input_buffer
         usb_cdc.data.timeout = 0.1
-        db_cdh.write(co("\nDebug USB Channel OPEN ! :)\r\n", 'green', 'bold'))
+        db_cdh.write("\r\n-----------------------------------------------------------")
+        db_cdh.write(co("Debug USB Channel OPEN ! :)", 'green', 'bold'))
+        db_cdh.write("-----------------------------------------------------------")
+        usb_cdc.data.write(bytes(">>>", 'utf-8'))
 
     async def main_task(self):
 
-        self.debug("usb console task")
+        #self.debug("usb console task")
 
         heard_cmd = usb_cdc.data.in_waiting
 
@@ -56,36 +58,28 @@ class task(Task):
             rx = usb_cdc.data.readline()
             if rx is not None:
                 rx = rx.decode('utf-8')
-                #parse data until first space
-                cmd = []
-                args = []
-                for letter in range(len(rx)):
-                    if rx[letter] == " ":
-                        cmd = rx[:letter]
-                        args = rx[letter:]
-                        break
-                db_cdh.write(co('command: {}\r\n args: {}\r\n'.format(cmd, args), 'orange'))
-                try:
-                    cmd = self.db_cmd_dispatch[cmd]
-                except KeyError:
-                    db_cdh.write(co('invalid command\r\n', 'red', 'bold'))
-                    cmd = None
-                except Exception as e:
-                    db_cdh.write(co('something went wrong: {}\r\n'.format(e), 'red', 'bold'))
-                    cmd = None
-                #if it found something
+                rx = rx.replace('\r', '')
+                rx = rx.split(' ', 1)
+                try:  cmd =  rx[0]
+                except: cmd = None
+                try: args = rx[1].split(",")
+                except: args=None
                 if cmd is not None:
-                    db_cdh.write(co("cmd not detected :(\r\n", "red", "bold"))
                     if args is None:
-                        db_cdh.write('running {} (no args)\r\n'.format(cmd))
+                        db_cdh.write(co('running {} (without args)'.format(cmd), 'orange'))
                         try:
-                            cmd(self)
+                            self.db_cmd_dispatch[cmd](self)
+                        except KeyError:
+                            db_cdh.write(co('invalid command', 'red', 'bold'))
                         except Exception as e:
-                            db_cdh.write(co('command execution failed\r\n'.format(cmd), 'red', 'bold'))
+                            db_cdh.write(co('valid command, but execution failed: {}'.format(e), 'red', 'bold'))
                     else:
-                        db_cdh.write('running {} (with args: {})\r\n'.format(cmd,args))
+                        db_cdh.write(co('running {} (with args: {})'.format(cmd,args), 'orange'))
                         try:
-                            cmd(self,args)
+                            self.db_cmd_dispatch[cmd](self, args)
+                        except KeyError:
+                            db_cdh.write(co('invalid command', 'red', 'bold'))
                         except Exception as e:
-                            db_cdh.write(co('command execution failed\r\ncmd: {}\r\nargs:{}'.format(cmd, args), 'red', 'bold'))
+                            db_cdh.write(co('valid command, but execution failed: {}'.format(e), 'red', 'bold'))
+            usb_cdc.data.write(bytes(">>>", 'utf-8'))
             

@@ -233,45 +233,80 @@ class IMU():
     """
     @property
     def gyro0_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['GYRO0']:
             self.mux.set_ch0()
             return self.gyro0.read() #dps
     
     @property
     def gyro1_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['GYRO1']:
             self.mux.set_ch1()
             return self.gyro1.read() #dps
                   
     @property
     def mag0_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
             self.mux.set_ch0()
             return self.mag0.read() #mG CHANGE TO uT
 
     @property
     def mag1_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
             self.mux.set_ch1()
             return self.mag1.read() #mG
     
     @property
     def accel0_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
             self.mux.set_ch0()
             return self.accel0.read() #g CHANGE TO m/s^2
     
     @property
     def accel1_r(self):
-        #if self.cubesat.simulation:
         if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
             self.mux.set_ch1()
             return self.accel1.read() #
+
+    """
+    returns specified device's reading UNSCALED in int form
+        if device is False in device table, it will return none.
+    see read_temp for a aquiring temp of specific devices
+    """
+    @property
+    def gyro0_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['GYRO0']:
+            self.mux.set_ch0()
+            return self.gyro0.read_raw()
+    
+    @property
+    def gyro1_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['GYRO1']:
+            self.mux.set_ch1()
+            return self.gyro1.read_raw()
+
+    @property
+    def mag0_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
+            self.mux.set_ch0()
+            return self.mag0.read_raw()
+
+    @property
+    def mag1_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
+            self.mux.set_ch1()
+            return self.mag1.read_raw()
+    
+    @property
+    def accel0_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
+            self.mux.set_ch0()
+            return self.accel0.read_raw()
+    
+    @property
+    def accel1_r_raw(self):
+        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
+            self.mux.set_ch1()
+            return self.accel1.read_raw()
 
     """
     returns specified device's temperature reading

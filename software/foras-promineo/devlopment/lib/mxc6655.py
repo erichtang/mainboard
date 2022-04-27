@@ -90,6 +90,30 @@ class MXC6655:
                 return(out)
         return(None)
     
+    # read function returns touple of floats if it got data, None type otherwise., maybe make this FFFFFF or exact 0? idk since it is gonna be a float
+    def read_raw(self): #device self refreshes @ 100Hz
+        good_data_flag = False
+        if(self._ord == 1):#check ord bit
+            if(self._drdy == 1): #check drdy bit
+                x_raw = (self._xout_u << 4) + (self._xout_l >> 4)
+                #print(x_raw)
+                y_raw = (self._yout_u << 4) + (self._yout_l >> 4)
+                #print(y_raw)
+                z_raw = (self._zout_u << 4) + (self._zout_l >> 4)
+                #print(z_raw)
+                out = [x_raw, y_raw, z_raw]
+                #reset drdy
+                self._drdy = False
+                #make data flagged goog
+                good_data_flag = True
+                #adjust values to accel in g
+                for meas in range(len(out)): #12b 2's complememt form, -2048 to 2048, 
+                    if (out[meas]>>11 == 1): # if it is 2's convert it to int
+                        #flip all 12 bits and add 1
+                        out[meas] = ((out[meas] ^ 0x0FFF) + 1) * (-1)
+                return(out)
+        return(None)
+
     def temp(self):
         temp = self._tout #8b value =0 @ 25degC, 0.568degC/LSB
         #do adjustment
