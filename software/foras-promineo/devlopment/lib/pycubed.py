@@ -265,13 +265,12 @@ class Satellite:
             self.log('[ERROR][CHRG Power Monitor]' + str(e))
 
         # Initialize IMU
-        # Edit this for SLI imu changes, this will just error out every time.
-    #try:
-        self.imu = sli_imu.IMU(self)
-        self.hardware['IMU'] = True
-        self.log('[INIT][IMU]')
-    #except Exception as e:
-     #   self.log('[ERROR][IMU]' + str(e))
+        try:
+            self.imu = sli_imu.IMU(self)
+            self.hardware['IMU'] = True
+            self.log('[INIT][IMU]')
+        except Exception as e:
+            self.log('[ERROR][IMU]' + str(e))
 
         # Initialize GPS
         try:
