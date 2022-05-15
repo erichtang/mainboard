@@ -77,6 +77,13 @@ def get_imu_offset(self, args):
 def print_file (path):
     pass 
 
+def startstoptask(self, args):
+    """
+    starts or stops specified task.
+    args[0] = task name
+    args[1] = "st" or "sp"
+    """
+
 ########### helper functions for using usb_cdc.data ###########
 
 #writes a string to usb_cdc.data

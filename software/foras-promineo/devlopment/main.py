@@ -37,8 +37,8 @@ for file in os.listdir('Tasks'):
     file=file[:-3]
 
     # ignore these files
-    if file in ("template_task", "test", "check_batteries", "game_manager", "check_batteries", "attitude_control", 
-                        "beacon_task","healthcheck_task", "communication", "test", "test_task", "imu_sampler"): ## added more tasks to ignore. MB, CH
+    if file in ("template_task", "game_manager", "attitude_control", 
+                        "beacon_task", "communication", "test", "test_task", "imu_sampler"):
         continue
 
     print(f"importing {file}")

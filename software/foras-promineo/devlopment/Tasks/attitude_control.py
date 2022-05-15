@@ -1,3 +1,12 @@
+"""
+attidude control task:
+
+FSM running all attitude control related data handling and execution
+
+
+"""
+
+
 from Tasks.template_task import Task
 import time
 class task(Task):

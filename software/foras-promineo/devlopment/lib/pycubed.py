@@ -147,11 +147,11 @@ class Satellite:
         # LOOK into this CH 
         # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
         #self._ichrg = AnalogIn(board.L1PROG) -- original code
-        self._ichrg = 0
+        self._ichrg = 0 # TEMP UNTILL NEXT MAINBOARD IS RECIEVED
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
         self._chrg_shdn = digitalio.DigitalInOut(board.PB21)
-        self._chrd_shdn.switch_to_output
+        self._chrg_shdn.switch_to_output()
         
 
         # Define SPI,I2C,UART

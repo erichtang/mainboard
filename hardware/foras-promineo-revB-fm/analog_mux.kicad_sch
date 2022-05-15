@@ -1327,7 +1327,7 @@
     (property "Reference" "R58" (id 0) (at 74.93 63.4999 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "100k" (id 1) (at 74.93 66.0399 0)
+    (property "Value" "110k" (id 1) (at 74.93 66.0399 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Resistor_SMD:R_0603_1608Metric" (id 2) (at 73.406 65.024 90)

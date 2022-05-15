@@ -49,7 +49,7 @@ class task(Task):
 
         """
         cmd structure:
-        all commands will ne terminated with \n (i.e. a single line), ASCII encoded
+        all commands will be terminated with \n (i.e. a single line), ASCII encoded
         all args passed shall be separated with "," NOT ", "
         """
 
