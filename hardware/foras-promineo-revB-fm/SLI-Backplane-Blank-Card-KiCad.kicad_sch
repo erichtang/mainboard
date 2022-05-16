@@ -3207,7 +3207,7 @@
     (uuid fed97871-4d75-4194-a3d3-5b61f2a948a5)
   )
 
-  (text "rbf low = gate low = on" (at 383.54 96.52 0)
+  (text "rbf HiZ = pnp off = gate low = on" (at 382.27 97.79 0)
     (effects (font (size 1.27 1.27)) (justify left bottom))
     (uuid 00085968-3958-4cc2-80a3-fd9a2026a92a)
   )
