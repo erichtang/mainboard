@@ -13,7 +13,6 @@ To-Do
 """
 
 # Common CircuitPython Libs
-#from syslog import LOG_DAEMON -- look into this
 import board, microcontroller
 import busio, time, sys
 from storage import mount,umount,VfsFat
@@ -51,7 +50,7 @@ _FLAG     = const(16)
 SEND_BUFF=bytearray(252) # marek removed this?
 
 class Satellite:           
-    # General NVM counters
+    # General NVM counters -- LOOK INTO THESE
     c_boot      = multiBitFlag(register=_BOOTCNT,  lowest_bit=0, num_bits=8)
     c_vbusrst   = multiBitFlag(register=_VBUSRST,  lowest_bit=0, num_bits=8)
     c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
@@ -118,9 +117,12 @@ class Satellite:
         # ------------------------------------------ End Section ^
         """
 
-        # table that stores whether or not a device is active or not
+        """
+        system hardware table
+        each subsystem has a bool attributed to it
+        """
         self.hardware = {
-                        'IMU':    False, #edit this one, maybe have each IMU device be it's own bool? i.e.
+                        'IMU':    False,
                         'Radio1': False,
                         'Radio2': False,
                         'SDcard': False,
