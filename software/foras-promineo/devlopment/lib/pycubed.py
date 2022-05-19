@@ -1,10 +1,14 @@
 """
 CircuitPython driver for PyCubed satellite board.
-PyCubed Hardware Version: mainboard-v05
+PyCubed Hardware Version: mainboard-v5-SLI
 CircuitPython Version: 7.0.0 alpha
-Library Repo: https://github.com/pycubed/library_pycubed.py
+Library Repo: 
 
-* Author(s): Max Holliday, Marek Brodke
+* Author(s): Max Holliday,
+Fork'd by Marek Brodke, C. Hillis
+
+To-Do
+    1. Update me!
 
 """
 
@@ -13,21 +17,26 @@ import board, microcontroller
 import busio, time, sys
 from storage import mount,umount,VfsFat
 from analogio import AnalogIn
-import digitalio, sdcardio, pwmio, tasko, supervisor
+import digitalio, sdcardio, pwmio, tasko#, supervisor #marek added supervisor?
 
 # Hardware Specific Libs
 import pycubed_rfm9x # Radio
-import bmx160 # IMU
 import neopixel # RGB LED
 import bq25883 # USB Charger
 import adm1176 # Power Monitor
-from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver
-from smart_buffer import smart_buffer # the buffer protocol
+import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
+import adafruit_gps #need to play with gps reading procedure. 
+import foras_promineo_pib
+import foras_promineo_payload
+#from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver $$ this is completely different now
+#from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
 # Common CircuitPython Libs
-from os import listdir, remove, stat, statvfs, mkdir, chdir, rmdir, getcwd
+from os import listdir, stat, statvfs, mkdir, chdir
+from os import remove, rmdir, getcwd #marek added
 from bitflags import bitFlag,multiBitFlag,multiByte
 from micropython import const
+
 
 # NVM register numbers
 _BOOTCNT  = const(0)
@@ -38,8 +47,10 @@ _GSRSP    = const(10)
 _ICHRG    = const(11)
 _FLAG     = const(16)
 
+SEND_BUFF=bytearray(252) # marek removed this?
+
 class Satellite:           
-    # General NVM counters
+    # General NVM counters -- LOOK INTO THESE
     c_boot      = multiBitFlag(register=_BOOTCNT,  lowest_bit=0, num_bits=8)
     c_vbusrst   = multiBitFlag(register=_VBUSRST,  lowest_bit=0, num_bits=8)
     c_state_err = multiBitFlag(register=_STATECNT, lowest_bit=0, num_bits=8)
@@ -57,15 +68,17 @@ class Satellite:
     def __init__(self):
         """
         Big init routine as the whole board is brought up.
-
         """
         self.BOOTTIME= const(time.time())
         self.data_cache={}
         self.filenumbers={}
+        self.micro = microcontroller
+        self.vlowbatt=6.0 #adjust this value--------------------------------------------------------------------------------------------------------------------------------------
+        self.send_buff = memoryview(SEND_BUFF)
+        self.debug=True # set to false for flight, unless we want this printing to nothing
 
-        # the minimum voltage that the battery can have before the satellite enters low power mode
-        self.vlowbatt=4.8
-
+        """
+        # I think this needs to be moved down lower in the init -- looking into this, also pycubed has commands already implemented, IDK why marek tried to implement his own. looking into this
         # ------------------------------------------ Start Section v
        
         # something that I set that indicates how much time in minutes to wait until starting transmitting
@@ -102,12 +115,12 @@ class Satellite:
         self.simulation=False
 
         # ------------------------------------------ End Section ^
+        """
 
-        self.micro=microcontroller
-
-        # ------------------------------------------ Start Section v
-
-        # table that stores whether or not a device is active or not
+        """
+        system hardware table
+        each subsystem has a bool attributed to it
+        """
         self.hardware = {
                         'IMU':    False,
                         'Radio1': False,
@@ -117,81 +130,43 @@ class Satellite:
                         'WDT':    False,
                         'USB':    False,
                         'PWR':    False,
-                        'MTDRIVERS': False,
-                        'CAMERA': False}
-
-        # ------------------------------------------ End Section ^
+                        'CHRG_PWR':False,
+                        'PIB':    False,
+                        'PAYLOAD':False,
+                        #'MTDRIVERS': False,# marek added
+                        #'CAMERA': False #marek added, rename to payload?
+                        } 
 
         # Define burn wires:
         self._relayA = digitalio.DigitalInOut(board.RELAY_A)
         self._relayA.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
         self._resetReg = digitalio.DigitalInOut(board.VBUS_RST)
         self._resetReg.switch_to_output(drive_mode=digitalio.DriveMode.OPEN_DRAIN)
+        
 
         # Define battery voltage
         self._vbatt = AnalogIn(board.BATTERY)
-
-        # Define MPPT charge current measurement
-        ################################################# look at this with revised solar charger CH 12/14
-        self._ichrg = AnalogIn(board.L1PROG)
+        # LOOK into this CH 
+        # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
+        #self._ichrg = AnalogIn(board.L1PROG) -- original code
+        self._ichrg = 0 # TEMP UNTILL NEXT MAINBOARD IS RECIEVED
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
+        self._chrg_shdn = digitalio.DigitalInOut(board.PB21)
+        self._chrg_shdn.switch_to_output()
+        
 
         # Define SPI,I2C,UART
         # for devices on the board, IMU, mt drivers etc,
         self.i2c1  = busio.I2C(board.SCL,board.SDA)
-
-        # connection to radios
         self.spi  = board.SPI()
+        self.uart1 = busio.UART(board.TX,board.RX)
+        self.uart2 = busio.UART(board.TX2,board.RX2)
+        self.uart3 = busio.UART(board.TX3,board.RX3)
+        self.uart4 = busio.UART(board.TX4,board.RX4)
 
-        # gps connection
-        self.uart = busio.UART(board.TX,board.RX)
-
-        # Initialize SD card (always init SD before anything else on spi bus)
-        try:
-            # Baud rate depends on the card, 4MHz should be safe
-            _sd = sdcardio.SDCard(self.spi, board.SD_CS, baudrate=4000000)
-            _vfs = VfsFat(_sd)
-            # mounting the sd to the virtual file system
-            mount(_vfs, "/sd")
-            self.fs=_vfs
-            
-            # adding the path to the visible directory tree
-            sys.path.append("/sd")
-            
-            # setting the SDcard row of the hardware table to true
-            self.hardware['SDcard'] = True
-
-            # ------------------------------------------ Start Section v
-
-            # setting the directory where all generated data is stored
-            self.storage_directory = "/sd/"
-
-            # setting the system log file
-            self.logfile = self.storage_directory + "log.txt"
-
-            #setting the user's file name /sd/user_file_name
-            self.user_file_name = self.storage_directory + self.user_file_name
-
-            # creating a big_buffer that the satellite can use for large file transfers
-            self.buffer = smart_buffer(self.storage_directory + "buf")
-
-            # ------------------------------------------ End Section ^
-        except Exception as e:
-            self.log('[ERROR][SD Card]:' + str(e))
-
-        # so you can tell the difference between boots in the log file
-        self.log("----BOOT----")
-        # ------------------------------------------ Start Section v
-
-        # initializing connection to the camera
-        try:
-            self.cam_port = busio.UART(board.SDA2, board.SCL2, timeout=0.05, baudrate=115200)
-
-        except Exception as e:
-            self.log('[ERROR][CONNECTION_TO_CAMERA]',e)
-
-        # ------------------------------------------ End Section ^
+        # Define filesystem stuff
+        self.logfile="/log.txt"
 
         # Define GPS
         self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
@@ -208,37 +183,57 @@ class Satellite:
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
 
-        # ------------------------------------------ Start Section v
-
-        # initializing magneto torquer driver board connection 
+        # Initialize SD card (always init SD before anything else on spi bus)
         try:
-            # initializing the driver board at the address 0x58 on the i2c bus
-            if not self.simulation:
-                pass
-                #self.driver_x = mt_driver(0x58, self.i2c1)
-                #self.driver_y = mt_driver(0x59, self.i2c1)
-                #self.driver_z = mt_driver(0x60, self.i2c1)
-            else:
-                self.driver_x = mt_driver_simulated(0x58, self.send_result_of_simulation)
-                self.driver_y = mt_driver_simulated(0x59, self.send_result_of_simulation)
-                self.driver_z = mt_driver_simulated(0x60, self.send_result_of_simulation)
+            # Baud rate depends on the card, 4MHz should be safe
+            _sd = sdcardio.SDCard(self.spi, board.SD_CS, baudrate=4000000)
+            _vfs = VfsFat(_sd)
+            mount(_vfs, "/sd")
+            self.fs=_vfs
+            sys.path.append("/sd")
+            self.hardware['SDcard'] = True
+            self.logfile="/sd/log.txt"
+            """
+            # ------------------------------------------ Start Section v
 
-            self.hardware['MTDRIVERS'] = True
-        
+            # setting the directory where all generated data is stored
+            self.storage_directory = "/sd/"
+
+            # setting the system log file
+            self.logfile = self.storage_directory + "log.txt"
+
+            #setting the user's file name /sd/user_file_name
+            #self.user_file_name = self.storage_directory + self.user_file_name
+
+            # creating a big_buffer that the satellite can use for large file transfers
+            #self.buffer = smart_buffer(self.storage_directory + "buf")
+
+            # ------------------------------------------ End Section ^
+            """
+            self.log('[INIT][SD]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[WARNING][MT_DRIVER]:' + str(e))
+            self.log('[ERROR][SD Card]',e)
+        
+        # so you can tell the difference between boots in the log file
+        self.log("----BOOT----")
 
-        # ------------------------------------------ End Section ^
+        """
+        # initializing connection to the camera
+        try:
+            self.cam_port = busio.UART(board.SDA2, board.SCL2, timeout=0.05, baudrate=115200)
 
+        except Exception as e:
+            self.log('[ERROR][CONNECTION_TO_CAMERA]',e)
+        """
+        
         # Initialize Neopixel
         try:
             self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB)
             self.neopixel[0] = (0,0,0)
             self.hardware['Neopixel'] = True
+            self.log('[INIT][Neopixel]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[WARNING][Neopixel]:' + str(e))
+            self.log('[WARNING][Neopixel]' + str(e))
 
         # Initialize USB charger
         try:
@@ -249,39 +244,47 @@ class Satellite:
             self.usb.charging_current=8 #400mA
             self.usb_charging=False
             self.hardware['USB'] = True
+            self.log('[INIT][USB Charger]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[ERROR][USB Charger]:' + str(e))
+            self.log('[ERROR][USB Charger]'+ str(e))
 
-        # Initialize Power Monitor
+        # Initialize Power Monitor 1 -- current to bus
         try:
             self.pwr = adm1176.ADM1176(self.i2c1)
             self.pwr.sense_resistor = 1
-            self.hardware['PWR'] = True
+            self.hardware['PWR'] = True 
+            self.log('[INIT][Power Monitor]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[ERROR][Power Monitor]:' + str(e))
+            self.log('[ERROR][Power Monitor]' + str(e))
+
+        # Initialize Power Monitor 2 -- current to batt
+        try:
+            self.chrg_pwr = adm1176.ADM1176(self.i2c1, addr=0x90)  #update address
+            self.chrg_pwr.sense_resistor = 1
+            self.hardware['CHRG_PWR'] = True
+            self.log('[INIT][CHRG Power Monitor]')
+        except Exception as e:
+            self.log('[ERROR][CHRG Power Monitor]' + str(e))
 
         # Initialize IMU
         try:
-            self.IMU = bmx160.BMX160_I2C(self.i2c1)
+            self.imu = sli_imu.IMU(self)
             self.hardware['IMU'] = True
+            self.log('[INIT][IMU]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[ERROR][IMU]:' + str(e))
+            self.log('[ERROR][IMU]' + str(e))
 
         # Initialize GPS
-        """
         try:
-            self.gps = GPS(self.uart,debug=False) # still powered off!
+            self.gps = adafruit_gps.GPS(self.uart1,debug=self.debug) # still powered off! #needs to be turned on somewhere else? -CH
             self.gps.timeout_handler=self.timeout_handler
             self.hardware['GPS'] = True
+            self.log('[INIT][GPS]')
         except Exception as e:
-            if self.debug:
-                self.log('[ERROR][GPS]:' + str(e))
-        """
+            self.log('[ERROR][GPS]' + str(e))
 
         # Initialize radio #1 - UHF
+        # Edit this for our mission spec. CH
         try:
             self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
                 433.0,code_rate=8,baudrate=1320000)
@@ -292,27 +295,47 @@ class Satellite:
             self.radio1.ack_delay=0.2
             self.radio1.sleep()
             self.hardware['Radio1'] = True
+            self.log('[INIT][Radio 1 - LoRa]')
         except Exception as e:
-            self.error_encountered = True
-            self.log('[ERROR][RADIO 1]:' + str(e))
+            self.log('[ERROR][Radio 1 - LoRa]' + str(e))
+
+        # init pib
+        try:
+            self.log('[INIT][PIB]')
+            self.pib = foras_promineo_pib.PIB(self)
+        except Exception as e:
+            self.log('[ERROR][PIB]' + str(e))
+
+        #init payload
+        try:
+            self.log('[INIT][PAYLOAD]')
+            self.payload = foras_promineo_payload.PAYLOAD(self)
+        except Exception as e:
+            self.log('[ERROR][PIB]' + str(e))
 
         # set PyCubed power mode
         self.power_mode = 'normal'
 
-
     def reinit(self,dev):
         dev=dev.lower()
         if   dev=='gps':
-            self.gps.__init__(self.uart,debug=False)
+            self.gps.__init__(self.uart,debug=self.debug)
         elif dev=='pwr':
             self.pwr.__init__(self.i2c1)
         elif dev=='usb':
             self.usb.__init__(self.i2c1)
         elif dev=='imu':
-            self.IMU.__init__(self.i2c1)
+            self.imu.__init__(self)
+        elif dev=='pib':
+            pass # implement!
+        elif dev=='payload':
+            pass # implement !
         else:
-            self.log('Invalid Device? ->' + dev)
+            self.log('Invalid Device? ->' + str(dev))
 
+    """ 
+    IMU data has moved to sli_imu.py lib. 
+    keeping this in until I figure out merek;s simulatoon stuff.
     @property
     def acceleration(self):
         if not self.simulation:
@@ -344,6 +367,7 @@ class Satellite:
                 return self.IMU.temperature # Celsius
         else:
             return self.query_for_simulation(b"temperature")
+    """
 
     @property
     def RGB(self):
@@ -355,13 +379,13 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.log('[WARNING]:' + str(e))
+                self.log('[WARNING]' + str(e))
 
     @property
     def charge_batteries(self):
         if self.hardware['USB']:
+            self.log('[USB Charging][f{}]'.format(self.usb_charging))
             return self.usb_charging
-
     @charge_batteries.setter
     def charge_batteries(self,value):
         if self.hardware['USB']:
@@ -371,15 +395,11 @@ class Satellite:
 
     @property
     def battery_voltage(self):
-        if not self.simulation:
             _vbat=0
             for _ in range(50):
                 _vbat+=self._vbatt.value * 3.3 / 65536
             _voltage = (_vbat/50)*(316+110)/110 # 316/110 voltage divider
-
             return _voltage # volts
-        else:
-            self.query_for_simulation("battery_voltage")
 
     @property
     def system_voltage(self):
@@ -387,14 +407,14 @@ class Satellite:
             try:
                 return self.pwr.read()[0] # volts
             except Exception as e:
-                self.log('[WARNING][PWR Monitor]:' + str(e))
+                self.log('[WARNING][PWR Monitor]' + str(e))
         else:
-            self.log('[WARNING] Power monitor not initialized')
+            self.log('[WARNING][Power monitor not initialized]')
 
     @property
     def current_draw(self):
         """
-        current draw from batteries
+        current FROM battery node -- current TO batteries needs implented yet in sw/hw.
         NOT accurate if powered via USB
         """
         if self.hardware['PWR']:
@@ -408,21 +428,35 @@ class Satellite:
         else:
             self.log('[WARNING] Power monitor not initialized')
 
+    # FIX this CH -- need to add charge current measurement on MB
+    @property
     def charge_current(self):
         """
-        LTC4121 solar charging IC with charge current monitoring
-        See Programming the Charge Current section
+        current TO battery node (adm1176 can not read -negative currents)
         """
-        _charge = 0
         if self.solar_charging:
-            _charge = self._ichrg.value * 3.3 / 65536
-            _charge = ((_charge*988)/3010)*1000
-        return _charge # mA
+            if self.hardware['CHRG_PWR']:
+                try:
+                    icharge=0
+                    for _ in range(50):
+                        icharge = self.chrg_pwr.read()[1]
+                        return(icharge/50)*1000 # mA
+                except Exception as e:
+                    self.log('[WARNING][CHRG PWR Monitor]' + str(e))
+            else:
+                self.log('[WARNING] CHRG Power monitor not initialized')
+        else:
+            return 0
+    
+    @property
+    def batt_charge_current(self):
+        return self.charge_current - self.current_draw
+
 
     @property
     def solar_charging(self):
         return not self._chrg.value
-
+    
     @property
     def reset_vbus(self):
         # unmount SD card to avoid errors
@@ -437,20 +471,15 @@ class Satellite:
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
 
-    # ------------------------------------------ Start Section modified by Marek Brodke on 11/24/2021, 12/8/2021 v
-
-    # writes a message to the log file
     def log(self, msg):
-        if not self.connected: # if debugging usb is not connected
-            with open(self.logfile, "a+") as f: # opening the log file for appending
+        # writes a message to the log file
+        # also prints it thru USB, can comment that line out if desired.
+        # change this to the msgpack format to save space? this appears to be a remnant of before msgpack was implemented.
+        if self.hardware['SDcard']:
+            with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
-                f.write('{}, {}\n'.format(t,msg)) # appending the time and message to file
-
-        else: # if debugging usb is connected
-            print(msg)
-
-
-    # ------------------------------------------ End Section ^
+                f.write('{}, {}\n'.format(t,msg))
+        if self.debug:print(msg)
 
     def print_file(self,filedir=None,binary=False):
         if filedir==None:
@@ -458,13 +487,12 @@ class Satellite:
         self.log('\n--- Printing File: {} ---'.format(filedir))
         if binary:
             with open(filedir, "rb") as file:
-                self.log(file.read())
-                self.log('')
+                print(file.read())
+                print('')
         else:
             with open(filedir, "r") as file:
                 for line in file:
-                    self.log(line.strip())
-
+                    print(line.strip())
 
     def timeout_handler(self):
         self.log('Incrementing timeout register')
@@ -476,64 +504,99 @@ class Satellite:
         else:
             self.micro.nvm[_TOUTS] += 1
 
-
     def powermode(self,mode):
         """
         Configure the hardware for minimum or normal power consumption
         Add custom modes for mission-specific control
+        needs edited. CH
         """
+        self.log('[POWERMODE][f{}]'.format(mode))
         if 'min' in mode:
-            # turning of the neopixel
             self.RGB = (0,0,0)
             self.neopixel.brightness=0
-
-            # putting the LoRa radio to sleep
             if self.hardware['Radio1']:
                 self.radio1.sleep()
-            
-            # other slot on the main board for a radio
-            #if self.hardware['Radio2']:
-            #    self.radio2.sleep()
+            if self.hardware['Radio2']:
+                self.radio2.sleep()
             self.enable_rf.value = False
-            
-            # putting the IMU to sleep
-            if self.hardware['IMU']:
-                self.IMU.gyro_powermode  = 0x14 # suspend mode
-                self.IMU.accel_powermode = 0x10 # suspend mode
-                self.IMU.mag_powermode   = 0x18 # suspend mode
-            
-            # putting the power moniter to sleep
+            if self.hardware['IMU']: #EDIT THIS
+                self.imu.powermode('sleep')
+                #original pycubed code here but removing once powermode is implemented
+                #self.IMU.gyro_powermode  = 0x14 # suspend mode
+                #self.IMU.accel_powermode = 0x10 # suspend mode
+                #self.IMU.mag_powermode   = 0x18 # suspend mode
             if self.hardware['PWR']:
                 self.pwr.config('V_ONCE,I_ONCE')
-            
-            # putting the gps to sleep
+            if self.hardware['CHRG_PWR']:
+                self.chrg_pwr.config('V_ONCE,I_ONCE')
             if self.hardware['GPS']:
                 self.en_gps.value = False
-            
-            # setting the flag that indicates the power mode of the satellite
             self.power_mode = 'minimum'
 
-        # normal power mode
         elif 'norm' in mode:
-            
             self.enable_rf.value = True
-            
-            # reinitializing IMU
             if self.hardware['IMU']:
                 self.reinit('IMU')
-            
-            # reinitializing power monitor
             if self.hardware['PWR']:
                 self.pwr.config('V_CONT,I_CONT')
-            
-            # reinitializing gps
+            if self.hardware['CHRG_PWR']:
+                self.chrg_pwr.config('V_CONT,I_CONT')
             if self.hardware['GPS']:
                 self.en_gps.value = True
-            
-             # setting the flag that indicates the power mode of the satellite
             self.power_mode = 'normal'
             # don't forget to reconfigure radios, gps, etc...
+            # EDIT THIS TO DO ABOVE CH- 4/6
+    """
+    how/why did the new_file def get cut out below? Just pasted the original back in below.
+    def new_file(self,substring,binary=False):
+        '''
+        substring something like '/data/DATA_'
+        directory is created on the SD!
+        int padded with zeros will be appended to the last found file
+        '''
+        if self.hardware['SDcard']:
+            ff=''
+            n=0
+    """
 
+    def new_file(self,substring,binary=False):
+        '''
+        substring something like '/data/DATA_'
+        directory is created on the SD!
+        int padded with zeros will be appended to the last found file
+        '''
+        if self.hardware['SDcard']:
+            ff=''
+            n=0
+            _folder=substring[:substring.rfind('/')+1]
+            _file=substring[substring.rfind('/')+1:]
+            print('Creating new file in directory: /sd{} with file prefix: {}'.format(_folder,_file))
+            try: chdir('/sd'+_folder)
+            except OSError:
+                print('Directory {} not found. Creating...'.format(_folder))
+                try: mkdir('/sd'+_folder)
+                except Exception as e:
+                    print(e)
+                    return None
+            for i in range(0xFFFF):
+                ff='/sd{}{}{:05}.txt'.format(_folder,_file,(n+i)%0xFFFF)
+                try:
+                    if n is not None:
+                        stat(ff)
+                except:
+                    n=(n+i)%0xFFFF
+                    # print('file number is',n)
+                    break
+            print('creating file...',ff)
+            if binary: b='ab'
+            else: b='a'
+            with open(ff,b) as f:
+                f.tell()
+            chdir('/')
+            return ff
+
+
+    """ Figure out what is going on here
     # ------------------------------------------ Start Section
 
     # removes a file with the inputted path or name
@@ -653,11 +716,12 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
+"""
 
     # ------------------------------------------ End Section
-    '''
+    """
     def burn(self,burn_num,dutycycle=0,freq=1000,duration=1):
-        """
+        '''
         Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
         has been installed.
 
@@ -668,11 +732,11 @@ class Satellite:
         dutycycle: (float) duty cycle percent, must be 0.0 to 100
         freq:      (float) frequency in Hz of the PWM pulse, default is 1000 Hz
         duration:  (float) duration in seconds the burn wire should be on
-        """
+        '''
         # convert duty cycle % into 16-bit fractional up time
         dtycycl=int((dutycycle/100)*(0xFFFF))
-        self.log('----- BURN WIRE CONFIGURATION -----')
-        self.log('\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})\n\tDuration of {}sec'.format(freq,(100*dtycycl/0xFFFF) + ' ' + str(dtycycl) + ' ' + duration))
+        print('----- BURN WIRE CONFIGURATION -----')
+        print('\tFrequency of: {}Hz\n\tDuty cycle of: {}% (int:{})\n\tDuration of {}sec'.format(freq,(100*dtycycl/0xFFFF) + ' ' + str(dtycycl) + ' ' + duration))
         # create our PWM object for the respective pin
         # not active since duty_cycle is set to 0 (for now)
         if '1' in burn_num:
@@ -698,10 +762,10 @@ class Satellite:
         burnwire.deinit()
         self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
         return True
-    '''
+    """
 
     # ------------------------------------------ Start Section modified by Marek Brodke on 12/8/2021
-
+    """
     def query_for_simulation(self, which):
         '''
         Sends a query for information to the computer connected to this one. This function requires tight integration with the software
@@ -865,7 +929,6 @@ class Satellite:
                 self.buffer.append(data)
 
     # ------------------------------------------ End Section
+    """
 
-# instantiation
 cubesat = Satellite()
-

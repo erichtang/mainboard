@@ -1,0 +1,1 @@
+--- MAKE SURE LIBS ARE CONCURRENT WITH software/foras-promineo/devlopment . most recent library things are kept there, any deltas here are superceded. 
