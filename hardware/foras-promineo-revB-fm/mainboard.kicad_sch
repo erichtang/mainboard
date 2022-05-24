@@ -573,7 +573,7 @@
     (path "/00000000-0000-0000-0000-00005cec5dde/00000000-0000-0000-0000-000063e54083"
       (reference "#PWR0105") (unit 1) (value "GNDREF") (footprint "")
     )
-    (path "/00000000-0000-0000-0000-00005cec5dde/00000000-0000-0000-0000-000063a5f516"
+    (path "/00000000-0000-0000-0000-00006186d6ec/a22dc110-c70d-4bf4-8286-d9795b29d5f9"
       (reference "#PWR0106") (unit 1) (value "GNDREF") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/baf73072-2de1-4afe-9fa2-35bc5ffd99ba"
@@ -823,7 +823,7 @@
       (reference "C46") (unit 1) (value "10uF") (footprint "Capacitor_SMD:C_0805_2012Metric")
     )
     (path "/00000000-0000-0000-0000-000061a94522/793c0ec5-e7ba-43a1-8ab0-24edc651af1f"
-      (reference "C51") (unit 1) (value "100uF") (footprint "")
+      (reference "C51") (unit 1) (value "100uF") (footprint "Capacitor_Tantalum_SMD:CP_EIA-7343-43_Kemet-X")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000062088ae2"
       (reference "C200") (unit 1) (value "10uF") (footprint "Capacitor_SMD:C_0805_2012Metric")
@@ -1008,9 +1008,6 @@
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b4f2d7"
       (reference "D208") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
     )
-    (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061b201c4"
-      (reference "D209") (unit 1) (value "1N4148WSTR") (footprint "Diode_SMD:D_SOD-323")
-    )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061e2eaaa"
       (reference "H200") (unit 1) (value "MountingHole_Pad") (footprint "SLI-Backplane-Blank-Card-KiCad:125mil_hole")
     )
@@ -1039,7 +1036,7 @@
       (reference "J12") (unit 1) (value "Amphenol_901-144") (footprint "Connector_Coaxial:SMA_Amphenol_901-144_Vertical")
     )
     (path "/a4d46053-7b21-4261-9f32-6cdd636136ec/b0519be6-4948-42d1-b8ac-04aeef529761"
-      (reference "J52") (unit 1) (value "samtec x") (footprint "")
+      (reference "J52") (unit 1) (value "T1M-08-F-SV-L") (footprint "mainboard-SLI:SAMTEC_T1M-08-F-SV-L")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061de65dd"
       (reference "J200") (unit 1) (value "ZX62-AB-5PA(31)") (footprint "SLI-Backplane-Blank-Card-KiCad:ZX62-AB-5PA(31)")
@@ -1060,7 +1057,7 @@
       (reference "L202") (unit 1) (value "1.5uH") (footprint "Inductor_SMD:L_Bourns_SRN8040TA")
     )
     (path "/00000000-0000-0000-0000-000061a94522/00000000-0000-0000-0000-000061af73f5"
-      (reference "L203") (unit 1) (value "22uH") (footprint "")
+      (reference "L203") (unit 1) (value "22uH") (footprint "Inductor_SMD:L_Wuerth_WE-PD-Typ-LS")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000067dd41cc"
       (reference "P1") (unit 1) (value "Card Edge for HSEC8-160-01-S-DV-A-K-TR") (footprint "SLI-Blank-Card:HSEC8-160-CARD-EDGE")
@@ -1592,6 +1589,9 @@
     )
     (path "/a4d46053-7b21-4261-9f32-6cdd636136ec/db00c1d7-77e7-40a1-bf13-7a891b63ad16"
       (reference "R132") (unit 1) (value "100k") (footprint "Resistor_SMD:R_0603_1608Metric")
+    )
+    (path "/00000000-0000-0000-0000-000061a94522/93175d65-8eb5-43f5-a4c0-be3572096f6c"
+      (reference "R133") (unit 1) (value "412k") (footprint "Resistor_SMD:R_0603_1608Metric")
     )
     (path "/00000000-0000-0000-0000-00006186d6ec/00000000-0000-0000-0000-000061d3502c/00000000-0000-0000-0000-000061df17fb"
       (reference "R200") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0402_1005Metric")
