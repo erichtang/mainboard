@@ -39,7 +39,7 @@ class PIB():
 
         # Initialize IMU
         try:
-            self.imu = sli_imu.IMU(self.cubesat, mux_addr=0x71)
+            self.imu = sli_imu.IMU(self.cubesat, mux_addr=0x72)
             self.hardware['IMU'] = True
             self.cubesat.log('[INIT][PIB][IMU]')
         except Exception as e:

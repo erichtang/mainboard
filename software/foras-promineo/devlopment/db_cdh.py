@@ -86,6 +86,19 @@ def startstoptask(self, args):
     """
     pass
 
+def i2c_scan(self):
+    while not self.cubesat.i2c1.try_lock():
+        pass
+    try:
+        while True:
+            print(
+                "I2C addresses found:",
+                [hex(device_address) for device_address in self.cubesat.i2c1.scan()],
+            )
+            time.sleep(2)
+    finally:  # unlock the i2c bus when ctrl-c'ing out of the loop
+       self.cubesat.i2c1.unlock()
+
 def pib_verify(self):
     """
     PIB checkout function to verify functionality on the PIB
