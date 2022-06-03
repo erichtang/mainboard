@@ -22,7 +22,6 @@ CONFIG_2 = const(0x7)
 
 
 class MAX7311:
-
     #class variables
     _OUT_00 = RWBit(OUT_0, 0)
     _OUT_01 = RWBit(OUT_0, 1)
@@ -42,11 +41,11 @@ class MAX7311:
     _OUT_15 = RWBit(OUT_1, 7)
     _config_0 = UnaryStruct(CONFIG_1, '<B')
     _config_1 = UnaryStruct(CONFIG_2, '<B')
-
+    
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
-        if not self.config_0 == 0xf: print("[ERROR][PIB][MAX7311][BAD CONFIG VAL]", self.config_0)
-        self.on(self)
+        #if not self.config_0 == 0xf: print("[ERROR][PIB][MAX7311][BAD CONFIG VAL]" + self.config_0)
+        #self.on(self)
 
     def on(self):
         self.config_0 = 0x0

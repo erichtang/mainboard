@@ -14,20 +14,14 @@ class payload():
 
     def __init__(self, satellite):
         """
-        inherits superclass satellite from pycubed.py
-        init's FP payload devices and any functionality for managing it.
+        inherits satellite from pycubed.py
         """
         self.cubesat = satellite
 
         self.hardware = {
-            'openMV' : False,
+            'OPENMV' : False,
             #other payload devices here
         }
-
-        ### this currently has nothing, but will change as the dev process foes on.
-
-    def reinit(self): ## call this in satellite.reinit
-        pass
 
     def powermode(self, mode): ## call this in satellite.reinit
         pass

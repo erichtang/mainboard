@@ -177,7 +177,7 @@ class IMU():
         #make sure this works if devices is not passed to the function
         for device in devices:
             if device is not None: device=device.lower()
-            if mode=="on":
+            if "norm" in mode:
                 #ch0 devices
                 self.mux.set_ch0()
                 if device is None or device=='gyro0':
@@ -200,7 +200,7 @@ class IMU():
                 if device is None or device=='accel1':
                     if self.hardware['ACCEL1'] == True:
                         self.accel1.ON()
-            elif mode=="sleep":
+            elif "min" in mode:
                 #ch0 devices
                 self.mux.set_ch0()
                 if device is None or device=='gyro0':

@@ -17,15 +17,16 @@ def hreset(self):
 ########### commands with arguments ###########
 
 def query(self,args):
-    usb_cdc.data.write('query: {}'.format(args))
-    usb_cdc.data.write(str(eval(args)))
+    write('query: {}'.format(args))
+    write(str(eval(args)))
 
 def exec_cmd(self,args):
-    usb_cdc.data.write('exec: {}'.format(args))
+    arg = args[0]
+    write('exec: {}'.format(arg))
     try:
-        exec(args)
+        exec(bytes(arg, 'utf-8'))
     except Exception as e:
-        usb_cdc.data.write('Execution failed... : {}'.format(e))
+        write('Execution failed... : {}'.format(e))
 
 def get_imu_offset(self, args):
     """
@@ -83,6 +84,106 @@ def startstoptask(self, args):
     args[0] = task name
     args[1] = "st" or "sp"
     """
+    pass
+
+def pib_verify(self):
+    """
+    PIB checkout function to verify functionality on the PIB
+    """
+    # verify imu
+    write("verifing imu ....")
+    write("Gyro 0 :"+str(self.cubesat.pib.imu.gyro0_r_raw))
+    write("Gyro 1 :"+str(self.cubesat.pib.imu.gyro1_r_raw))
+    write("Mag 0 :"+str(self.cubesat.pib.imu.mag0_r_raw))
+    write("Mag 1 :"+str(self.cubesat.pib.imu.mag1_r_raw))
+    write("Accel 0 :"+str(self.cubesat.pib.imu.accel0_r_raw))
+    write("Accel 1 :"+str(self.cubesat.pib.imu.accel1_r_raw))
+    write("")
+
+    # verify io exp
+    write("verifying io_exp")
+    self.cubesat.pib.n_dac_lat0 = False
+    time.sleep(1)
+    self.cubesat.pib.n_dac_lat0 = True
+    write("")
+
+    # verify dac
+    write("verifying dac")
+    write("setting all outputs to 1.25V")
+    self.cubesat.pib.dac.dac0 = 2^6
+    self.cubesat.pib.dac.dac1 = 2^6
+    self.cubesat.pib.dac.dac2 = 2^6
+    write("sleeping 5s")
+    write("")
+    time.sleep(5)
+
+    # verify amp
+    write("verifing amp")
+    write("turning all outputs ON")
+    self.cubesat.pib.n_amp_shdn_xy = True
+    self.cubesat.pib.n_amp_shdn_z = True
+    write("sleeping 5s")
+    write("")
+    time.sleep(5)
+
+    # verify h-bridge
+    write("verifing h-bridge")
+    write("turning all outputs ON in + direction")
+    self.cubesat.pib.drv_ph_x = True
+    self.cubesat.pib.drv_ph_y = True
+    self.cubesat.pib.drv_ph_z = True
+    self.cubesat.pib.drv_en_x = True
+    self.cubesat.pib.drv_en_y = True
+    self.cubesat.pib.drv_en_z = True
+    self.cubesat.pib.n_drv_slp_x = True
+    self.cubesat.pib.n_drv_slp_y = True
+    self.cubesat.pib.n_drv_slp_z = True
+    write("sleeping 5s")
+    write("")
+    time.sleep(5)
+
+    # verify i sen
+    write("verifing h-bridge")
+    write("sense resistor is not installed, so readings should be around 1.25V")
+    self.cubesat.pib.ch0_en = True
+    refresh = self.cubesat.pib.adc.read
+    write("CH0: "+str(self.cubesat.pib.adc.read))
+    self.cubesat.pib.ch0_en = False
+    refresh = self.cubesat.pib.adc.read
+    self.cubesat.pib.ch1_en = True
+    refresh = self.cubesat.pib.adc.read
+    write("CH1: "+str(self.cubesat.pib.adc.read))
+    self.cubesat.pib.ch1_en = False
+    refresh = self.cubesat.pib.adc.read
+    self.cubesat.pib.ch2_en = True
+    refresh = self.cubesat.pib.adc.read
+    write("CH2: "+str(self.cubesat.pib.adc.read))
+    self.cubesat.pib.ch2_en = False
+    write("sleeping 5s")
+    write("")
+    time.sleep(5)
+       
+    # verify rockblock
+    write("rockblock verification not written")
+
+    write("")
+    write("returning things to idle")
+    self.cubesat.pib.dac.dac0 = 0
+    self.cubesat.pib.dac.dac1 = 0
+    self.cubesat.pib.dac.dac2 = 0
+    self.cubesat.pib.n_amp_shdn_xy = False
+    self.cubesat.pib.n_amp_shdn_z = False
+    self.cubesat.pib.drv_ph_x = False
+    self.cubesat.pib.drv_ph_y = False
+    self.cubesat.pib.drv_ph_z = False
+    self.cubesat.pib.drv_en_x = False
+    self.cubesat.pib.drv_en_y = False
+    self.cubesat.pib.drv_en_z = False
+    self.cubesat.pib.n_drv_slp_x = False
+    self.cubesat.pib.n_drv_slp_y = False
+    self.cubesat.pib.n_drv_slp_z = False
+    write(" PIB checkout END")
+    pass
 
 ########### helper functions for using usb_cdc.data ###########
 
