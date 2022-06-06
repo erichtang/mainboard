@@ -58,6 +58,7 @@ class task(Task):
             self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
         pass
 
+        """
         # save data to the sd card, but only if we have a proper data file
         if self.data_file is not None:
             # save our readings using msgpack
@@ -84,7 +85,7 @@ class task(Task):
                             print(chunk)
                             chunk = f.read(64)
                     print('finished\n')
-                """
+                '''
                 data is already printed with line 57
                 edited out for now
                 else:
@@ -96,7 +97,7 @@ class task(Task):
                             except: break
                     print('finished\n')
                 # increment our data file number
-                """
+                '''
                 self.data_file=self.cubesat.new_file('/data/imu')
-
+        """
     

@@ -39,10 +39,10 @@ class AD7091:
     """
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
-        if not self.config_0 == 0xf: print("[ERROR][PIB][DAC][BAD CONFIG VAL]", self.config_0)
+        #if not self.config_0 == 0xf: print("[ERROR][PIB][DAC][BAD CONFIG VAL]", self.config_0)
         self.on(self)
 
-    #when turned on, channel just needs to be set -- then turned off unless code to handle ch in the reading dict exists
+    #when turned on, channel just needs to be set -- then turned off when done reading it
     def on(self):
         self.ch0_en = False
         self.ch1_en = False

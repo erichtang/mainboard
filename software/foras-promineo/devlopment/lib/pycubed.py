@@ -129,7 +129,7 @@ class Satellite:
                         'GPS':    False,
                         'WDT':    False,
                         'USB':    False,
-                        'PWR':    False,
+                        'BUS_PWR':False,
                         'CHRG_PWR':False,
                         'PIB':    False,
                         'PAYLOAD':False,
@@ -146,24 +146,26 @@ class Satellite:
 
         # Define battery voltage
         self._vbatt = AnalogIn(board.BATTERY)
+
+        #define solar voltage
+        #self._vsolar = AnalogIn(board...)
+
         # LOOK into this CH 
         # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
-        #self._ichrg = AnalogIn(board.L1PROG) -- original code
         self._ichrg = 0 # TEMP UNTILL NEXT MAINBOARD IS RECIEVED
         self._chrg = digitalio.DigitalInOut(board.CHRG)
         self._chrg.switch_to_input()
-        self._chrg_shdn = digitalio.DigitalInOut(board.PB21)
-        self._chrg_shdn.switch_to_output()
+        # not in firmware yet self._chrg_shdn = digitalio.DigitalInOut(board.PB21)
+        #self._chrg_shdn.switch_to_output()
         
-
         # Define SPI,I2C,UART
         # for devices on the board, IMU, mt drivers etc,
         self.i2c1  = busio.I2C(board.SCL,board.SDA)
         self.spi  = board.SPI()
-        self.uart1 = busio.UART(board.TX,board.RX)
-        self.uart2 = busio.UART(board.TX2,board.RX2)
-        self.uart3 = busio.UART(board.TX3,board.RX3)
-        self.uart4 = busio.UART(board.TX4,board.RX4)
+        self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
+        self.uart2 = busio.UART(board.TX2,board.RX2) # payload UART
+        self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
+        self.uart4 = busio.UART(board.TX4,board.RX4) # startracker UART
 
         # Define filesystem stuff
         self.logfile="/log.txt"
@@ -212,7 +214,7 @@ class Satellite:
             """
             self.log('[INIT][SD]')
         except Exception as e:
-            self.log('[ERROR][SD Card]',e)
+            self.log('[ERROR][SD Card]' + str(e))
         
         # so you can tell the difference between boots in the log file
         self.log("----BOOT----")
@@ -250,12 +252,12 @@ class Satellite:
 
         # Initialize Power Monitor 1 -- current to bus
         try:
-            self.pwr = adm1176.ADM1176(self.i2c1)
-            self.pwr.sense_resistor = 1
-            self.hardware['PWR'] = True 
-            self.log('[INIT][Power Monitor]')
+            self.bus_pwr = adm1176.ADM1176(self.i2c1)
+            self.bus_pwr.sense_resistor = 1
+            self.hardware['BUS_PWR'] = True 
+            self.log('[INIT][Bus Power Monitor]')
         except Exception as e:
-            self.log('[ERROR][Power Monitor]' + str(e))
+            self.log('[ERROR][Bus Power Monitor]' + str(e))
 
         # Initialize Power Monitor 2 -- current to batt
         try:
@@ -302,13 +304,31 @@ class Satellite:
         # init pib
         try:
             self.log('[INIT][PIB]')
+            self.rockblock_pw_sw = digitalio.DigitalInOut(board.PC07)
+            self.rockblock_pw_sw.switch_to_output(value = False)
+            self.rockblock_en = digitalio.DigitalInOut(board.PA19)
+            self.rockblock_en.switch_to_output(value = False)
+            self.pico_pw_sw = digitalio.DigitalInOut(board.PB17)
+            self.pico_pw_sw.switch_to_output(value = False)
             self.pib = foras_promineo_pib.PIB(self)
         except Exception as e:
             self.log('[ERROR][PIB]' + str(e))
 
+        #init startracker
+        try:
+            pass
+        except Exception as e:
+            pass
+
         #init payload
         try:
             self.log('[INIT][PAYLOAD]')
+            self.payload_pw_sw = digitalio.DigitalInOut(board.PC10)
+            self.payload_pw_sw.switch_to_output(value = False)
+            self.payload_rst = digitalio.DigitalInOut(board.PC06)
+            self.payload_rst.switch_to_output(value = True)
+            self.payload_servo_pwr_ctrl = digitalio.DigitalInOut(board.PC05)
+            self.payload_servo_pwr_ctrl.switch_to_output(value=False)
             self.payload = foras_promineo_payload.PAYLOAD(self)
         except Exception as e:
             self.log('[ERROR][PIB]' + str(e))
@@ -320,16 +340,18 @@ class Satellite:
         dev=dev.lower()
         if   dev=='gps':
             self.gps.__init__(self.uart,debug=self.debug)
-        elif dev=='pwr':
-            self.pwr.__init__(self.i2c1)
+        elif dev=='bus_pwr':
+            self.bus_pwr.__init__(self.i2c1)
+        elif dev=='chrg_pwr':
+            self.chrg_pwr.__init__(self.i2c1)
         elif dev=='usb':
             self.usb.__init__(self.i2c1)
         elif dev=='imu':
             self.imu.__init__(self)
         elif dev=='pib':
-            pass # implement!
+            self.pib.__init__(self)
         elif dev=='payload':
-            pass # implement !
+            self.payload.__init__(self)
         else:
             self.log('Invalid Device? ->' + str(dev))
 
@@ -403,13 +425,13 @@ class Satellite:
 
     @property
     def system_voltage(self):
-        if self.hardware['PWR']:
+        if self.hardware['BUS_PWR']:
             try:
-                return self.pwr.read()[0] # volts
+                return self.bus_pwr.read()[0] # volts
             except Exception as e:
-                self.log('[WARNING][PWR Monitor]' + str(e))
+                self.log('[WARNING][BUS PWR Monitor]' + str(e))
         else:
-            self.log('[WARNING][Power monitor not initialized]')
+            self.log('[WARNING][Bus Power monitor not initialized]')
 
     @property
     def current_draw(self):
@@ -417,16 +439,16 @@ class Satellite:
         current FROM battery node -- current TO batteries needs implented yet in sw/hw.
         NOT accurate if powered via USB
         """
-        if self.hardware['PWR']:
+        if self.hardware['BUS_PWR']:
             idraw=0
             try:
                 for _ in range(50): # average 50 readings
-                    idraw+=self.pwr.read()[1]
+                    idraw+=self.bus_pwr.read()[1]
                 return (idraw/50)*1000 # mA
             except Exception as e:
-                self.log('[WARNING][PWR Monitor]' + str(e))
+                self.log('[WARNING][BUS_PWR Monitor]' + str(e))
         else:
-            self.log('[WARNING] Power monitor not initialized')
+            self.log('[WARNING] Bus Power monitor not initialized')
 
     # FIX this CH -- need to add charge current measurement on MB
     @property
@@ -447,12 +469,12 @@ class Satellite:
                 self.log('[WARNING] CHRG Power monitor not initialized')
         else:
             return 0
-    
+    # look at this
     @property
     def batt_charge_current(self):
         return self.charge_current - self.current_draw
 
-
+    # look at this
     @property
     def solar_charging(self):
         return not self._chrg.value
@@ -472,14 +494,14 @@ class Satellite:
         self._resetReg.value=1
 
     def log(self, msg):
+        # LOOK IONTO THIS AND CHANFE NOT FINAL
         # writes a message to the log file
-        # also prints it thru USB, can comment that line out if desired.
-        # change this to the msgpack format to save space? this appears to be a remnant of before msgpack was implemented.
+        # also prints it thru USB
         if self.hardware['SDcard']:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
                 f.write('{}, {}\n'.format(t,msg))
-        if self.debug:print(msg)
+        if self.debug: print(msg)
 
     def print_file(self,filedir=None,binary=False):
         if filedir==None:
@@ -507,7 +529,6 @@ class Satellite:
     def powermode(self,mode):
         """
         Configure the hardware for minimum or normal power consumption
-        Add custom modes for mission-specific control
         needs edited. CH
         """
         self.log('[POWERMODE][f{}]'.format(mode))
@@ -519,30 +540,36 @@ class Satellite:
             if self.hardware['Radio2']:
                 self.radio2.sleep()
             self.enable_rf.value = False
-            if self.hardware['IMU']: #EDIT THIS
-                self.imu.powermode('sleep')
-                #original pycubed code here but removing once powermode is implemented
-                #self.IMU.gyro_powermode  = 0x14 # suspend mode
-                #self.IMU.accel_powermode = 0x10 # suspend mode
-                #self.IMU.mag_powermode   = 0x18 # suspend mode
-            if self.hardware['PWR']:
-                self.pwr.config('V_ONCE,I_ONCE')
+            if self.hardware['IMU']:
+                self.imu.powermode('min')
+            if self.hardware['BUS_PWR']:
+                self.bus_pwr.config('V_ONCE,I_ONCE')
             if self.hardware['CHRG_PWR']:
                 self.chrg_pwr.config('V_ONCE,I_ONCE')
             if self.hardware['GPS']:
                 self.en_gps.value = False
+            if self.hardware['PIB']:
+                self.pib.powermode('min')
+            if self.hardware['PAYLOAD']:
+                self.payload.powermode('min')
             self.power_mode = 'minimum'
 
         elif 'norm' in mode:
+            #put neopixel here
+            # put radio1 here
             self.enable_rf.value = True
             if self.hardware['IMU']:
-                self.reinit('IMU')
-            if self.hardware['PWR']:
-                self.pwr.config('V_CONT,I_CONT')
+                self.imu.powermode('norm')
+            if self.hardware['BUS_PWR']:
+                self.bus_pwr.config('V_CONT,I_CONT')
             if self.hardware['CHRG_PWR']:
                 self.chrg_pwr.config('V_CONT,I_CONT')
             if self.hardware['GPS']:
                 self.en_gps.value = True
+            if self.hardware['PIB']:
+                self.pib.powermode('norm')
+            if self.hardware['PAYLOAD']:
+                self.payload.powermode('norm')
             self.power_mode = 'normal'
             # don't forget to reconfigure radios, gps, etc...
             # EDIT THIS TO DO ABOVE CH- 4/6

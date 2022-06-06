@@ -115,14 +115,7 @@ class IAM20380:
             i = self._device_reset #waits for reset to be completed
 
     def read(self):
-        data_good_flag = False #is set to true if measurement goes thru
-        #if(self._drdy_int == True): we arent polling this fast enough for it to matter
-        x = (self._gyro_xout_h << 8) + self._gyro_xout_l
-        y = (self._gyro_yout_h << 8) + self._gyro_yout_l
-        z = (self._gyro_zout_h << 8) + self._gyro_zout_l
-        out = [x,y,z]
-        data_good_flag = True
-        #raw to dps data massaging
+        out = self.read_raw()
         for meas in range(len(out)):
             if (out[meas]>>15==1):
                 out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
@@ -131,8 +124,6 @@ class IAM20380:
                 #put 16b twos comp code here ?
                 # or put null offset code here?
         return(out)
-        #else:
-            #return(None)
 
     def read_raw(self):
         x = (self._gyro_xout_h << 8) + self._gyro_xout_l

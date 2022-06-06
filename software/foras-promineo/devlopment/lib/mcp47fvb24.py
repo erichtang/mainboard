@@ -25,19 +25,21 @@ PD_R = const(0x9)
 GS_R = const(0xa)
 WL_R = const(0xb)
 
+_BUFFER = bytearray(2)
+
 class MCP47FVB24:
 
-    _DAC0 = RWBits(12, DAC0_R, 0)
-    _DAC1 = RWBits(12, DAC1_R, 0)
-    _DAC2 = RWBits(12, DAC2_R, 0)
-    _DAC3 = RWBits(12, DAC3_R, 0)
+    _DAC0 = RWBits(8, DAC0_R, 0)
+    _DAC1 = RWBits(8, DAC1_R, 0)
+    _DAC2 = RWBits(8, DAC2_R, 0)
+    _DAC3 = RWBits(8, DAC3_R, 0)
     _DAC0_REF = RWBits(2, REF_R, 0)
     _DAC1_REF = RWBits(2, REF_R, 2)
     _DAC2_REF = RWBits(2, REF_R, 4)
     _DAC3_REF = RWBits(2, REF_R, 6)
     _POWER_DOWN = RWBits(8, PD_R, 0) #default 0's
     _RST = RWBit(GS_R, 7)
-    _GAIN = RWBits(4, GS_R, 8)
+    #_GAIN = RWBits(4, GS_R, 0)
 
     """
     general device init. 
@@ -65,7 +67,7 @@ class MCP47FVB24:
         self.dac2_ref = 0x3
         self.dac3_ref = 0x3
         self.power_down = 0x0
-        self.gain = 0xf
+        #self.gain = 0xf
 
     def off(self):
         self.power_down = 0xff
@@ -164,12 +166,14 @@ class MCP47FVB24:
     0x0 = 1x gain
     0xf = 2x gain
     """
+    """
     @property
     def gain(self):
         return self._GAIN
     @gain.setter
     def gain(self, value):
         self._GAIN = value
+    """
 
 
     

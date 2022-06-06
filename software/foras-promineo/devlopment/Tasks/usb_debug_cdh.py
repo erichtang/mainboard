@@ -28,7 +28,8 @@ class task(Task):
         'exec_cmd':     db_cdh.exec_cmd,
         # new
         'get_imu_offset': db_cdh.get_imu_offset,
-        'write':        db_cdh.write
+        'write':        db_cdh.write,
+        'i2c_scan': db_cdh.i2c_scan
     }
 
 
