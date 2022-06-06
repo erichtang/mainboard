@@ -6,6 +6,7 @@
  this devices registers are 16b!
 
  C. Hillis 4/22
+ needs finished and rewrote
 """
 
 from micropython import const
