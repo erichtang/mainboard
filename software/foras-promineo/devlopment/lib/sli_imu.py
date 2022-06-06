@@ -78,17 +78,11 @@ class IMU():
             self.mux.set_ch0()
             self.mux.clear()
             self.hardware['MUX'] = True
-            print('[INIT][MUX]')
+            print('[INIT][IMU][MUX]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MUX]' + str(e))
+            self.cubesat.log('[ERROR][IMU][MUX]: ' + str(e))
             pass
 
-        """
-        in reality these will be used for 2 gyros, 2 mag's and 1 accel 
-                but there does not need to be different memory or addr's between; them pca9543 mux's the i2c lines and the classes dont really save any independent data
-        if init of a lower device fails the class will error out and the try except will catch it.
-        """
-        
         #ch0 devices init
         self.mux.set_ch0()
         try:
@@ -96,19 +90,19 @@ class IMU():
             self.hardware['GYRO0'] = True
             print('[INIT][IMU][GYRO0]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][GYRO0]' + str(e))
+            self.cubesat.log('[ERROR][IMU][GYRO0]: ' + str(e))
         try:
             self.mag0 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG0'] = True
             print('[INIT][IMU][MAG0]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MAG0]' + str(e))
+            self.cubesat.log('[ERROR][IMU][MAG0]: ' + str(e))
         try:
             self.accel0 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL0'] = True
             print('[INIT][IMU][ACCEL0]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][ACCEL0]' + str(e))
+            self.cubesat.log('[ERROR][IMU][ACCEL0]: ' + str(e))
         #ch1 devices init
         self.mux.set_ch1()
         try:
@@ -116,54 +110,21 @@ class IMU():
             self.hardware['GYRO1'] = True
             print('[INIT][IMU][GYRO1]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][GYRO1]' + str(e))
+            self.cubesat.log('[ERROR][IMU][GYRO1]: ' + str(e))
         try:
             self.mag1 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG1'] = True
             print('[INIT][IMU][MAG1]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MAG1]' + str(e))
+            self.cubesat.log('[ERROR][IMU][MAG1]: ' + str(e))
         try: #accel 1 is DNP, so this may toss an error but is NBD
             self.accel1 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL1'] = True
             print('[INIT][IMU][ACCEL1]')
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][ACCEL1]' + str(e))
+            self.cubesat.log('[ERROR][IMU][ACCEL1]: ' + str(e))
         self.mux.clear()
-
         #device default power mode is ON
-
-    """
-    Re-initializes device passed
-    this function MUST be called in a try-except clause if the init fails!!
-    it is also up to the user to correctly update the self.hardware dict!!
-            this function purposely does not accept multiple args!
-    """
-    def reinit(self, dev):
-        dev=dev.lower()
-        if   dev=='mux':
-            self.mux.__init__()
-        elif dev=='gyro0':
-            self.mux.set_ch0()
-            self.gyro0.__init__()
-        elif dev=='gyro1':
-            self.mux.set_ch1()
-            self.gyro1.__init__()
-        elif dev=='mag0':
-            self.mux.set_ch0()
-            self.mag0.__init__()
-        elif dev=='mag1':
-            self.mux.set_ch1()
-            self.mag1.__init__()
-        elif dev=='accel0':
-            self.mux.set_ch0()
-            self.accel0.__init__()
-        elif dev=='accel1':
-            self.mux.set_ch1()
-            self.accel1.__init__()
-        else:
-            print('Invalid Device? ->' + str(dev))
-        self.mux.clear()
 
     """
     Power mode setting
@@ -176,7 +137,6 @@ class IMU():
         for device in devices:
             if device is not None:     
                 device = device.lower()
-        #make sure this works if devices is not passed to the function
         for device in devices:
             if device is not None: device=device.lower()
             if "norm" in mode:
@@ -232,148 +192,154 @@ class IMU():
             
     """
     returns specified device's reading
-        if device is False in device table, it will return none.
-    see read_temp for a aquiring temp of specific devices
     """
     @property
-    def gyro0_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO0']:
-            return self.gyro0.read() #dps
+    def gyro0(self):
+        if self.hardware['GYRO0']:
+            self.mux.set_ch0()
+            ret =  self.gyro0.gyro
+            self.mux.clear()
+            return ret
     
     @property
-    def gyro1_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO1']:
-            return self.gyro1.read() #dps
+    def gyro1(self):
+        if self.hardware['GYRO1']:
+            self.mux.set_ch1()
+            ret = self.gyro1.gyro
+            self.mux.clear()
+            return ret
                   
     @property
-    def mag0_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
-            return self.mag0.read() #mG CHANGE TO uT
+    def mag0(self):
+        if self.hardware['MAG0']:
+            self.mux.set_ch0()
+            ret = self.mag0.mag
+            self.mux.clear()
+            return ret
 
     @property
-    def mag1_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
-            return self.mag1.read() #mG
+    def mag1(self):
+        if self.hardware['MAG1']:
+            self.mux.set_ch1()
+            ret = self.mag1.mag
+            self.mux.clear()
+            return ret
     
     @property
-    def accel0_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
-            return self.accel0.read() #g CHANGE TO m/s^2
-    
+    def accel0(self):
+        if self.hardware['ACCEL0']:
+            self.mux.set_ch0()
+            ret = self.accel0.accel
+            self.mux.clear()
+            return ret
+
     @property
-    def accel1_r(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
-            return self.accel1.read() #
+    def accel1(self):
+        if self.hardware['ACCEL1']:
+            self.mux.set_ch1()
+            ret = self.accel1.accel
+            self.mux.clear()
+            return ret
 
     """
-    returns specified device's reading UNSCALED in int form
-        if device is False in device table, it will return none.
-    see read_temp for a aquiring temp of specific devices
+    returns specified device's raw reading
     """
     @property
-    def gyro0_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO0']:
+    def gyro0_raw(self):
+        if self.hardware['GYRO0']:
             self.mux.set_ch0()
-            ret = self.gyro0.read_raw()
+            ret = self.gyro0.gyro_raw
             self.mux.clear()
             return ret
     
     @property
-    def gyro1_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO1']:
+    def gyro1_raw(self):
+        if self.hardware['GYRO1']:
             self.mux.set_ch1()
-            ret = self.gyro1.read_raw()
+            ret = self.gyro1.gyro_raw
             self.mux.clear()
             return ret
 
     @property
-    def mag0_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
+    def mag0_raw(self):
+        if self.hardware['MAG0']:
             self.mux.set_ch0()
-            ret = self.mag0.read_raw()
+            ret = self.mag0.mag_raw
             self.mux.clear()
             return ret
 
     @property
-    def mag1_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
+    def mag1_raw(self):
+        if self.hardware['MAG1']:
             self.mux.set_ch1()
-            ret = self.mag1.read_raw()
+            ret = self.mag1.mag_raw
             self.mux.clear()
             return ret
     
     @property
-    def accel0_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
+    def accel0_raw(self):
+        if self.hardware['ACCEL0']:
             self.mux.set_ch0()
-            ret = self.accel0.read_raw()
+            ret = self.accel0.accel_raw
             self.mux.clear()
             return ret
     
     @property
-    def accel1_r_raw(self):
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
+    def accel1_raw(self):
+        if self.hardware['ACCEL1']:
             self.mux.set_ch1()
-            ret = self.accel1.read_raw()
+            ret = self.accel1.accel_raw
             self.mux.clear()
             return ret
 
     """
     returns specified device's temperature reading
-        if device is False in device table, it will return none.
         evaluate each device and use as needed, as the temp sensor for the IAM20380(gyro) is slightly off no matter what I try 
-        -- and it isn't worth it to fine tune the paramater when I have 5 more temp sensors in the same area
     """
     @property
     def gyro0_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO0']:
+        if self.hardware['GYRO0']:
             self.mux.set_ch0()
-            ret = self.gyro0.temp()
+            ret = self.gyro0.temp
             self.mux.clear()
             return ret
     
     @property
     def gyro1_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['GYRO1']:
+        if self.hardware['GYRO1']:
             self.mux.set_ch1()
-            ret = self.gyro1.temp()
+            ret = self.gyro1.temp
             self.mux.clear()
             return ret
                   
     @property
     def mag0_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG0']:
+        if self.hardware['MAG0']:
             self.mux.set_ch0()
-            ret = self.mag0.temp()
+            ret = self.mag0.temp
             self.mux.clear()
             return ret
 
     @property
     def mag1_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['MAG1']:
+        if self.hardware['MAG1']:
             self.mux.set_ch1()
-            ret = self.mag1.temp()
+            ret = self.mag1.temp
             self.mux.clear()
             return ret
     
     @property
     def accel0_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL0']:
+        if self.hardware['ACCEL0']:
             self.mux.set_ch0()
-            ret = self.accel0.temp()
+            ret = self.accel0.temp
             self.mux.clear()
             return ret
     
     @property
     def accel1_t(self):
-        #if self.cubesat.simulation:
-        if self.cubesat.hardware['IMU'] and self.hardware['ACCEL1']:
+        if self.hardware['ACCEL1']:
             self.mux.set_ch1()
-            ret = self.accel1.temp()
+            ret = self.accel1.temp
             self.mux.clear()
             return ret

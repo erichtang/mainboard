@@ -78,61 +78,21 @@ class Satellite:
         self.debug=True # set to false for flight, unless we want this printing to nothing
 
         """
-        # I think this needs to be moved down lower in the init -- looking into this, also pycubed has commands already implemented, IDK why marek tried to implement his own. looking into this
-        # ------------------------------------------ Start Section v
-       
-        # something that I set that indicates how much time in minutes to wait until starting transmitting
-        self.minutes_to_wait = 1
-
-        # the name of the file where the user's uploaded code will be stored
-        self.user_file_name = "user_file"
-
-        # bool used to determine whether or not the user's file should be sent to the camera
-        self.send_file_to_camera = False
-
-        # password that every upload must begin with, must be 4 bytes currently
-        self.password = b"MAIN"
-
-        # all data sent to the ground must start with this
-        self.start_communication = b"STAR"
-
-        # file that things will be logged to
-        self.logfile = "log.txt"
-
-        # ends a communication
-        self.end_communication = b"END_"
-
-        # indicates if the game is running on the the camera
-        self.game_is_running = False
-
-        # if connected to the ground
-        #if supervisor.runtime.serial_connected:
-        #    self.connected = True
-        #else:
-        #    self.connected = False
-        
-        self.connected=False
-        self.simulation=False
-
-        # ------------------------------------------ End Section ^
-        """
-
-        """
         system hardware table
         each subsystem has a bool attributed to it
         """
         self.hardware = {
-                        'IMU':    False,
-                        'Radio1': False,
-                        'Radio2': False,
-                        'SDcard': False,
-                        'GPS':    False,
-                        'WDT':    False,
-                        'USB':    False,
-                        'BUS_PWR':False,
+                        'IMU':     False,
+                        'Radio1':  False,
+                        'Radio2':  False,
+                        'SDcard':  False,
+                        'GPS':     False,
+                        'WDT':     False,
+                        'USB':     False,
+                        'BUS_PWR': False,
                         'CHRG_PWR':False,
-                        'PIB':    False,
-                        'PAYLOAD':False,
+                        'PIB':     False,
+                        'PAYLOAD': False,
                         #'MTDRIVERS': False,# marek added
                         #'CAMERA': False #marek added, rename to payload?
                         } 
@@ -214,28 +174,18 @@ class Satellite:
             """
             self.log('[INIT][SD]')
         except Exception as e:
-            self.log('[ERROR][SD Card]' + str(e))
+            self.log('[ERROR][INIT][SD Card]: ' + str(e))
         
-        # so you can tell the difference between boots in the log file
         self.log("----BOOT----")
-
-        """
-        # initializing connection to the camera
-        try:
-            self.cam_port = busio.UART(board.SDA2, board.SCL2, timeout=0.05, baudrate=115200)
-
-        except Exception as e:
-            self.log('[ERROR][CONNECTION_TO_CAMERA]',e)
-        """
         
         # Initialize Neopixel
         try:
             self.neopixel = neopixel.NeoPixel(board.NEOPIXEL, 1, brightness=0.2, pixel_order=neopixel.GRB)
             self.neopixel[0] = (0,0,0)
             self.hardware['Neopixel'] = True
-            self.log('[INIT][Neopixel]')
+            print('[INIT][Neopixel]')
         except Exception as e:
-            self.log('[WARNING][Neopixel]' + str(e))
+            print('[WARNING][Neopixel]: ' + str(e))
 
         # Initialize USB charger
         try:
@@ -248,7 +198,7 @@ class Satellite:
             self.hardware['USB'] = True
             self.log('[INIT][USB Charger]')
         except Exception as e:
-            self.log('[ERROR][USB Charger]'+ str(e))
+            self.log('[ERROR][INIT][USB Charger]: '+ str(e))
 
         # Initialize Power Monitor 1 -- current to bus
         try:
@@ -257,7 +207,7 @@ class Satellite:
             self.hardware['BUS_PWR'] = True 
             self.log('[INIT][Bus Power Monitor]')
         except Exception as e:
-            self.log('[ERROR][Bus Power Monitor]' + str(e))
+            self.log('[ERROR][INIT][Bus Power Monitor]: ' + str(e))
 
         # Initialize Power Monitor 2 -- current to batt
         try:
@@ -266,7 +216,7 @@ class Satellite:
             self.hardware['CHRG_PWR'] = True
             self.log('[INIT][CHRG Power Monitor]')
         except Exception as e:
-            self.log('[ERROR][CHRG Power Monitor]' + str(e))
+            self.log('[ERROR][INIT][CHRG Power Monitor]: ' + str(e))
 
         # Initialize IMU
         try:
@@ -274,7 +224,7 @@ class Satellite:
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
-            self.log('[ERROR][IMU]' + str(e))
+            self.log('[ERROR][INIT][IMU]: ' + str(e))
 
         # Initialize GPS
         try:
@@ -283,7 +233,7 @@ class Satellite:
             self.hardware['GPS'] = True
             self.log('[INIT][GPS]')
         except Exception as e:
-            self.log('[ERROR][GPS]' + str(e))
+            self.log('[ERROR][INIT][GPS]: ' + str(e))
 
         # Initialize radio #1 - UHF
         # Edit this for our mission spec. CH
@@ -299,11 +249,10 @@ class Satellite:
             self.hardware['Radio1'] = True
             self.log('[INIT][Radio 1 - LoRa]')
         except Exception as e:
-            self.log('[ERROR][Radio 1 - LoRa]' + str(e))
+            self.log('[ERROR][INIT][Radio 1 - LoRa]: ' + str(e))
 
         # init pib
         try:
-            self.log('[INIT][PIB]')
             self.rockblock_pw_sw = digitalio.DigitalInOut(board.PC07)
             self.rockblock_pw_sw.switch_to_output(value = False)
             self.rockblock_en = digitalio.DigitalInOut(board.PA19)
@@ -311,8 +260,10 @@ class Satellite:
             self.pico_pw_sw = digitalio.DigitalInOut(board.PB17)
             self.pico_pw_sw.switch_to_output(value = False)
             self.pib = foras_promineo_pib.PIB(self)
+            self.hardware['PIB'] = True
+            self.log('[INIT][PIB]')
         except Exception as e:
-            self.log('[ERROR][PIB]' + str(e))
+            self.log('[ERROR][INIT][PIB]: ' + str(e))
 
         #init startracker
         try:
@@ -322,7 +273,6 @@ class Satellite:
 
         #init payload
         try:
-            self.log('[INIT][PAYLOAD]')
             self.payload_pw_sw = digitalio.DigitalInOut(board.PC10)
             self.payload_pw_sw.switch_to_output(value = False)
             self.payload_rst = digitalio.DigitalInOut(board.PC06)
@@ -330,8 +280,10 @@ class Satellite:
             self.payload_servo_pwr_ctrl = digitalio.DigitalInOut(board.PC05)
             self.payload_servo_pwr_ctrl.switch_to_output(value=False)
             self.payload = foras_promineo_payload.PAYLOAD(self)
+            self.hardware['PAYLOAD'] = True
+            self.log('[INIT][PAYLOAD]')
         except Exception as e:
-            self.log('[ERROR][PIB]' + str(e))
+            self.log('[ERROR][INIT][PAYLOAD]: ' + str(e))
 
         # set PyCubed power mode
         self.power_mode = 'normal'
@@ -401,7 +353,7 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                self.log('[WARNING]' + str(e))
+                print('[WARNING]' + str(e))
 
     @property
     def charge_batteries(self):
@@ -429,9 +381,9 @@ class Satellite:
             try:
                 return self.bus_pwr.read()[0] # volts
             except Exception as e:
-                self.log('[WARNING][BUS PWR Monitor]' + str(e))
+                print('[WARNING][BUS PWR Monitor]' + str(e))
         else:
-            self.log('[WARNING][Bus Power monitor not initialized]')
+            print('[WARNING][Bus Power monitor not initialized]')
 
     @property
     def current_draw(self):
@@ -446,15 +398,16 @@ class Satellite:
                     idraw+=self.bus_pwr.read()[1]
                 return (idraw/50)*1000 # mA
             except Exception as e:
-                self.log('[WARNING][BUS_PWR Monitor]' + str(e))
+                print('[WARNING][BUS_PWR Monitor]' + str(e))
         else:
-            self.log('[WARNING] Bus Power monitor not initialized')
+            print('[WARNING] Bus Power monitor not initialized')
 
     # FIX this CH -- need to add charge current measurement on MB
     @property
     def charge_current(self):
         """
         current TO battery node (adm1176 can not read -negative currents)
+        WIP
         """
         if self.solar_charging:
             if self.hardware['CHRG_PWR']:
@@ -464,11 +417,12 @@ class Satellite:
                         icharge = self.chrg_pwr.read()[1]
                         return(icharge/50)*1000 # mA
                 except Exception as e:
-                    self.log('[WARNING][CHRG PWR Monitor]' + str(e))
+                    print('[WARNING][CHRG PWR Monitor]' + str(e))
             else:
-                self.log('[WARNING] CHRG Power monitor not initialized')
+                print('[WARNING] CHRG Power monitor not initialized')
         else:
             return 0
+
     # look at this
     @property
     def batt_charge_current(self):
@@ -488,25 +442,22 @@ class Satellite:
                 self.spi.deinit()
                 time.sleep(3)
             except Exception as e:
-                self.log('vbus reset error?' + str(e))
+                print('vbus reset error?' + str(e))
                 pass
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
 
-    def log(self, msg):
-        # LOOK IONTO THIS AND CHANFE NOT FINAL
-        # writes a message to the log file
-        # also prints it thru USB
+    def log(self, msg, print_flag=True):
         if self.hardware['SDcard']:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
                 f.write('{}, {}\n'.format(t,msg))
-        if self.debug: print(msg)
+        if print_flag: print(msg)
 
     def print_file(self,filedir=None,binary=False):
         if filedir==None:
             return
-        self.log('\n--- Printing File: {} ---'.format(filedir))
+        print('\n--- Printing File: {} ---'.format(filedir))
         if binary:
             with open(filedir, "rb") as file:
                 print(file.read())
@@ -573,18 +524,6 @@ class Satellite:
             self.power_mode = 'normal'
             # don't forget to reconfigure radios, gps, etc...
             # EDIT THIS TO DO ABOVE CH- 4/6
-    """
-    how/why did the new_file def get cut out below? Just pasted the original back in below.
-    def new_file(self,substring,binary=False):
-        '''
-        substring something like '/data/DATA_'
-        directory is created on the SD!
-        int padded with zeros will be appended to the last found file
-        '''
-        if self.hardware['SDcard']:
-            ff=''
-            n=0
-    """
 
     def new_file(self,substring,binary=False):
         '''
@@ -625,7 +564,7 @@ class Satellite:
 
     """ Figure out what is going on here
     # ------------------------------------------ Start Section
-
+# is this not implemented in os.rm and os.rmdir?
     # removes a file with the inputted path or name
     def remove_file(self, file_name):
         # if the sd card is inserted
@@ -662,7 +601,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-
+#what is the purpose of this? it is already implemented default
     # creates a new file with a path and name equal to the one inputted
     # if the path does not exist it is created
     def new_file(self,substring):
@@ -701,7 +640,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-
+#what is the purpose of this? the substring on new_file above creates directories
     # creates a new directory with a path and name equal to the one inputted
     # if the path does not exist it is created
     def new_directory(self, substring):
@@ -722,7 +661,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-
+#no current use for this
     # removes a directory with a path and name equal to the one inputted
     # if the path does not exist nothing is done
     def remove_directory(self, substring):
@@ -744,9 +683,8 @@ class Satellite:
             self.log("ERROR: SD NOT FOUND")
 
 """
-
     # ------------------------------------------ End Section
-    """
+
     def burn(self,burn_num,dutycycle=0,freq=1000,duration=1):
         '''
         Operate burn wire circuits. Wont do anything unless the a nichrome burn wire
@@ -789,7 +727,6 @@ class Satellite:
         burnwire.deinit()
         self._relayA.drive_mode=digitalio.DriveMode.OPEN_DRAIN
         return True
-    """
 
     # ------------------------------------------ Start Section modified by Marek Brodke on 12/8/2021
     """

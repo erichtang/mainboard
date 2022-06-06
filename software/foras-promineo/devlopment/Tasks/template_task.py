@@ -27,18 +27,20 @@ class Task:
         """
         self.cubesat = satellite
         
-    def debug(self,msg,level=1):
+    def debug(self,msg,level=1,log=False):
         """
-        Print a debug message formatted with the task name and color
+        Print a debug message formatted with the task name and color, can append logfile
 
         :param msg: Debug message to print
         :param level: > 1 will print as a sub-level
-
+        :param log: appends logfile if True #added CH
         """
         if level==1:
             print('{:>30} {}'.format('['+co(msg=self.name,color=self.color)+']',msg))
         else:
             print('{}{}'.format('\t   └── ',msg))
+        if log:
+            self.cubesat.log(msg, print_flag = False)
 
     async def main_task(self, *args, **kwargs):
         """

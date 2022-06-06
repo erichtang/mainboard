@@ -1,10 +1,12 @@
-# iam20380.py
-#
-# circuitpython driver lib for iam20380 gyro
-#
-# currently is just a set-it-and-forget-it dealio for the FP/mainboard usage
-#
-# C. Hillis 3/22
+""" 
+iam20380.py
+
+    circuitpython driver lib for iam20380 gyro
+
+    currently is just a set-it-and-forget-it dealio for FP/mainboard usage
+
+C. Hillis 3/22
+"""
 
 from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
@@ -76,11 +78,14 @@ class IAM20380:
     _sleep = RWBit(PWR_MGMT_1, 6)
     _clksel = RWBits(3, PWR_MGMT_1, 0)
     _who_am_i = ROBits(4, WHO_AM_I, 0)
+
+    class _BAD_WHO_AM_I(Exception):
+        pass
     
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
         test = self._who_am_i
-        if not test == 5: print("[ERROR][IAM20380][BAD WHO_AM_I VALUE]")
+        if not test == 5: raise self._BAD_WHO_AM_I("[ERROR][IAM20380][BAD WHO_AM_I VALUE]: " + str(test))
         self.ON()
 
     def ON(self):
@@ -97,13 +102,6 @@ class IAM20380:
         #print(self._drdy_int_en)
         self._sleep = 0 #it is intiallized as 1
         #print(self._sleep)
-    
-    # def low_power(self):
-    #     self.rst()
-    #     self.fs_sel = 0
-    #     self.gyro_cycle = 1 #add what this means
-    #     self.gavg_cfg = 7
-    #     self.sleep = 0 
 
     def SLEEP(self):
         self._sleep = 1
@@ -114,28 +112,20 @@ class IAM20380:
         while i == 1:
             i = self._device_reset #waits for reset to be completed
 
-    def read(self):
-        out = self.read_raw()
-        for meas in range(len(out)):
-            if (out[meas]>>15==1):
-                out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
-            out[meas] = out[meas]/131 # 131LSB/dps , hardcoded in sensitivty, sorry future self
-            #no idea to know what the sign of this is?
-                #put 16b twos comp code here ?
-                # or put null offset code here?
-        return(out)
-
-    def read_raw(self):
+    #returns python float (doubler precision flt)
+    @property
+    def gyro(self):
         x = (self._gyro_xout_h << 8) + self._gyro_xout_l
         y = (self._gyro_yout_h << 8) + self._gyro_yout_l
         z = (self._gyro_zout_h << 8) + self._gyro_zout_l
         out = [x,y,z]
-        for meas in range(len(out)): #changing from 16b 2's comp to a regular int, unscaled
+        for meas in range(len(out)):
             if (out[meas]>>15==1):
                 out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
+            out[meas] = float(out[meas]/131) # 131LSB/dps , hardcoded in sensitivty, sorry future self
         return(out)
 
-
+    @property
     def temp(self): # @25degc it reads 0
         temp = (self._temp_h << 8) + (self._temp_l) # merge registers
         #this is in twos comp when the datasheets says it isnt LOL
@@ -192,54 +182,6 @@ class IAM20380:
     # def gavg_cfg(self, value):
     #     self._gavg_cfg = value
 
-    # @property
-    # def temp_raw(self):
-    #     temp_raw = (self._temp_h << 8) + self._temp_l
-    #     #print("[IAM20380][TEMP][RAW][",temp_raw,"]")
-    #     return(temp_raw)
-
-    # @property
-    # def temp(self):
-    #     temp = ((self.temp_raw - 25)/326.8)+25
-    #     #print("[IAM20380][TEMP][ADJ][",temp,"]")
-    #     return(temp)
-
-    # @property
-    # def x_raw(self):
-    #     x_raw = (self._gyro_xout_h << 8) + self._gyro_xout_l
-    #     #print("[IAM20380][XOUT][R][",bin(x_raw),"]")
-    #     return(x_raw)
-    
-    # @property
-    # def y_raw(self):
-    #     y_raw = (self._gyro_yout_h << 8) + self._gyro_yout_l
-    #     #print("[IAM20380][YOUT][R][",bin(y_raw),"]")
-    #     return(y_raw)
-    
-    # @property
-    # def z_raw(self):
-    #     z_raw = (self._gyro_zout_h << 8) + self._gyro_zout_l
-    #     #print("[IAM20380][ZOUT][R][",bin(z_raw),"]")
-    #     return(z_raw)
-    
-    # @property
-    # def x(self):
-    #     x = self._gyro_scale(self.x_raw)
-    #     #print("[IAM20380][XOUT][",x,"][DPS]")
-    #     return(x)
-    
-    # @property
-    # def y(self):
-    #     y = self._gyro_scale(self.y_raw)
-    #     #print("[IAM20380][YOUT][",y,"][DPS]")
-    #     return(y)
-    
-    # @property
-    # def z(self):
-    #     z = self._gyro_scale(self.z_raw)
-    #     #print("[IAM20380][ZOUT][",z,"][DPS]")
-    #     return(z)
-
     # def _gyro_scale(self, raw_input):
     #     #scale is in form LSB/dps # I AM NOT SURE IF THIS CONVERSION IS CORRECCT
     #     sw = self.fs_sel
@@ -259,9 +201,3 @@ class IAM20380:
     #     scaled_output = raw_input / scale #/ sensitivity # THIS IS W R O N G FIX LATER
     #     #print(scaled_output)
     #     return(scaled_output)
-    
-    # def _16btwos2int(self, value):
-    #      if (value>>15==1):
-    #         value = ((value ^ 0xFF)+1)*(-1)
-    #         #print(value)
-    #         return(value)

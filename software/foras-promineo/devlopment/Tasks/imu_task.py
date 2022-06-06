@@ -1,7 +1,11 @@
 """
+imu_sampler.py
+
 edits to the beepsat-advanced code 
-not done, see ln 64 for changes to be made
+
+not done
 may need aditional work as dev goes on.
+
 ch 4/5/22
 """
 
@@ -15,9 +19,10 @@ SEND_DATA = False # make sure you have an antenna attached!
 class task(Task):
 
     priority = 2
-    frequency = 1/2 # during normal operation this would preform 2Hz, but is different for now.
+    frequency = 1 #other tasks will probably adjust this
     name = 'imu_sampler'
     color = 'green'
+    oversample = 10
 
     # we want to initialize the data file only once upon boot
     # so perform our task init and use that as a chance to init the data files
@@ -28,32 +33,44 @@ class task(Task):
 
     async def main_task(self):
 
-        # take IMU readings
-        readings = {
-            'gyro0_r'     : self.cubesat.imu.gyro0_r,
-            'gyro0_t'     : self.cubesat.imu.gyro0_t, #_t suffix means temperature
-            'gyro1_r'     : self.cubesat.imu.gyro1_r,
-            'gyro1_t'     : self.cubesat.imu.gyro1_t,
-            'mag0_r'      : self.cubesat.imu.mag0_r,
-            'mag0_t'      : self.cubesat.imu.mag0_t,
-            'mag1_r'      : self.cubesat.imu.mag1_r,
-            'mag1_t'      : self.cubesat.imu.mag1_t,
-            'accel0_r'    : self.cubesat.imu.accel0_r,
-            'accel0_t'    : self.cubesat.imu.accel0_t,
-            'accel1_r'    : self.cubesat.imu.accel1_r,
-            'accel1_t'    : self.cubesat.imu.accel1_t,
-            'timestamp'   : (time.time()-self.cubesat.BOOTTIME), #time since boot of measurement
-        }
-        if self.cubesat.hardware['PAYLOAD']:
-            #if self.cubesat.payload.hardware['imu']:
-                #append readings dict to add payload 
-            pass
+        # take IMU readings 
+        #implement oversampling? -- think about this
 
-        # store them in our cubesat data_cache object
+        #where does she comes from
+        read_ptr = [self.cubesat.imu.gyro0,  self.cubesat.imu.gyro1,  self.cubesat.pib.imu.gyro0,  self.cubesat.pib.imu.gyro1,
+                     self.cubesat.imu.mag0,   self.cubesat.imu.mag1,   self.cubesat.pib.imu.mag1,   self.cubesat.pib.imu.mag1,
+                     self.cubesat.imu.accel0, self.cubesat.imu.accel1, self.cubesat.pib.imu.accel1, self.cubesat.pib.imu.accel1
+                    ]
+        #where does she gos
+        data_list =[None]*12
+
+        #what does she derives from
+        #cotton eyed joe
+        for ptr in range(len(read_ptr)):
+            i=0
+            temp = 0
+            while i < self.oversample:
+                try:
+                    temp += read_ptr[ptr]
+                except AttributeError:
+                    temp = None
+                    break
+                i += 1
+            if temp is not None: temp /= temp/self.oversample
+            data_list[ptr] = temp
+
+        #big readings dict, 8byte float * 12 
+        readings = { 
+            'gyro'  : [self.oversampler(self.cubesat.imu.gyro0),self.oversampler(self.cubesat.imu.gyro1),self.oversampler(self.cubesat.pib.imu.gyro0),self.oversampler(self.cubesat.pib.imu.gyro1)],
+            'mag'   : [self.oversampler(self.cubesat.imu.mag0),self.oversampler(self.cubesat.imu.mag1),self.oversampler(self.cubesat.pib.imu.mag0),self.oversampler(self.cubesat.pib.imu.mag1)],
+            'accel' : [self.oversampler(self.cubesat.imu.accel0),self.oversampler(self.cubesat.imu.accel1),self.oversampler(self.cubesat.pib.imu.accel0),self.oversampler(self.cubesat.pib.imu.accel1)],
+            'timestamp'  : (time.time()-self.cubesat.BOOTTIME), #time since boot of measurement
+        }
+
         self.cubesat.data_cache.update({'imu':readings})
 
         # print the readings with some fancy formatting
-        self.debug('IMU readings (x,y,z), dps, mG, g')
+        self.debug('IMU readings (x,y,z), dps, uT, g')
         for imu_type in self.cubesat.data_cache['imu']:
             self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
         pass
@@ -66,7 +83,7 @@ class task(Task):
                 msgpack.pack(readings,f)
                 self.debug("Data File Size: {}".format(stat(self.data_file)[6])) # prints number of bytes the filesize is [it *is 16*(number of dict keys)] currently 215bytes
 
-
+        
             # check if the file is getting bigger than we'd like
             '''
             possibly edit this to save a larger file?
@@ -101,3 +118,15 @@ class task(Task):
                 self.data_file=self.cubesat.new_file('/data/imu')
         """
     
+    def oversampler(ptr, samples= oversample):
+            i=0
+            temp = 0
+            while i < samples:
+                try:
+                    temp += ptr
+                except AttributeError:
+                    temp = None
+                    break
+                i += 1
+            if temp is not None: temp /= samples
+            return temp
