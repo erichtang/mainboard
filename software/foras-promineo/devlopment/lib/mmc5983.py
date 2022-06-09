@@ -89,14 +89,14 @@ class MMC5983:
         self._reset = True
 
     @property
-    def mag(self):
-        out = self.mag_raw
+    def read(self):
+        out = self.read_raw
         for meas in range(len(out)):
             out[meas] = ((out[meas]-131072)/16384/0.01)# adjusts raw values to uT, sensor default sensitivity is 16384 counts/G, unsigned, null offset is 131072, 1uT/0.01G
         return(out)
 
     @property
-    def mag_raw(self):
+    def read_raw(self):
         self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
         x = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
         y = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)

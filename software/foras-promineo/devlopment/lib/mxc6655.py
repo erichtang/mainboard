@@ -68,9 +68,9 @@ class MXC6655:
         self._sw_rst = True
 
     @property
-    def accel(self): #device self refreshes @ 100Hz
+    def read(self): #device self refreshes @ 100Hz
         #adjust values to accel in g
-        out = self.accel_raw
+        out = self.read_raw
         for meas in range(len(out)): #12b 2's complememt form, -2048 to 2048, 
             if (out[meas]>>11 == 1): # if it is 2's convert it to neg
                 #flip all 12 bits and add 1
@@ -81,7 +81,7 @@ class MXC6655:
     
     # read function returns touple of floats if it got data, None type otherwise., maybe make this FFFFFF or exact 0? idk since it is gonna be a float
     @property
-    def accel_raw(self): #device self refreshes @ 100Hz
+    def read_raw(self): #device self refreshes @ 100Hz
         x = (self._xout_u << 4) + (self._xout_l >> 4)
         y = (self._yout_u << 4) + (self._yout_l >> 4)
         z = (self._zout_u << 4) + (self._zout_l >> 4)

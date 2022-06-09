@@ -42,6 +42,18 @@ class Task:
         if log:
             self.cubesat.log(msg, print_flag = False)
 
+    def settings_loader(self, fname):
+        """
+        Get persistent settings from SD card file for this task
+
+            need to figure this oout but this is OK for now ish
+
+        :param fname: file name with settings
+        :param level: > 1 will print as a sub-level
+        :param log: appends logfile if True #added CH
+        """
+        pass
+
     async def main_task(self, *args, **kwargs):
         """
         Contains the code for the user defined task. 
@@ -51,5 +63,6 @@ class Task:
 
         """
         pass
+    
 
     

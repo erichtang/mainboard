@@ -34,15 +34,19 @@ import pca9543
 import iam20380
 import mxc6655
 import mmc5983
+from micropython import const
 
 class IMU():
     #remove i2c paramater as it is self.cubesat.i2c1
-    def __init__(self, satellite, mux_addr=0x70, gyro_addr=0x69,mag_addr=0x30, accel_addr=0x15): #insert optional variables for ignoring devices?
+
+    err_trig = const(1) #this is very low right now so i can see things happen
+
+    def __init__(self, satellite, imu_name, mux_addr=0x70, gyro_addr=0x69,mag_addr=0x30, accel_addr=0x15): #insert optional variables for ignoring devices?
         """
         Init routine
         """
         self.cubesat = satellite
-
+        self.name = imu_name
         #saving variables passed to the class
         self.mux_addr = mux_addr
         self.gyro_addr = gyro_addr
@@ -57,6 +61,18 @@ class IMU():
             'MAG1'  : False,
             'ACCEL0': False,
             'ACCEL1': False,
+        }
+
+        
+
+        self.err_cnt = {
+            'MUX'   : 0,
+            'GYRO0' : 0,
+            'GYRO1' : 0,
+            'MAG0'  : 0,
+            'MAG1'  : 0,
+            'ACCEL0': 0,
+            'ACCEL1': 0,
         }
 
         """
@@ -78,52 +94,55 @@ class IMU():
             self.mux.set_ch0()
             self.mux.clear()
             self.hardware['MUX'] = True
-            print('[INIT][IMU][MUX]')
+            print('[INIT][{}][MUX]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MUX]: ' + str(e))
+            self.cubesat.log('[ERROR][{}][MUX]: {}'.format(self.name, e))
             pass
 
         #ch0 devices init
         self.mux.set_ch0()
         try:
-            self.gyro0 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
+            self._gyro0 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
             self.hardware['GYRO0'] = True
-            print('[INIT][IMU][GYRO0]')
+            print('[INIT][{}][GYRO0]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][GYRO0]: ' + str(e))
+            self.cubesat.log('[ERROR][{}}][GYRO0]: {}'.format(self.name, e))
         try:
-            self.mag0 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
+            self._mag0 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG0'] = True
-            print('[INIT][IMU][MAG0]')
+            print('[INIT][{}][MAG0]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MAG0]: ' + str(e))
+            self.cubesat.log('[ERROR][{}][MAG0]: {}'.format(self.name, e))
         try:
-            self.accel0 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
+            self._accel0 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL0'] = True
-            print('[INIT][IMU][ACCEL0]')
+            print('[INIT][{}][ACCEL0]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][ACCEL0]: ' + str(e))
+            self.cubesat.log('[ERROR][{}][ACCEL0]: {}'.format(self.name, e))
         #ch1 devices init
         self.mux.set_ch1()
         try:
-            self.gyro1 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
+            self._gyro1 = iam20380.IAM20380(self.cubesat.i2c1, gyro_addr)
             self.hardware['GYRO1'] = True
-            print('[INIT][IMU][GYRO1]')
+            print('[INIT][{}][GYRO1]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][GYRO1]: ' + str(e))
+            self.cubesat.log('[ERROR][{}][GYRO1]: {}'.format(self.name, e))
         try:
-            self.mag1 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
+            self._mag1 = mmc5983.MMC5983(self.cubesat.i2c1, mag_addr)
             self.hardware['MAG1'] = True
-            print('[INIT][IMU][MAG1]')
+            print('[INIT][{}][MAG1]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][MAG1]: ' + str(e))
-        try: #accel 1 is DNP, so this may toss an error but is NBD
-            self.accel1 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
+            self.cubesat.log('[ERROR][{}][MAG1]: {}'.format(self.name, e))
+        try:
+            self._accel1 = mxc6655.MXC6655(self.cubesat.i2c1, accel_addr)
             self.hardware['ACCEL1'] = True
-            print('[INIT][IMU][ACCEL1]')
+            print('[INIT][{}][ACCEL1]'.format(self.name))
         except Exception as e:
-            self.cubesat.log('[ERROR][IMU][ACCEL1]: ' + str(e))
-        self.mux.clear()
+            self.cubesat.log('[ERROR][{}][ACCEL1]: {}'.format(self.name, e))
+        try:
+            self.mux.clear()
+        except Exception as e:
+            self.cubesat.log('[ERROR][{}][MUX]: {}'.format(self.name, e))
         #device default power mode is ON
 
     """
@@ -143,48 +162,48 @@ class IMU():
                 #ch0 devices
                 self.mux.set_ch0()
                 if device is None or device=='gyro0':
-                    if self.hardware['GYRO0'] == True:
-                        self.gyro0.ON()
+                    if self.hardware['GYRO0']:
+                        self._gyro0.ON()
                 if device is None or device=='mag0':
-                    if self.hardware['MAG0'] == True:
-                        self.mag0.ON()
+                    if self.hardware['MAG0']:
+                        self._mag0.ON()
                 if device is None or device=='accel0':
-                    if self.hardware['ACCEL0'] == True:
-                        self.accel0.ON()
+                    if self.hardware['ACCEL0']:
+                        self._accel0.ON()
                 #ch1
                 self.mux.set_ch1()
                 if device is None or device=='gyro1':
-                    if self.hardware['GYRO1'] == True:
-                        self.gyro1.ON()
+                    if self.hardware['GYRO1']:
+                        self._gyro1.ON()
                 if device is None or device=='mag1':
-                    if self.hardware['MAG1'] == True:
-                        self.mag1.ON()
+                    if self.hardware['MAG1']:
+                        self._mag1.ON()
                 if device is None or device=='accel1':
-                    if self.hardware['ACCEL1'] == True:
-                        self.accel1.ON()
+                    if self.hardware['ACCEL1']:
+                        self._accel1.ON()
             elif "min" in mode:
                 #ch0 devices
                 self.mux.set_ch0()
                 if device is None or device=='gyro0':
-                    if self.hardware['GYRO0'] == True:
-                        self.gyro0.SLEEP()
+                    if self.hardware['GYRO0']:
+                        self._gyro0.SLEEP()
                 if device is None or device=='mag0':
-                    if self.hardware['MAG0'] == True:
-                        self.mag0.SLEEP()
+                    if self.hardware['MAG0']:
+                        self._mag0.SLEEP()
                 if device is None or device=='accel0':
-                    if self.hardware['ACCEL0'] == True:
-                        self.accel0.SLEEP()
+                    if self.hardware['ACCEL0']:
+                        self._accel0.SLEEP()
                 #ch1
                 self.mux.set_ch1()
                 if device is None or device=='gyro1':
-                    if self.hardware['GYRO1'] == True:
-                        self.gyro1.SLEEP()
+                    if self.hardware['GYRO1']:
+                        self._gyro1.SLEEP()
                 if device is None or device=='mag1':
-                    if self.hardware['MAG1'] == True:
-                        self.mag1.SLEEP()
+                    if self.hardware['MAG1']:
+                        self._mag1.SLEEP()
                 if device is None or device=='accel1':
-                    if self.hardware['ACCEL1'] == True:
-                        self.accel1.SLEEP()
+                    if self.hardware['ACCEL1']:
+                        self._accel1.SLEEP()
             else:
                 print('Invalid Device? ->' + str(device))
             self.mux.clear()
@@ -192,63 +211,88 @@ class IMU():
             
     """
     returns specified device's reading
+
+    i have a basic error protection going on, imu_task should handle trying to reset devices at x interval if it has errored out (self.err_cnt = b'0xff')
+
+
+    all of this can probably be written better in less lines
+
     """
+
+    def _read_device(self, key, ch, device_obj):
+        try_again_flag = True
+        while try_again_flag:
+            try:
+                if ch == 0:
+                    self.mux.set_ch0()
+                elif ch ==1:
+                    self.mux.set_ch1()
+                ret = device_obj.read
+                try:
+                    self.mux.clear()
+                except:
+                    #increment mux error cntr?
+                    pass
+                if ret is None:
+                    raise Exception('read value is None')
+                return ret
+            except Exception as e:
+                #self.cubesat.i2c_rst() #most of the time and i2c reset will fix this
+                if not try_again_flag:
+                    print('[WARNING][{}][{}]: {}'.format(self.name, str(key), e))
+                    self.err_cnt[key] += 1
+                    if self.err_cnt[key] >= self.err_trig:
+                        self.cubesat.log('[ERROR][{}}][{}}][ERROR COUNT EXCEEDED][TURNING DEVICE OFF]'.format(self.name, str(key)))
+                        try:
+                            self.cubesat.i2c_rst()
+                            device_obj.SLEEP()
+                        except:
+                            self.cubesat.log('[ERROR][{}][{}][DEVICE POWER OFF FAILED]'.format(self.name, str(key)))
+                        self.hardware[key] = False
+                        self.err_cnt[key] = -1 # if the error counter is -1 the deivce has errored out
+                else:
+                    try_again_flag = False
+
+
     @property
     def gyro0(self):
         if self.hardware['GYRO0']:
-            self.mux.set_ch0()
-            ret =  self.gyro0.gyro
-            self.mux.clear()
-            return ret
-    
+            return self._read_device('GYRO0',0, self._gyro0)
+
     @property
     def gyro1(self):
         if self.hardware['GYRO1']:
-            self.mux.set_ch1()
-            ret = self.gyro1.gyro
-            self.mux.clear()
-            return ret
-                  
+            return self._read_device('GYRO1',1, self._gyro1)
+
     @property
     def mag0(self):
         if self.hardware['MAG0']:
-            self.mux.set_ch0()
-            ret = self.mag0.mag
-            self.mux.clear()
-            return ret
+            return self._read_device('MAG0',0, self._mag0)
 
     @property
     def mag1(self):
         if self.hardware['MAG1']:
-            self.mux.set_ch1()
-            ret = self.mag1.mag
-            self.mux.clear()
-            return ret
-    
+            return self._read_device('MAG1',1, self._mag1)
+
     @property
     def accel0(self):
         if self.hardware['ACCEL0']:
-            self.mux.set_ch0()
-            ret = self.accel0.accel
-            self.mux.clear()
-            return ret
+            return self._read_device('ACCEL0',0, self._accel0)
 
     @property
     def accel1(self):
         if self.hardware['ACCEL1']:
-            self.mux.set_ch1()
-            ret = self.accel1.accel
-            self.mux.clear()
-            return ret
+            return self._read_device('ACCEL1',1, self._accel1)
 
     """
     returns specified device's raw reading
+    error checking not implemented, this is really only for debug purposes
     """
     @property
     def gyro0_raw(self):
         if self.hardware['GYRO0']:
             self.mux.set_ch0()
-            ret = self.gyro0.gyro_raw
+            ret = self._gyro0.read_raw
             self.mux.clear()
             return ret
     
@@ -256,7 +300,7 @@ class IMU():
     def gyro1_raw(self):
         if self.hardware['GYRO1']:
             self.mux.set_ch1()
-            ret = self.gyro1.gyro_raw
+            ret = self._gyro1.read_raw
             self.mux.clear()
             return ret
 
@@ -264,7 +308,7 @@ class IMU():
     def mag0_raw(self):
         if self.hardware['MAG0']:
             self.mux.set_ch0()
-            ret = self.mag0.mag_raw
+            ret = self._mag0.read_raw
             self.mux.clear()
             return ret
 
@@ -272,7 +316,7 @@ class IMU():
     def mag1_raw(self):
         if self.hardware['MAG1']:
             self.mux.set_ch1()
-            ret = self.mag1.mag_raw
+            ret = self._mag1.read_raw
             self.mux.clear()
             return ret
     
@@ -280,7 +324,7 @@ class IMU():
     def accel0_raw(self):
         if self.hardware['ACCEL0']:
             self.mux.set_ch0()
-            ret = self.accel0.accel_raw
+            ret = self._accel0.read_raw
             self.mux.clear()
             return ret
     
@@ -288,7 +332,7 @@ class IMU():
     def accel1_raw(self):
         if self.hardware['ACCEL1']:
             self.mux.set_ch1()
-            ret = self.accel1.accel_raw
+            ret = self._accel1.read_raw
             self.mux.clear()
             return ret
 

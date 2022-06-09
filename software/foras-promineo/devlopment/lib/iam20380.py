@@ -114,17 +114,21 @@ class IAM20380:
 
     #returns python float (doubler precision flt)
     @property
-    def gyro(self):
-        x = (self._gyro_xout_h << 8) + self._gyro_xout_l
-        y = (self._gyro_yout_h << 8) + self._gyro_yout_l
-        z = (self._gyro_zout_h << 8) + self._gyro_zout_l
-        out = [x,y,z]
+    def read(self):
+        out = self.read_raw
         for meas in range(len(out)):
             if (out[meas]>>15==1):
                 out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
             out[meas] = float(out[meas]/131) # 131LSB/dps , hardcoded in sensitivty, sorry future self
         return(out)
 
+    @property
+    def read_raw(self):
+        x = (self._gyro_xout_h << 8) + self._gyro_xout_l
+        y = (self._gyro_yout_h << 8) + self._gyro_yout_l
+        z = (self._gyro_zout_h << 8) + self._gyro_zout_l
+        return([x,y,z])
+        
     @property
     def temp(self): # @25degc it reads 0
         temp = (self._temp_h << 8) + (self._temp_l) # merge registers

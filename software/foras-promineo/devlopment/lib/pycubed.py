@@ -28,7 +28,7 @@ import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
 import foras_promineo_pib
 import foras_promineo_payload
-#from mt_driver import mt_driver, mt_driver_simulated # magneto tourquer driver $$ this is completely different now
+import simulation
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
 # Common CircuitPython Libs
@@ -69,6 +69,7 @@ class Satellite:
         """
         Big init routine as the whole board is brought up.
         """
+
         self.BOOTTIME= const(time.time())
         self.data_cache={}
         self.filenumbers={}
@@ -119,8 +120,9 @@ class Satellite:
         #self._chrg_shdn.switch_to_output()
         
         # Define SPI,I2C,UART
-        # for devices on the board, IMU, mt drivers etc,
-        self.i2c1  = busio.I2C(board.SCL,board.SDA)
+        self.i2c_rst() # sometimes during a soft reset i will get a lockup, this resets the i2c line and resets hangups
+        self.i2c1 = busio.I2C(board.SCL,board.SDA,frequency=400000)
+        #self.i2c1  = busio.I2C(board.SCL,board.SDA)
         self.spi  = board.SPI()
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
         self.uart2 = busio.UART(board.TX2,board.RX2) # payload UART
@@ -174,7 +176,7 @@ class Satellite:
             """
             self.log('[INIT][SD]')
         except Exception as e:
-            self.log('[ERROR][INIT][SD Card]: ' + str(e))
+            self.log('[ERROR][INIT][SD Card]: {}'.format(e))
         
         self.log("----BOOT----")
         
@@ -185,7 +187,7 @@ class Satellite:
             self.hardware['Neopixel'] = True
             print('[INIT][Neopixel]')
         except Exception as e:
-            print('[WARNING][Neopixel]: ' + str(e))
+            print('[WARNING][Neopixel]: {}'.format(e))
 
         # Initialize USB charger
         try:
@@ -198,7 +200,7 @@ class Satellite:
             self.hardware['USB'] = True
             self.log('[INIT][USB Charger]')
         except Exception as e:
-            self.log('[ERROR][INIT][USB Charger]: '+ str(e))
+            self.log('[ERROR][INIT][USB Charger]: {}'.format(e))
 
         # Initialize Power Monitor 1 -- current to bus
         try:
@@ -207,7 +209,7 @@ class Satellite:
             self.hardware['BUS_PWR'] = True 
             self.log('[INIT][Bus Power Monitor]')
         except Exception as e:
-            self.log('[ERROR][INIT][Bus Power Monitor]: ' + str(e))
+            self.log('[ERROR][INIT][Bus Power Monitor]: {}'.format(e))
 
         # Initialize Power Monitor 2 -- current to batt
         try:
@@ -216,15 +218,15 @@ class Satellite:
             self.hardware['CHRG_PWR'] = True
             self.log('[INIT][CHRG Power Monitor]')
         except Exception as e:
-            self.log('[ERROR][INIT][CHRG Power Monitor]: ' + str(e))
+            self.log('[ERROR][INIT][CHRG Power Monitor]: {}'.format(e))
 
         # Initialize IMU
         try:
-            self.imu = sli_imu.IMU(self)
+            self.imu = sli_imu.IMU(self, 'IMU')
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
-            self.log('[ERROR][INIT][IMU]: ' + str(e))
+            self.log('[ERROR][INIT][IMU]: {}'.format(e))
 
         # Initialize GPS
         try:
@@ -233,7 +235,7 @@ class Satellite:
             self.hardware['GPS'] = True
             self.log('[INIT][GPS]')
         except Exception as e:
-            self.log('[ERROR][INIT][GPS]: ' + str(e))
+            self.log('[ERROR][INIT][GPS]: {}'.format(e))
 
         # Initialize radio #1 - UHF
         # Edit this for our mission spec. CH
@@ -249,7 +251,7 @@ class Satellite:
             self.hardware['Radio1'] = True
             self.log('[INIT][Radio 1 - LoRa]')
         except Exception as e:
-            self.log('[ERROR][INIT][Radio 1 - LoRa]: ' + str(e))
+            self.log('[ERROR][INIT][Radio 1 - LoRa]: {}'.format(e))
 
         # init pib
         try:
@@ -263,7 +265,7 @@ class Satellite:
             self.hardware['PIB'] = True
             self.log('[INIT][PIB]')
         except Exception as e:
-            self.log('[ERROR][INIT][PIB]: ' + str(e))
+            self.log('[ERROR][INIT][PIB]: {}'.format(e))
 
         #init startracker
         try:
@@ -283,7 +285,14 @@ class Satellite:
             self.hardware['PAYLOAD'] = True
             self.log('[INIT][PAYLOAD]')
         except Exception as e:
-            self.log('[ERROR][INIT][PAYLOAD]: ' + str(e))
+            self.log('[ERROR][INIT][PAYLOAD]: {}'.format(e))
+
+        #init simulation class
+        try:
+            self.sim = simulation.Simulation(self)
+            self.log('[INIT][SIMULATION]')
+        except Exception as e:
+            self.log('[ERROR][INIT][SIMULATION]: {}'.format(e))
 
         # set PyCubed power mode
         self.power_mode = 'normal'
@@ -305,43 +314,7 @@ class Satellite:
         elif dev=='payload':
             self.payload.__init__(self)
         else:
-            self.log('Invalid Device? ->' + str(dev))
-
-    """ 
-    IMU data has moved to sli_imu.py lib. 
-    keeping this in until I figure out merek;s simulatoon stuff.
-    @property
-    def acceleration(self):
-        if not self.simulation:
-            if self.hardware['IMU']:
-                return self.IMU.accel # m/s^2
-        else:
-            return self.query_for_simulation(b"acceleration")
-
-    @property
-    def magnetic(self):
-        if not self.simulation:
-            if self.hardware['IMU']:
-                return self.IMU.mag # uT
-        else:
-            return self.query_for_simulation(b"magnetic")
-
-    @property
-    def gyro(self):
-        if not self.simulation:
-            if self.hardware['IMU']:
-                return self.IMU.gyro # deg/s
-        else:
-            return self.query_for_simulation(b"gyro")
-
-    @property
-    def temperature(self):
-        if not self.simulation:
-            if self.hardware['IMU']:
-                return self.IMU.temperature # Celsius
-        else:
-            return self.query_for_simulation(b"temperature")
-    """
+            self.log('Invalid Device? -> {}'.format(dev))
 
     @property
     def RGB(self):
@@ -353,7 +326,7 @@ class Satellite:
             try:
                 self.neopixel[0] = value
             except Exception as e:
-                print('[WARNING]' + str(e))
+                print('[WARNING]: {}'.format(e))
 
     @property
     def charge_batteries(self):
@@ -381,7 +354,7 @@ class Satellite:
             try:
                 return self.bus_pwr.read()[0] # volts
             except Exception as e:
-                print('[WARNING][BUS PWR Monitor]' + str(e))
+                print('[WARNING][BUS PWR Monitor]: {}'.format(e))
         else:
             print('[WARNING][Bus Power monitor not initialized]')
 
@@ -398,7 +371,7 @@ class Satellite:
                     idraw+=self.bus_pwr.read()[1]
                 return (idraw/50)*1000 # mA
             except Exception as e:
-                print('[WARNING][BUS_PWR Monitor]' + str(e))
+                print('[WARNING][BUS_PWR Monitor]: {}'.format(e))
         else:
             print('[WARNING] Bus Power monitor not initialized')
 
@@ -417,7 +390,7 @@ class Satellite:
                         icharge = self.chrg_pwr.read()[1]
                         return(icharge/50)*1000 # mA
                 except Exception as e:
-                    print('[WARNING][CHRG PWR Monitor]' + str(e))
+                    print('[WARNING][CHRG PWR Monitor]: {}'.format(e))
             else:
                 print('[WARNING] CHRG Power monitor not initialized')
         else:
@@ -442,7 +415,7 @@ class Satellite:
                 self.spi.deinit()
                 time.sleep(3)
             except Exception as e:
-                print('vbus reset error?' + str(e))
+                print('vbus reset error?: {}'.format(e))
                 pass
         self._resetReg.drive_mode=digitalio.DriveMode.PUSH_PULL
         self._resetReg.value=1
@@ -894,5 +867,14 @@ class Satellite:
 
     # ------------------------------------------ End Section
     """
+    """
+    >10 pulses on SCL @400khz to remove a hung-up bus
+    """
+    def i2c_rst(self):
+        #self.i2c1.deinit()
+        scl = pwmio.PWMOut(board.SCL, duty_cycle=2**14, frequency=400000, variable_frequency=True)
+        time.sleep(0.005) # >10 pusles
+        scl.deinit()
+        #self.i2c1 = busio.I2C(board.SCL,board.SDA, frequency=400000)
 
 cubesat = Satellite()
