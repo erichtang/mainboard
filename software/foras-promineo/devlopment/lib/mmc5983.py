@@ -1,9 +1,11 @@
-# mmc5983.py
-#
-# circuitpython driver lib for mmc5983 magnetometer
-# currently is just a set-it-and-forget-it dealio for the FP/mainboard usage
-#
-# C. Hillis 3/22
+""" 
+mmc5983.py
+
+    circuitpython driver lib for mmc5983 magnetometer
+    currently is just a set-it-and-forget-it dealio for the FP/mainboard usage
+
+C. Hillis 3/22
+"""
 
 from micropython import const
 from adafruit_bus_device.i2c_device import I2CDevice
@@ -29,6 +31,7 @@ PRODUCT_ID_1        = const(0x2F)
 
 class MMC5983:
 
+    # Class Variables (NOT ALL REGISTERS AND FUNCTIONS ARE IMPLEMENTED)
     _xout0 = UnaryStruct(XOUT0, "<B")
     _xout1 = UnaryStruct(XOUT1, "<B")
     _yout0 = UnaryStruct(YOUT0, "<B")
@@ -55,10 +58,13 @@ class MMC5983:
     _st_en_n = RWBit(INTERNAL_CONTROL_3, 2)
     _p_id = ROBits(4, PRODUCT_ID_1, 4)
 
+    class _BAD_P_ID(Exception):
+        pass
+
     def __init__(self, i2c_bus, addr):
         self.i2c_device = I2CDevice(i2c_bus, addr, probe=False)
         test = self._p_id
-        if not test == 3 : print("[ERROR][MMC5983][BAD P_ID VALUE]", test)
+        if not test == 3 : raise self._BAD_P_ID("[ERROR][MMC5983][BAD P_ID VALUE]: "+ str(test))
         self.ON()
 
     def ON(self):
@@ -66,17 +72,11 @@ class MMC5983:
         if(self._otp_rd_done==True):
             self._inhibit = 0 #disables inhibits
             self._bw = 0 #100Hz BW,  measurement time 8ms
-            #print("bw", self._bw)
             self._cmfreq = 5 #100Hz continuous measurements -- w/ 8ms measurement time
-            #print("cm_freq", self._cm_freq)
             self._cmm_en = True
-            #print("cmm_en", self._cmm_en)
             self.prd_set = 6 #every 1000 measurements the device will set/reset the coils (~10sec)
-            #print("prd_set", self._prd_set)
             self._en_prd_set = True
-            #print("en_prd", self._en_prd_set)
             self._int_meas_done_en = True
-            #print("en meas done", self._int_meas_done_en)
         
     def SLEEP(self):
         #self.reset()
@@ -88,100 +88,28 @@ class MMC5983:
     def reset(self):
         self._reset = True
 
+    @property
     def read(self):
-        good_data_flag = False
-        #print(self._otp_rd_done)
-        #check = self._otp_rd_done
-        #if(self._otp_rd_done == True):
-        self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
-        #print(self._meas_m_done)
-        if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
-            x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
-            #print(x_raw)
-            y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
-            #print(y_raw)
-            z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
-            #print(z_raw)
-            out = [x_raw, y_raw, z_raw]
-            #print(out)
-            self.meas_t_done = True # writing 1 resets this interrupt
-            good_data_flag = True
-            for meas in range(len(out)):
-                out[meas] = ((out[meas]-131072)/16384/10000)# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
-            return(out)
-        else:
-            return(None)
+        out = self.read_raw
+        for meas in range(len(out)):
+            out[meas] = ((out[meas]-131072)/16384/0.01)# adjusts raw values to uT, sensor default sensitivity is 16384 counts/G, unsigned, null offset is 131072, 1uT/0.01G
+        return(out)
 
+    @property
     def read_raw(self):
-        good_data_flag = False
-        #print(self._otp_rd_done)
-        #check = self._otp_rd_done
-        #if(self._otp_rd_done == True):
         self._tm_m = 1 # should NOT have to set this why doesn't the auto-measurements work?
-        #print(self._meas_m_done)
-        if(self._meas_m_done == True): #may not need this consitional since it is auto updating at 100Hz
-            x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
-            #print(x_raw)
-            y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
-            #print(y_raw)
-            z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
-            #print(z_raw)
-            out = [x_raw, y_raw, z_raw]
-            #print(out)
-            self.meas_t_done = True # writing 1 resets this interrupt
-            good_data_flag = True
-            for meas in range(len(out)):
-                out[meas] = ((out[meas]-131072))# adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1T/10000G, unsigned,  null offset is 131072
-            return(out)
-        else:
-            return(None)
-
+        x = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
+        y = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
+        z = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
+        out = [x, y, z]
+        self.meas_t_done = True # writing 1 resets this interrupt
+        return(out)
+        
+    @property
     def temp(self): #datasheet says 0.8degC per cnt, -75degC offset
         self._tm_t = True
         temp = (self._tout * 0.8) - 75
         return(temp)
-
-    # @property
-    # def x_raw(self):
-    #     x_raw = (self._xout0 << 10) + (self._xout1 << 2) + (self._xyzout >> 6)
-    #     return(x_raw)
-    
-    # @property
-    # def y_raw(self):
-    #     y_raw = (self._yout0 << 10) + (self._yout1 << 2) + ((self._xyzout & 0x30) >> 4)
-    #     return(y_raw)
-    
-    # @property
-    # def z_raw(self):
-    #     z_raw = (self._zout0 << 10) + (self._zout1 << 2) + ((self._xyzout & 0xC) >> 2)
-    #     return(z_raw)
-    
-    # @property
-    # def x(self):
-    #     x = self._adj(self.x_raw)
-    #     return(x)
-    
-    # @property
-    # def y(self):
-    #     y = self._adj(self.y_raw)
-    #     return(y)
-    
-    # @property
-    # def z(self):
-    #     z = self._adj(self.z_raw)
-    #     return(z)
-
-    # def _adj(value): # adjusts raw values to mG, sensor default sensitivity is 16384 counts/G, 1G/1000mG, unsigned,  null offset is 131072
-    #     adj = ((value-131072)/16.384)
-
-    # @property
-    # def t_raw(self):
-    #     t_raw = self._tout
-    #     return t_raw
-    
-    # @property
-    # def t(self): #datasheet says 0.8degC per cnt, -75degC offset
-    #     t = (self.t_raw * 0.8) - 75
 
     # @property
     # def auto_sr(self):

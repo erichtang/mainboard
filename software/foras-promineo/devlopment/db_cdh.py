@@ -18,7 +18,7 @@ def hreset(self):
 
 def query(self,args):
     write('query: {}'.format(args))
-    write(str(eval(args)))
+    write(eval(bytes(args,'utf-8')))
 
 def exec_cmd(self,args):
     arg = args[0]
@@ -75,9 +75,6 @@ def get_imu_offset(self, args):
             #print 
             write("Device {} Offset Calculation for {} readings: ".format(device, x) + co('{}'.format(temp_avg), 'green', 'bold'))
 
-def print_file (path):
-    pass 
-
 def startstoptask(self, args):
     """
     starts or stops specified task.
@@ -105,20 +102,33 @@ def pib_verify(self):
     """
     # verify imu
     write("verifing imu ....")
-    write("Gyro 0 :"+str(self.cubesat.pib.imu.gyro0_r_raw))
-    write("Gyro 1 :"+str(self.cubesat.pib.imu.gyro1_r_raw))
-    write("Mag 0 :"+str(self.cubesat.pib.imu.mag0_r_raw))
-    write("Mag 1 :"+str(self.cubesat.pib.imu.mag1_r_raw))
-    write("Accel 0 :"+str(self.cubesat.pib.imu.accel0_r_raw))
-    write("Accel 1 :"+str(self.cubesat.pib.imu.accel1_r_raw))
+    write("Gyro 0 : {}".format(self.cubesat.pib.imu.gyro0))
+    write("Gyro 1 : {}".format(self.cubesat.pib.imu.gyro1))
+    write("Mag 0 : {}".format(self.cubesat.pib.imu.mag0))
+    write("Mag 1 : {}".format(self.cubesat.pib.imu.mag1))
+    write("Accel 0 : {}".format(self.cubesat.pib.imu.accel0))
+    write("Accel 1 : {}".format(self.cubesat.pib.imu.accel1))
     write("")
 
+
     # verify io exp
-    write("verifying io_exp")
-    self.cubesat.pib.n_dac_lat0 = False
-    time.sleep(1)
+    write("verifying io_exp... turning all outputs HIGH except SLP lines")
     self.cubesat.pib.n_dac_lat0 = True
+    self.cubesat.pib.n_dac_lat0 = True
+    self.cubesat.pib.n_amp_shdn_xy = False
+    self.cubesat.pib.n_amp_shdn_z = False
+    self.cubesat.pib.drv_ph_x = True
+    self.cubesat.pib.drv_en_x = True
+    self.cubesat.pib.n_drv_slp_x = False
+    self.cubesat.pib.drv_ph_y = True
+    self.cubesat.pib.drv_en_y = True
+    self.cubesat.pib.n_drv_slp_y = False
+    self.cubesat.pib.drv_ph_z = True
+    self.cubesat.pib.drv_en_z = True
+    self.cubesat.pib.n_drv_slp_z = False
+    self.cubesat.pib.n_dac_rst = True
     write("")
+    waitforinput()
 
     # verify dac
     write("verifying dac")
@@ -126,18 +136,16 @@ def pib_verify(self):
     self.cubesat.pib.dac.dac0 = 2^6
     self.cubesat.pib.dac.dac1 = 2^6
     self.cubesat.pib.dac.dac2 = 2^6
-    write("sleeping 5s")
     write("")
-    time.sleep(5)
+    waitforinput()
 
     # verify amp
     write("verifing amp")
-    write("turning all outputs ON")
+    write("turning all outputs ON, output should be ~2.5V")
     self.cubesat.pib.n_amp_shdn_xy = True
     self.cubesat.pib.n_amp_shdn_z = True
-    write("sleeping 5s")
     write("")
-    time.sleep(5)
+    waitforinput()
 
     # verify h-bridge
     write("verifing h-bridge")
@@ -151,30 +159,27 @@ def pib_verify(self):
     self.cubesat.pib.n_drv_slp_x = True
     self.cubesat.pib.n_drv_slp_y = True
     self.cubesat.pib.n_drv_slp_z = True
-    write("sleeping 5s")
     write("")
-    time.sleep(5)
+    waitforinput()
 
     # verify i sen
-    write("verifing h-bridge")
-    write("sense resistor is not installed, so readings should be around 1.25V")
-    self.cubesat.pib.ch0_en = True
-    refresh = self.cubesat.pib.adc.read
-    write("CH0: "+str(self.cubesat.pib.adc.read))
-    self.cubesat.pib.ch0_en = False
-    refresh = self.cubesat.pib.adc.read
-    self.cubesat.pib.ch1_en = True
-    refresh = self.cubesat.pib.adc.read
-    write("CH1: "+str(self.cubesat.pib.adc.read))
-    self.cubesat.pib.ch1_en = False
-    refresh = self.cubesat.pib.adc.read
-    self.cubesat.pib.ch2_en = True
-    refresh = self.cubesat.pib.adc.read
-    write("CH2: "+str(self.cubesat.pib.adc.read))
-    self.cubesat.pib.ch2_en = False
-    write("sleeping 5s")
+    write("verifing sense line")
+    write("sense resistor is not installed, so readings should be railed")
+    self.cubesat.pib.adc.ch = 0
+    write("CH0: {}".format(self.cubesat.pib.adc.read))
+    time.sleep(0.01)
+    write("CH0: {}".format(self.cubesat.pib.adc.read))
+    self.cubesat.pib.adc.ch = 1
+    write("CH1: {}".format(self.cubesat.pib.adc.read))
+    time.sleep(0.01)
+    write("CH1: {}".format(self.cubesat.pib.adc.read))
+    self.cubesat.pib.adc.ch = 2
+    write("CH2: {}".format(self.cubesat.pib.adc.read))
+    time.sleep(0.01)
+    write("CH2: {}".format(self.cubesat.pib.adc.read))
+    self.cubesat.pib.adc.ch = 0
     write("")
-    time.sleep(5)
+    waitforinput()
        
     # verify rockblock
     write("rockblock verification not written")
@@ -196,12 +201,40 @@ def pib_verify(self):
     self.cubesat.pib.n_drv_slp_y = False
     self.cubesat.pib.n_drv_slp_z = False
     write(" PIB checkout END")
-    pass
+    write("")
+
+def simulate(self, *args):
+    """
+    simulate command. 
+    passed args are keys in the self.cubesat.sim.simulate dict
+    they TOGGLE simulation
+    """
+    for arg in args:
+        if arg in self.cubesat.sim.simulate:
+            self.cubesat.sim.simulate[arg] = not self.cubesat.sim.simulate[arg]
+            write("Simulation for value: {} set  to {}" .format(arg, str(self.cubesat.sim.simulate[arg])))
 
 ########### helper functions for using usb_cdc.data ###########
 
-#writes a string to usb_cdc.data
-# appends \r\n 
 def write(msg):
+    """
+    writes a string to usb_cdc.data
+    appends \r\n
+    """
     msg = msg + '\r\n'
     usb_cdc.data.write(bytes(msg, 'utf-8'))
+
+
+def waitforinput():
+    """
+    waits for ANY input then throws the data away
+    useful for pib verification
+    """
+    write("Press enter to continue")
+    waitflag = True
+    while waitflag:
+        if usb_cdc.data.in_waiting:
+            rx = usb_cdc.data.readline()
+            if rx:
+                waitflag = False
+        time.sleep(1)

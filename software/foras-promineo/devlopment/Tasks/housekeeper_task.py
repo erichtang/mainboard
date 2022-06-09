@@ -14,7 +14,7 @@ class task(Task):
     priority = 1
     frequency = 1/10
     name = 'housekeeper'
-    color = 'red'
+    color = 'orange'
 
     async def main_task(self):
 

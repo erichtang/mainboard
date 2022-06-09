@@ -10,7 +10,7 @@ only pertains to the payload, see foras_promineo_pib.py for things on the PIB.
 
 """
 
-class payload():
+class PAYLOAD():
 
     def __init__(self, satellite):
         """

@@ -6,7 +6,10 @@ class task(Task):
     TODO: need to add functionality where this class is supended until the command from the ground is recieved
     
     """
+    """
 
+    figure out what marek wrote here
+    
     priority = 4
     frequency = 5
     name = 'cam'
@@ -31,3 +34,4 @@ class task(Task):
                 
                 else:
                     self.cubesat.game_is_running = False # if there was no image recieved then the camera is no loger running the user's code
+    """
