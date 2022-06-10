@@ -7,9 +7,8 @@ original code by Max Holliday
 configs are stpred in msgpak .bak files, 
 TODO implement a command that allows changinging config settings on the fly in db_cdh and cdh
 
-modified by C. Hillis
-
-Ideally we would use the /lib/cfg.bak, since it has a lower likelihood of failure...
+* Author: Caden Hillis
+Based upon def's in pycubed.py by Max Holliday
 """
 
 import msgpack

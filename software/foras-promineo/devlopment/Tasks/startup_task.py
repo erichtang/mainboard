@@ -1,13 +1,17 @@
 """
-state handler for foras promineo.
-sets task settings according to state device state. 
+startup task for foras promineo.
+at startup, suspsends all non-critical tasks and preforms an initial startup procedure.
+at the end it will change eveything back to idle mode
+can go into lowbatt mode if nessesary
 
-in progress
+TODO in progress
+currently just bypasses itself...
+
+* Author: Caden Hillis
 """
 from Tasks.template_task import Task
 import time
 import usb_cdc
-import state_settings
 
 class task(Task):
     priority = 1
@@ -26,11 +30,11 @@ class task(Task):
             'deploy' : False,
             'detumble' : False,
             'calibrate' : False,
+            'done'      : False
             }
 
     async def main_task(self):
-        
-        if not self.cubesat.f_deployed: #f_deployed should only be set AFTER FLIGHT startup has been completed. there is NO changing it back except manually.
+        if not self.cubesat.f_deployed: #f_deployed is set AFTER FLIGHT startup has been completed. there is NO changing it back except manually.
             #preform deployment operaton
             self.startup() # sets settings and other things for startup mode
         else:
@@ -49,5 +53,4 @@ class task(Task):
         elif not self.startup_steps['deploy']:
             #do next step of cubesat initial startup
             pass
-
         #todo implement and define all startup steps

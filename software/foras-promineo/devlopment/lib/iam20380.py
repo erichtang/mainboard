@@ -5,7 +5,7 @@ iam20380.py
 
     currently is just a set-it-and-forget-it dealio for FP/mainboard usage
 
-C. Hillis 3/22
+* Author: Caden Hillis
 """
 
 from micropython import const

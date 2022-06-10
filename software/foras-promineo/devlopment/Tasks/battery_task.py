@@ -3,10 +3,10 @@ battery monitoring task that turns the sat to low power mode if battery low enou
 
 working through this right now.
 
-add functionality to 
+move this functionality to housekeeper_task...
 
-
-ch 4/6
+* Author: Max Holliday
+* Edited by: Caden Hillis
 """
 
 from Tasks.template_task import Task

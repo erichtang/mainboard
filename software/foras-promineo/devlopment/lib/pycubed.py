@@ -5,11 +5,7 @@ CircuitPython Version: 7.0.0 alpha
 Library Repo: 
 
 * Author(s): Max Holliday,
-Fork'd by Marek Brodke, C. Hillis
-
-To-Do
-    1. Update me!
-
+* Edited for Foras Promineo by : C. Hillis , M. Brodke
 """
 
 # Common CircuitPython Libs
@@ -47,7 +43,7 @@ _GSRSP    = const(10)
 _ICHRG    = const(11)
 _FLAG     = const(16)
 
-SEND_BUFF=bytearray(252) # marek removed this?
+SEND_BUFF=bytearray(252)
 
 class Satellite:           
     # General NVM counters -- LOOK INTO THESE
@@ -126,7 +122,7 @@ class Satellite:
         self.i2c1 = busio.I2C(board.SCL,board.SDA,frequency=400000)
         self.spi  = board.SPI()
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
-        self.uart2 = busio.UART(board.TX2,board.RX2) # payload UART
+        self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000 ,recieve_buffer_size=240) # payload UART
         self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
         self.uart4 = busio.UART(board.TX4,board.RX4) # startracker UART
 
@@ -283,9 +279,7 @@ class Satellite:
         except Exception as e:
             self.log('[ERROR][INIT][SIMULATION]: {}'.format(e))
 
-        try:
-
-        # set PyCubed power mode
+        # set PyCubed power mode # TODO CHANGE THIS FOR FP
         self.power_mode = 'normal'
 
     def reinit(self,dev):
