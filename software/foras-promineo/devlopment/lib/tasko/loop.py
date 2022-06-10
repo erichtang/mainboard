@@ -66,6 +66,10 @@ class ScheduledTask:
         ### Update the task rate to a new frequency ###
         self._nanoseconds_per_invocation = (1 / hz) * 1000000000
 
+    def change_priority(self, p):
+        ### Update task priority
+        self._priority = p
+
     def stop(self):
         ### Stop the task (does not interrupt a currently running task) ###
         self._stop = True

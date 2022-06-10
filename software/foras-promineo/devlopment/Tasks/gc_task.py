@@ -6,9 +6,9 @@ from Tasks.template_task import Task
 import gc
 
 class task(Task):
-    priority = 1
+    priority = 2
     frequency = 1
-    name='gc_task'
+    name='gc'
     color = 'pink'
 
     async def main_task(self):

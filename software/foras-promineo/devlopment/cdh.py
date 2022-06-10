@@ -52,6 +52,8 @@ def exec_cmd(self,args):
     self.debug('exec: {}'.format(args))
     exec(args)
 
+def payload_start(self, args):
+    pass
 
 
 

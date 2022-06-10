@@ -1,4 +1,5 @@
 from debugcolor import co
+import config
 
 class Task:
 
@@ -42,18 +43,6 @@ class Task:
         if log:
             self.cubesat.log(msg, print_flag = False)
 
-    def settings_loader(self, fname):
-        """
-        Get persistent settings from SD card file for this task
-
-            need to figure this oout but this is OK for now ish
-
-        :param fname: file name with settings
-        :param level: > 1 will print as a sub-level
-        :param log: appends logfile if True #added CH
-        """
-        pass
-
     async def main_task(self, *args, **kwargs):
         """
         Contains the code for the user defined task. 
@@ -64,5 +53,28 @@ class Task:
         """
         pass
     
+    def load_cfg(self, cfg, name, sd=False):
+        #loading of different named configs for different operating modes is possible by passing differnet names
+        #load prev prio and freq if they exist
+        try:
+            prev_prio = cfg['priority']
+            prev_freq = cfg['frequency']
+        except:
+            prev_prio = -1
+            prev_freq = -1
+        #update config
+        config.load_config(cfg, name, self.cubesat.log, sd)
+        #if new prio and freq we update the self.cubesat.scheduled tasks attribute
+        try:
+            if cfg['priority'] != prev_prio:
+                self.cubesat.scheduled_tasks[self.name].change_priority(cfg['priority'])
+            if cfg['frequency'] != prev_freq:
+                self.cubesat.scheduled_tasks[self.name].change_rate(cfg['frequency'])
+        except:
+            self.cubesat.log("[ERROR][PRIORITY / FREQ UPDATE][{}][FAIL]".format(name))
+
+    def save_cfg(self, cfg, name, sd=False):
+        #literally the same for save cfg i think.
+        config.save_config(cfg, name, self.cubesat.log, sd)
 
     

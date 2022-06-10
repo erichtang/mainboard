@@ -1,5 +1,8 @@
 # Transmit "Hello World" beacon
+"""
+LoRa interface for payload operation.
 
+"""
 from Tasks.template_task import Task
 import cdh
 
@@ -8,12 +11,12 @@ ANTENNA_ATTACHED = False
 class task(Task):
     priority = 2
     frequency = 1/30 # once every 30s
-    name='beacon'
+    name='lora_beacon'
     color = 'teal'
 
     schedule_later = True
 
-    # our 4 byte code to authorize commands
+    # our 4 byte codee to authorize commands
     # pass-code for DEMO PURPOSES ONLY
     super_secret_code = b'p\xba\xb8C'
 
@@ -26,7 +29,7 @@ class task(Task):
     }
 
     def __init__(self,satellite):
-        super().__init__(satellite)
+        self.cubesat = satellite
         # set our radiohead node ID so we can get ACKs
         self.cubesat.radio1.node = 0xFA # our ID
         self.cubesat.radio1.destination = 0xAB # target's ID

@@ -12,7 +12,7 @@ import time
 class task(Task):
     priority = 2
     frequency = 1
-    name = 'attitude_control'
+    name = 'adcs'
 
     async def main_task(self):
         pass

@@ -3,20 +3,13 @@ imu_sampler.py
 
 edits to the beepsat-advanced code 
 
-not done
-may need aditional work as dev goes on.
-
-have it try to fix an error'd out imu device every hour
+TODO add a mode setting where the task can be configured to use any 2 imu devices. have this task turn the unused IMU devices OFF.
 
 ch 4/5/22
 """
 
 from Tasks.template_task import Task
-import msgpack
-from os import stat
 import time
-
-SEND_DATA = False # make sure you have an antenna attached!
 
 class task(Task):
 
@@ -27,11 +20,9 @@ class task(Task):
 
     # we want to initialize the data file only once upon boot
     # so perform our task init and use that as a chance to init the data files
-    def __init__(self, satellite, samples=10):
+    def __init__(self, satellite):
         #self.data_file=self.cubesat.new_file('/data/imu',binary=True) # why does this take so long?
         self.cubesat=satellite
-        self.samples=samples
-
 
 
     async def main_task(self):
@@ -71,49 +62,6 @@ class task(Task):
         for imu_type in self.cubesat.data_cache['imu']:
             self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
         pass
-
-        """
-        # save data to the sd card, but only if we have a proper data file
-        if self.data_file is not None:
-            # save our readings using msgpack
-            with open(self.data_file,'ab') as f:
-                msgpack.pack(readings,f)
-                self.debug("Data File Size: {}".format(stat(self.data_file)[6])) # prints number of bytes the filesize is [it *is 16*(number of dict keys)] currently 215bytes
-
-        
-            # check if the file is getting bigger than we'd like
-            '''
-            possibly edit this to save a larger file?
-            this will not send data as long as dend_data is false 
-                but the transmit of this data needs to be moved to a different task and execute under different conditions
-            '''
-            if stat(self.data_file)[6] >= 256: # bytes
-                #
-                if SEND_DATA:
-                    print('\nSend IMU data file: {}'.format(self.data_file))
-                    with open(self.data_file,'rb') as f:
-                        chunk = f.read(64) # each IMU readings is 64 bytes when encoded
-                        while chunk:
-                            # we could send bigger chunks, radio packet can take 252 bytes
-                            self.cubesat.radio1.send(chunk)
-                            print(chunk)
-                            chunk = f.read(64)
-                    print('finished\n')
-                '''
-                data is already printed with line 57
-                edited out for now
-                else:
-                    # print the unpacked data from the file
-                    print('\nPrinting IMU data file: {}'.format(self.data_file))
-                    with open(self.data_file,'rb') as f:
-                        while True:
-                            try: print('\t',msgpack.unpack(f))
-                            except: break
-                    print('finished\n')
-                # increment our data file number
-                '''
-                self.data_file=self.cubesat.new_file('/data/imu')
-        """
     
     def oversampler(self, ptr):
         i=0

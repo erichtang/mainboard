@@ -65,23 +65,26 @@ class Satellite:
     f_gpsfix   = bitFlag(register=_FLAG, bit=4)
     f_shtdwn   = bitFlag(register=_FLAG, bit=5)
 
+    #Foras Promineo flags
+    f_deployed = bitFlag(register=_FLAG, bit=6)
+
     def __init__(self):
         """
         Big init routine as the whole board is brought up.
         """
-
+        # default config dict. will get updated if config.bak file exists
+        self.cfg={
+            'id':0xFA,  # default sat id
+            'gs':0xAB,  # ground station id
+            'st':5,     # sleep time exponent 1e5 sec
+            'lb':6.0,   # low battery voltage (V)
+        }
         self.BOOTTIME= const(time.time())
         self.data_cache={}
         self.filenumbers={}
         self.micro = microcontroller
-        self.vlowbatt=6.0 #adjust this value--------------------------------------------------------------------------------------------------------------------------------------
         self.send_buff = memoryview(SEND_BUFF)
-        self.debug=True # set to false for flight, unless we want this printing to nothing
-
-        """
-        system hardware table
-        each subsystem has a bool attributed to it
-        """
+        self.debug=True       
         self.hardware = {
                         'IMU':     False,
                         'Radio1':  False,
@@ -94,8 +97,6 @@ class Satellite:
                         'CHRG_PWR':False,
                         'PIB':     False,
                         'PAYLOAD': False,
-                        #'MTDRIVERS': False,# marek added
-                        #'CAMERA': False #marek added, rename to payload?
                         } 
 
         # Define burn wires:
@@ -111,7 +112,7 @@ class Satellite:
         #define solar voltage
         #self._vsolar = AnalogIn(board...)
 
-        # LOOK into this CH 
+        # TODO LOOK into this CH 
         # Define MPPT charge current measurement --- add current sense line to mainboard to read this effectively------------------------------------------- next mainboard REV
         self._ichrg = 0 # TEMP UNTILL NEXT MAINBOARD IS RECIEVED
         self._chrg = digitalio.DigitalInOut(board.CHRG)
@@ -120,9 +121,9 @@ class Satellite:
         #self._chrg_shdn.switch_to_output()
         
         # Define SPI,I2C,UART
+        # TODO i2c_rst function needs modified to recover from an i2c lockup wihtout a soft reset. Will entail re-initing all i2c devices....
         self.i2c_rst() # sometimes during a soft reset i will get a lockup, this resets the i2c line and resets hangups
         self.i2c1 = busio.I2C(board.SCL,board.SDA,frequency=400000)
-        #self.i2c1  = busio.I2C(board.SCL,board.SDA)
         self.spi  = board.SPI()
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
         self.uart2 = busio.UART(board.TX2,board.RX2) # payload UART
@@ -157,28 +158,11 @@ class Satellite:
             sys.path.append("/sd")
             self.hardware['SDcard'] = True
             self.logfile="/sd/log.txt"
-            """
-            # ------------------------------------------ Start Section v
-
-            # setting the directory where all generated data is stored
-            self.storage_directory = "/sd/"
-
-            # setting the system log file
-            self.logfile = self.storage_directory + "log.txt"
-
-            #setting the user's file name /sd/user_file_name
-            #self.user_file_name = self.storage_directory + self.user_file_name
-
-            # creating a big_buffer that the satellite can use for large file transfers
-            #self.buffer = smart_buffer(self.storage_directory + "buf")
-
-            # ------------------------------------------ End Section ^
-            """
             self.log('[INIT][SD]')
         except Exception as e:
             self.log('[ERROR][INIT][SD Card]: {}'.format(e))
         
-        self.log("----BOOT----")
+        print("----BOOT----")
         
         # Initialize Neopixel
         try:
@@ -238,7 +222,7 @@ class Satellite:
             self.log('[ERROR][INIT][GPS]: {}'.format(e))
 
         # Initialize radio #1 - UHF
-        # Edit this for our mission spec. CH
+        # TODO Edit this for our mission spec. CH
         try:
             self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
                 433.0,code_rate=8,baudrate=1320000)
@@ -248,12 +232,15 @@ class Satellite:
             self.radio1.enable_crc=True
             self.radio1.ack_delay=0.2
             self.radio1.sleep()
+            self.radio1.node = self.cfg['id'] # our ID
+            self.radio1.destination = self.cfg['gs'] # target's ID
             self.hardware['Radio1'] = True
             self.log('[INIT][Radio 1 - LoRa]')
         except Exception as e:
             self.log('[ERROR][INIT][Radio 1 - LoRa]: {}'.format(e))
 
         # init pib
+        #TODO WIP
         try:
             self.rockblock_pw_sw = digitalio.DigitalInOut(board.PC07)
             self.rockblock_pw_sw.switch_to_output(value = False)
@@ -268,6 +255,7 @@ class Satellite:
             self.log('[ERROR][INIT][PIB]: {}'.format(e))
 
         #init startracker
+        #TODO WIP
         try:
             pass
         except Exception as e:
@@ -288,11 +276,14 @@ class Satellite:
             self.log('[ERROR][INIT][PAYLOAD]: {}'.format(e))
 
         #init simulation class
+        #TODO WIP
         try:
             self.sim = simulation.Simulation(self)
             self.log('[INIT][SIMULATION]')
         except Exception as e:
             self.log('[ERROR][INIT][SIMULATION]: {}'.format(e))
+
+        try:
 
         # set PyCubed power mode
         self.power_mode = 'normal'
@@ -308,7 +299,7 @@ class Satellite:
         elif dev=='usb':
             self.usb.__init__(self.i2c1)
         elif dev=='imu':
-            self.imu.__init__(self)
+            self.imu.__init__(self, 'IMU')
         elif dev=='pib':
             self.pib.__init__(self)
         elif dev=='payload':
@@ -361,7 +352,7 @@ class Satellite:
     @property
     def current_draw(self):
         """
-        current FROM battery node -- current TO batteries needs implented yet in sw/hw.
+        current FROM batteries
         NOT accurate if powered via USB
         """
         if self.hardware['BUS_PWR']:
@@ -379,8 +370,8 @@ class Satellite:
     @property
     def charge_current(self):
         """
-        current TO battery node (adm1176 can not read -negative currents)
-        WIP
+        current TO batteries FROM charger
+        TODO WIP
         """
         if self.solar_charging:
             if self.hardware['CHRG_PWR']:
@@ -453,7 +444,7 @@ class Satellite:
     def powermode(self,mode):
         """
         Configure the hardware for minimum or normal power consumption
-        needs edited. CH
+        TODO needs edited for FP modes. norm and min modes should be removed from our application
         """
         self.log('[POWERMODE][f{}]'.format(mode))
         if 'min' in mode:
@@ -498,6 +489,18 @@ class Satellite:
             # don't forget to reconfigure radios, gps, etc...
             # EDIT THIS TO DO ABOVE CH- 4/6
 
+        elif 'idle' in mode:
+            pass
+
+        elif 'safe' in mode:
+            pass
+
+        elif 'payload' in mode:
+            pass
+
+        elif 'startup' in mode:
+            pass
+        
     def new_file(self,substring,binary=False):
         '''
         substring something like '/data/DATA_'
@@ -535,9 +538,8 @@ class Satellite:
             return ff
 
 
-    """ Figure out what is going on here
-    # ------------------------------------------ Start Section
-# is this not implemented in os.rm and os.rmdir?
+    """
+# is this not implemented in os.rm and os.rmdir? -CH
     # removes a file with the inputted path or name
     def remove_file(self, file_name):
         # if the sd card is inserted
@@ -574,7 +576,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-#what is the purpose of this? it is already implemented default
+#what is the purpose of this? it is already implemented above... CH
     # creates a new file with a path and name equal to the one inputted
     # if the path does not exist it is created
     def new_file(self,substring):
@@ -613,7 +615,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-#what is the purpose of this? the substring on new_file above creates directories
+#what is the purpose of this? the substring on new_file above creates directories -CH
     # creates a new directory with a path and name equal to the one inputted
     # if the path does not exist it is created
     def new_directory(self, substring):
@@ -634,7 +636,7 @@ class Satellite:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
 
-#no current use for this
+#no current use for this/. imlemented in os.rmdir - CH
     # removes a directory with a path and name equal to the one inputted
     # if the path does not exist nothing is done
     def remove_directory(self, substring):
@@ -654,9 +656,7 @@ class Satellite:
         else:
             # sd card is not insert so show it
             self.log("ERROR: SD NOT FOUND")
-
 """
-    # ------------------------------------------ End Section
 
     def burn(self,burn_num,dutycycle=0,freq=1000,duration=1):
         '''
@@ -703,6 +703,7 @@ class Satellite:
 
     # ------------------------------------------ Start Section modified by Marek Brodke on 12/8/2021
     """
+# will be re-implemented in simulaton.py library. -CH
     def query_for_simulation(self, which):
         '''
         Sends a query for information to the computer connected to this one. This function requires tight integration with the software
@@ -715,7 +716,7 @@ class Satellite:
         self.send_to_ground(b"GET_" + which)
         return eval(input())
 
-
+# will be re-implemented in simulaton.py library. -CH
     def send_result_of_simulation(self, device, result):
         '''
         Sends the device name and the value that it would have been set to
@@ -727,7 +728,7 @@ class Satellite:
         '''
         self.send_to_ground("SET_{}{}".format(str(device), str(result)).encode("utf-8", 'w'))
 
-
+#will be implemented in payload task or lib. -CH
     def send_buffer_to_camera(self, clear_after=True):
         '''
         sends the data in the buffer to the camera
@@ -745,7 +746,7 @@ class Satellite:
         # sends the end communication bytes to the camera
         self.cam_port.write(self.end_communication)
 
-
+# ? -CH
     def send_to_ground(self, value):
         '''
         sends the inputted value to the ground with the start and end bytes
@@ -769,7 +770,7 @@ class Satellite:
         # sending an error message to the ground
         else: sys.stdout.write(self.start_communication + b"Invalid type to send" + self.end_communication)
 
-
+# ? -CH
     def send_buffer_to_ground(self, clear_after=True):
         '''
         Sends the data that is present in the buffer to the ground
@@ -785,7 +786,7 @@ class Satellite:
         #self.buffer.write_to_target(target=sys.stdout, clear_after_write=clear_after)
         sys.stdout.write(self.end_communication)
 
-
+# ? -CH
     def get_camera_into_buffer(self, timeout=None, clear_buffer_before=True):
         '''
         reads data that is sent from the camera into the buffer
@@ -837,7 +838,7 @@ class Satellite:
 
         #return return_val[len(self.password) : -1 * len(self.end_communication)] # returns the recieved data with the end communication and password bytes removed
 
-
+# ? -CH 
     def get_ground_into_buffer(self, clear_buffer_before=True):
         '''
         gets data transmitted from the ground, returns this in bytes form
@@ -864,13 +865,16 @@ class Satellite:
                 
                 # adds the data to the buffer
                 self.buffer.append(data)
+    """
 
-    # ------------------------------------------ End Section
-    """
-    """
-    >10 pulses on SCL @400khz to remove a hung-up bus
-    """
     def i2c_rst(self):
+        """
+        I2C reset procedure
+
+        >10 pulses on SCL @400khz to remove a hung-up bus
+
+        TODO implement device-by-device re-init so self.i2c1.deinit() can run and then re-init all i2c devices.
+        """
         #self.i2c1.deinit()
         scl = pwmio.PWMOut(board.SCL, duty_cycle=2**14, frequency=400000, variable_frequency=True)
         time.sleep(0.005) # >10 pusles
