@@ -5,8 +5,8 @@ communication.py
 communications via Irridium and LoRa Radios.
 
  need to implement something that avoids port timeout - MB
-
- WIP, i have not touched this. CH
+ 
+ i have not touched this. CH. It appears most of this has been supersceded.
 """
 from Tasks.template_task import Task
 import supervisor, time, struct, os

@@ -867,12 +867,39 @@ class Satellite:
 
         >10 pulses on SCL @400khz to remove a hung-up bus
 
-        TODO implement device-by-device re-init so self.i2c1.deinit() can run and then re-init all i2c devices.
+        TODO this is wip
         """
-        #self.i2c1.deinit()
+        self.i2c1.deinit()
         scl = pwmio.PWMOut(board.SCL, duty_cycle=2**14, frequency=400000, variable_frequency=True)
         time.sleep(0.005) # >10 pusles
         scl.deinit()
-        #self.i2c1 = busio.I2C(board.SCL,board.SDA, frequency=400000)
+
+        self.i2c1 = busio.I2C(board.SCL,board.SDA, frequency=400000)
+        #re-init all i2c devices....
+        if self.hardware['BUS_PWR']:
+            try:
+                self.reinit('bus_pwr')
+            except:
+                pass
+        if self.hardware['CHRG_PWR']:
+            try:
+                self.reinit('chrg_pwr')
+            except:
+                pass
+        if self.hardware['USB']:
+            try:
+                self.reinit('usb')
+            except:
+                pass
+        if self.hardware['IMU']:
+            try:
+                self.reinit('imu')
+            except:
+                pass
+        if self.hardware['PIB']:
+            try:
+                self.reinit('pib')
+            except:
+                pass
 
 cubesat = Satellite()

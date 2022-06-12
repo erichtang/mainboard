@@ -13,16 +13,25 @@ import time
 
 class task(Task):
 
-    priority = 2
-    frequency = 1 #other tasks will probably adjust this
+    #priority = 2
+    #frequency = 1 #other tasks will probably adjust this
     name = 'imu'
     color = 'green'
+
+    d_cfg = {
+        'priority' : 2,
+        'frequnecy' : 1,
+        'imu_sel' : 2, # 0 for mainboard imu, 1 for pib imu, 2 for both
+    }
 
     # we want to initialize the data file only once upon boot
     # so perform our task init and use that as a chance to init the data files
     def __init__(self, satellite):
         #self.data_file=self.cubesat.new_file('/data/imu',binary=True) # why does this take so long?
         self.cubesat=satellite
+
+        self.cfg = self.d_cfg
+        self.load_cfg(self.cfg, self.name)
 
 
     async def main_task(self):
@@ -31,27 +40,45 @@ class task(Task):
 
         #big readings dict, 8byte float * 12 * 3 
         readings = { 
-            'gyro'  : [None]*4,
-            'mag'   : [None]*4,
-            'accel' : [None]*4,
+            'gyro'  : [],
+            'mag'   : [],
+            'accel' : [],
             'timestamp'  : None, #time since boot of measurement
         }
 
-        if self.cubesat.hardware['IMU']:
+        if self.cfg['imu_sel'] == 0: # mainboard imu
+            if self.cubesat.hardware['IMU']:
                 readings['gyro'][0] = self.oversampler(self.cubesat.imu.gyro0)
                 readings['gyro'][1] = self.oversampler(self.cubesat.imu.gyro1)
                 readings['mag'][0] = self.oversampler(self.cubesat.imu.mag0)
                 readings['mag'][1] = self.oversampler(self.cubesat.imu.mag1)
                 readings['accel'][0] = self.oversampler(self.cubesat.imu.accel0)
                 readings['accel'][1] = self.oversampler(self.cubesat.imu.accel1)
-        if self.cubesat.hardware['PIB']:
-            if self.cubesat.pib.hardware['IMU']:
-                readings['gyro'][2] = self.oversampler(self.cubesat.pib.imu.gyro0)
-                readings['gyro'][3] = self.oversampler(self.cubesat.pib.imu.gyro1)
-                readings['mag'][2] = self.oversampler(self.cubesat.pib.imu.mag0)
-                readings['mag'][3] = self.oversampler(self.cubesat.pib.imu.mag1)
-                readings['accel'][2] = self.oversampler(self.cubesat.pib.imu.accel0)
-                readings['accel'][3] = self.oversampler(self.cubesat.pib.imu.accel1)
+        elif self.cfg['imu_sel'] == 1: # pib imu
+            if self.cubesat.hardware['PIB']:
+                if self.cubesat.pib.hardware['IMU']:
+                    readings['gyro'][0] = self.oversampler(self.cubesat.pib.imu.gyro0)
+                    readings['gyro'][1] = self.oversampler(self.cubesat.pib.imu.gyro1)
+                    readings['mag'][0] = self.oversampler(self.cubesat.pib.imu.mag0)
+                    readings['mag'][1] = self.oversampler(self.cubesat.pib.imu.mag1)
+                    readings['accel'][0] = self.oversampler(self.cubesat.pib.imu.accel0)
+                    readings['accel'][1] = self.oversampler(self.cubesat.pib.imu.accel1)
+        elif self.cfg['imu_sel'] == 2: #both
+            if self.cubesat.hardware['IMU']:
+                readings['gyro'][0] = self.oversampler(self.cubesat.imu.gyro0)
+                readings['gyro'][1] = self.oversampler(self.cubesat.imu.gyro1)
+                readings['mag'][0] = self.oversampler(self.cubesat.imu.mag0)
+                readings['mag'][1] = self.oversampler(self.cubesat.imu.mag1)
+                readings['accel'][0] = self.oversampler(self.cubesat.imu.accel0)
+                readings['accel'][1] = self.oversampler(self.cubesat.imu.accel1)
+            if self.cubesat.hardware['PIB']:
+                if self.cubesat.pib.hardware['IMU']:
+                    readings['gyro'][2] = self.oversampler(self.cubesat.pib.imu.gyro0)
+                    readings['gyro'][3] = self.oversampler(self.cubesat.pib.imu.gyro1)
+                    readings['mag'][2] = self.oversampler(self.cubesat.pib.imu.mag0)
+                    readings['mag'][3] = self.oversampler(self.cubesat.pib.imu.mag1)
+                    readings['accel'][2] = self.oversampler(self.cubesat.pib.imu.accel0)
+                    readings['accel'][3] = self.oversampler(self.cubesat.pib.imu.accel1)
 
         readings['timestamp']= (time.time()-self.cubesat.BOOTTIME)
 

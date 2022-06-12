@@ -85,7 +85,7 @@ class task(Task):
                     self.cubesat.payload.buf =  bytearray(248)
                     self.cubesat.payload.read_buf =  memoryview(self.cubesat.payload.buf)
             else:
-                rx = self.listen()
+                rx = self.listen() # what timeout should we use if it is connected?
                 if rx is not None:
                     self.dc_cnt = 0
                     self.rx_handler(rx)
@@ -121,7 +121,8 @@ class task(Task):
                 return response
 
     def rx_handler(self, rx):
-        #check passcode on
+        # TODO
+        # Have this function check a transmitted flag that says if there are multiple commands or not.
         length = len(pc.top_secret_code)
         if rx[:length] == pc.top_secret_code:
             rx = rx[length-1:] #TODO check indexing

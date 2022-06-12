@@ -1,9 +1,11 @@
 """
-Payload_task.py
+payload_task.py
+
+gathers image chunks from openMV and transmits it.
 
 not of this is verified to work, but is code of how i imagine it would operate.
 
-mostly this gathering camera data when burst mode is active. i dont think any other new scheduled task has to appear that wouldn't already be operating / a mode of another task...
+maybe this can be generalized so other things can transmit larger amounts of data? i.e. a log file IDK
 """
 from Tasks.template_task import Task
 import time

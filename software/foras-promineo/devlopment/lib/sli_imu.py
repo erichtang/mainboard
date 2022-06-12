@@ -63,8 +63,6 @@ class IMU():
             'ACCEL1': False,
         }
 
-        
-
         self.err_cnt = {
             'MUX'   : 0,
             'GYRO0' : 0,
@@ -150,6 +148,8 @@ class IMU():
         mode   -- is either "on" or "sleep" right now.
         *argv  -- magical keyword that turns the device names passed to the power state specified
             ex. imu.powermode("off", "gyro1", "mag1", "accel1")
+
+        this needs touch-up --CH
     """
     def powermode(self, mode, *devices):
         mode=mode.lower()
@@ -237,22 +237,18 @@ class IMU():
                     raise Exception('read value is None')
                 return ret
             except Exception as e:
-                #self.cubesat.i2c_rst() #most of the time and i2c reset will fix this
-                if not try_again_flag:
+                if try_again_flag:
+                    try_again_flag = False
+                else:
                     print('[WARNING][{}][{}]: {}'.format(self.name, str(key), e))
                     self.err_cnt[key] += 1
                     if self.err_cnt[key] >= self.err_trig:
                         self.cubesat.log('[ERROR][{}}][{}}][ERROR COUNT EXCEEDED][TURNING DEVICE OFF]'.format(self.name, str(key)))
                         try:
                             self.cubesat.i2c_rst()
-                            device_obj.SLEEP()
                         except:
-                            self.cubesat.log('[ERROR][{}][{}][DEVICE POWER OFF FAILED]'.format(self.name, str(key)))
-                        self.hardware[key] = False
-                        self.err_cnt[key] = -1 # if the error counter is -1 the deivce has errored out
-                else:
-                    try_again_flag = False
-
+                            self.cubesat.log('[ERROR][{}][{}][I2C BUS RESET FAILED]]'.format(self.name, str(key)))
+                        
 
     @property
     def gyro0(self):
