@@ -4,14 +4,16 @@ housekeeper_task.py
 polling various values to direct satellite operating modes. monitors batteries, temps, and current.
     has elements of battery-task BUT has various thresholds for payload operation.
 
-WIP, only prints things right now
+WIP, only prints things right now...
+
+* Author: Caden Hillis
 """
 
 from Tasks.template_task import Task
 import time
 
 class task(Task):
-    priority = 1
+    priority = 2
     frequency = 1/10
     name = 'housekeeper'
     color = 'orange'

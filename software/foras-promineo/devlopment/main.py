@@ -56,7 +56,11 @@ for file in os.listdir('Tasks'):
         schedule=cubesat.tasko.schedule
 
     # schedule each task object and add it to our dict
-    cubesat.scheduled_tasks[task_obj.name]=schedule(task_obj.frequency,task_obj.main_task,task_obj.priority)
+    if hasattr(task_obj, 'd_cfg'):
+        cubesat.scheduled_tasks[task_obj.name]=schedule(task_obj.d_cfg['frequency'],task_obj.main_task,task_obj.d_cfg['priority'])
+    else:
+        cubesat.scheduled_tasks[task_obj.name]=schedule(task_obj.frequency,task_obj.main_task,task_obj.priority)
+
 print(len(cubesat.scheduled_tasks),'total')
 
 print("Running....")

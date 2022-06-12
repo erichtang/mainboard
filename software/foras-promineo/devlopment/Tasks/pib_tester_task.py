@@ -7,7 +7,7 @@ import gc
 import time
 
 class task(Task):
-    priority = 1
+    priority = 2
     frequency = 1/10
     name='pib tester'
     color = 'red'

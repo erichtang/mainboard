@@ -1,0 +1,1 @@
+refer to https://pycubed.org/Beep-Sat-advanced-2d93fbe63d1a42cc8ce084b6f19535ba for adapting main.py for flight.}

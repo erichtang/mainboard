@@ -5,7 +5,7 @@
 
  only init'ing funcs we need
 
- C. Hillis 4/22
+* Author: Caden Hillis
 """
 
 from micropython import const

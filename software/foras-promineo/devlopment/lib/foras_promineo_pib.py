@@ -6,7 +6,6 @@ Foras Promineo mission-specific payload interface board library
 only pertains to the pib, see foras_promineo_payload.py for things on the payload.
 
 * Authors C. Hillis
-4/6
 ====================================================================
 
 """

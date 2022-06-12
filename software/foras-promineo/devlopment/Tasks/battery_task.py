@@ -3,10 +3,10 @@ battery monitoring task that turns the sat to low power mode if battery low enou
 
 working through this right now.
 
-add functionality to 
+move this functionality to housekeeper_task...
 
-
-ch 4/6
+* Author: Max Holliday
+* Edited by: Caden Hillis
 """
 
 from Tasks.template_task import Task
@@ -15,17 +15,17 @@ import time
 class task(Task):
     priority = 1
     frequency = 1/10
-    name = 'battery_task'
+    name = 'battery'
     color = 'orange'
 
     timeout = 60*60
 
     async def main_task(self):
 
-        self.debug("Voltage of battery = " + str(self.cubesat.battery_voltage)  + " Threshold = " + str(self.cubesat.vlowbatt))
+        self.debug("Voltage of battery = " + str(self.cubesat.battery_voltage)  + " Threshold = " + str(self.cubesat.config['vb']))
 
         # checking > vlowbatt
-        if self.cubesat.battery_voltage < self.cubesat.vlowbatt:
+        if self.cubesat.battery_voltage < self.cubesat.config['vb']:
             # setting a nvm flag that persists through power cycles
             self.cubesat.f_lowbatt=True
             # if we've timed out, don't do anything
@@ -50,7 +50,7 @@ class task(Task):
                     time.sleep(_sleeptime)
                     self.debug('vbatt: {:.1f}V'.format(self.cubesat.battery_voltage))
                     # if the current battery voltage is greater than the allotted minimum
-                    if self.cubesat.battery_voltage > self.cubesat.vlowbatt:
+                    if self.cubesat.battery_voltage > self.cubesat.config['vb']:
                         self.debug('batteries above threshold')
                         self.cubesat.f_lowbatt=False
                         break
