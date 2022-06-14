@@ -69,11 +69,11 @@ class Satellite:
         Big init routine as the whole board is brought up.
         """
         # default config dict. will get updated if config.bak file exists
-        self.cfg={
+        self.config={
             'id':0xFA,  # default sat id
             'gs':0xAB,  # ground station id
             'st':5,     # sleep time exponent 1e5 sec
-            'lb':6.0,   # low battery voltage (V)
+            'vlb':6.0,   # low battery voltage (V)
         }
         self.BOOTTIME= const(time.time())
         self.data_cache={}
@@ -122,7 +122,7 @@ class Satellite:
         self.i2c1 = busio.I2C(board.SCL,board.SDA,frequency=400000)
         self.spi  = board.SPI()
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
-        self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000 ,recieve_buffer_size=240) # payload UART
+        self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000, receiver_buffer_size=256) # payload UART
         self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
         self.uart4 = busio.UART(board.TX4,board.RX4) # startracker UART
 
@@ -860,20 +860,23 @@ class Satellite:
                 # adds the data to the buffer
                 self.buffer.append(data)
     """
-
     def i2c_rst(self):
-        """
-        I2C reset procedure
-
-        >10 pulses on SCL @400khz to remove a hung-up bus
-
-        TODO this is wip
-        """
-        self.i2c1.deinit()
+        #>10 pulses on SCL @400khz to remove a hung-up bus
+        try:
+            self.i2c1.deinit()
+        except:
+            pass
         scl = pwmio.PWMOut(board.SCL, duty_cycle=2**14, frequency=400000, variable_frequency=True)
         time.sleep(0.005) # >10 pusles
         scl.deinit()
 
+    def i2c_reinit(self):
+        """
+        I2C reinit procedure
+
+        TODO this is wip
+        """
+        
         self.i2c1 = busio.I2C(board.SCL,board.SDA, frequency=400000)
         #re-init all i2c devices....
         if self.hardware['BUS_PWR']:

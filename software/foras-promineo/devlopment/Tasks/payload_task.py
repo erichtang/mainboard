@@ -37,6 +37,5 @@ class task(Task):
                         self.cubesat.payload.send_buff_flag = True
                     else:
                         self.debug("Invalid data from payload durng burst")
-                
 
 

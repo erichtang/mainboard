@@ -63,7 +63,7 @@ class Task:
             prev_prio = -1
             prev_freq = -1
         #update config
-        config.load_config(cfg, name, self.cubesat.log, sd)
+        config.load_cfg(cfg, name, self.cubesat.log, sd)
         #if new prio and freq we update the self.cubesat.scheduled tasks attribute
         try:
             if cfg['priority'] != prev_prio:

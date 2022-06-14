@@ -22,10 +22,10 @@ class task(Task):
 
     async def main_task(self):
 
-        self.debug("Voltage of battery = " + str(self.cubesat.battery_voltage)  + " Threshold = " + str(self.cubesat.config['vb']))
+        self.debug("Voltage of battery = " + str(self.cubesat.battery_voltage)  + " Threshold = " + str(self.cubesat.config['vlb']))
 
         # checking > vlowbatt
-        if self.cubesat.battery_voltage < self.cubesat.config['vb']:
+        if self.cubesat.battery_voltage < self.cubesat.config['vlb']:
             # setting a nvm flag that persists through power cycles
             self.cubesat.f_lowbatt=True
             # if we've timed out, don't do anything
@@ -50,7 +50,7 @@ class task(Task):
                     time.sleep(_sleeptime)
                     self.debug('vbatt: {:.1f}V'.format(self.cubesat.battery_voltage))
                     # if the current battery voltage is greater than the allotted minimum
-                    if self.cubesat.battery_voltage > self.cubesat.config['vb']:
+                    if self.cubesat.battery_voltage > self.cubesat.config['vlb']:
                         self.debug('batteries above threshold')
                         self.cubesat.f_lowbatt=False
                         break

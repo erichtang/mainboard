@@ -9,11 +9,11 @@ currently just bypasses itself...
 
 * Author: Caden Hillis
 """
-from Tasks.template_task import Task
-import time
 import usb_cdc
+from Tasks.template_task import Task
 
 class task(Task):
+    
     priority = 1
     frequency = 1
     name = 'startup'
@@ -22,7 +22,6 @@ class task(Task):
     def __init__(self, satellite): 
 
         self.cubesat = satellite 
-
         # some example startup steps that need to happen before startup releases to idle mode
         # code in handoff from startup to low power though
         self.startup_steps = {
@@ -39,18 +38,18 @@ class task(Task):
             self.startup() # sets settings and other things for startup mode
         else:
             # set default idle settings
-            self.cubesat.scheduled_tasks['startup_task'].stop()
+            self.cubesat.scheduled_tasks['startup'].stop()
 
     def startup(self):
         if usb_cdc.terminal.connected:
             self.debug('[STARTUP BYPASSED][REASON: USB TERMINAL]')
             self.cubesat.scheduled_tasks['startup_task'].stop()
             return
-        elif not self.startup_steps['init']:
+        if not self.startup_steps['init']:
             #do things here
             # unscheduled all non-critical tasks and begin initial startup
             pass
         elif not self.startup_steps['deploy']:
             #do next step of cubesat initial startup
             pass
-        #todo implement and define all startup steps
+        #TODO implement and define all startup steps

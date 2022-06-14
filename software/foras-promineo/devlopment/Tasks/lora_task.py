@@ -10,7 +10,6 @@ most of this code is unverified, but this is how i imagine it will execute...
 Based upon beacon_task.py by Max Holliday
 """
 
-from pdb import runctx
 from Tasks.template_task import Task
 import cdh
 import foras_promineo_passcode as pc
@@ -26,9 +25,10 @@ class task(Task):
     #default configuration settings
     d_cfg = {
         'priority' : 2,
-        'frequnecy' : 1/30,
-        'to' : 10,
-        'dc_t' : 1
+        'frequency' : 1/10,
+        'b_to' : 10, # beacon timeout
+        'dc_t' : 1,
+        'c_to' : .1 # connected timeout
     }
 
     # our 4 byte codee to authorize commands
@@ -46,8 +46,8 @@ class task(Task):
     def __init__(self,satellite):
         self.cubesat = satellite
         # set our radiohead node ID so we can get ACKs
-        self.cubesat.radio1.node = 0xFA # our ID
-        self.cubesat.radio1.destination = 0xAB # target's ID
+        #self.cubesat.radio1.node = 0xFA # our ID
+        #self.cubesat.radio1.destination = 0xAB # target's ID
 
         self.cfg = self.d_cfg
         self.load_cfg(self.cfg, self.name)
@@ -60,10 +60,12 @@ class task(Task):
 
         if self.beacon:
             #we we are not connected, send a beacon
-            self.debug("Sending beacon")
-            self.beacon()
-            rx = self.listen()
+            #self.debug("Sending beacon")
+            self.tx_beacon()
+            rx = await self.listen(self.cfg['b_to'])
             if rx is not None:
+                self.debug("Heard Something: ")
+                self.debug("{}".format(rx),2)
                 self.rx_handler(rx)
             else:
                 self.cubesat.radio1.sleep()
@@ -85,7 +87,7 @@ class task(Task):
                     self.cubesat.payload.buf =  bytearray(248)
                     self.cubesat.payload.read_buf =  memoryview(self.cubesat.payload.buf)
             else:
-                rx = self.listen() # what timeout should we use if it is connected?
+                rx = self.listen(self.cfg['c_to']) # what timeout should we use if it is connected?
                 if rx is not None:
                     self.dc_cnt = 0
                     self.rx_handler(rx)
@@ -99,15 +101,16 @@ class task(Task):
         """
         tbr what the header will have. probably some flags ?
         """
-        return bytearray(2)
+        return "\xff"
 
-    def beacon(self):
+    def tx_beacon(self):
         #tries to initiate a downlink connection.
         # sends data and awaits a connect response from the GS.
-        packet = self.assemble_packet(self) #TODO look into header instered on pycubed_rfm96 lib. maybe we can edit / minimize header length on our end.
-        packet.append("Foras Promineo Cubesat Beacon")
-        self.debug("Sending Packet: \n\t{}".format(packet))
-        self.cubesat.radio1.send(packet, keep_listening=True,)
+        packet = self.assemble_header() #TODO look into header instered on pycubed_rfm96 lib. maybe we can edit / minimize header length on our end.
+        packet += "Foras Promineo Cubesat Beacon"
+        self.debug("Sending Packet:")
+        self.debug("{}".format(packet), level=2)
+        self.cubesat.radio1.send(bytearray(packet, 'utf-8'), keep_listening=True)
     
     async def listen(self, timeout):
         self.debug("Listening {}s for response (non-blocking)".format(timeout))
@@ -163,6 +166,6 @@ class task(Task):
     def error_handler(self):
         #records packet IDs of missing packets and requests them? IDK
         #TBR THIS WILL PROBABLY HAVE TO BE MUCH MORE SOPHISTICATED?
-        error_packet = self.assemble_packet(self)
+        error_packet = self.assemble_header()
         error_packet.append(cdh.tx_cmd['ERROR'])
         self.cubesat.radio1.send(error_packet) # THIS IS TEMPORARY
