@@ -20,8 +20,9 @@ class task(Task):
 
     d_cfg = {
         'priority' : 2,
-        'frequnecy' : 1,
+        'frequency' : 1,
         'imu_sel' : 2, # 0 for mainboard imu, 1 for pib imu, 2 for both
+        'samples' : 5
     }
 
     # we want to initialize the data file only once upon boot
@@ -46,39 +47,23 @@ class task(Task):
             'timestamp'  : None, #time since boot of measurement
         }
 
-        if self.cfg['imu_sel'] == 0: # mainboard imu
+        if self.cfg['imu_sel'] == 0 or self.cfg['imu_sel'] == 2: # mainboard imu
             if self.cubesat.hardware['IMU']:
-                readings['gyro'][0] = self.oversampler(self.cubesat.imu.gyro0)
-                readings['gyro'][1] = self.oversampler(self.cubesat.imu.gyro1)
-                readings['mag'][0] = self.oversampler(self.cubesat.imu.mag0)
-                readings['mag'][1] = self.oversampler(self.cubesat.imu.mag1)
-                readings['accel'][0] = self.oversampler(self.cubesat.imu.accel0)
-                readings['accel'][1] = self.oversampler(self.cubesat.imu.accel1)
-        elif self.cfg['imu_sel'] == 1: # pib imu
+                readings['gyro'].append(self.oversampler(self.cubesat.imu.gyro0))
+                readings['gyro'].append(self.oversampler(self.cubesat.imu.gyro1))
+                readings['mag'].append(self.oversampler(self.cubesat.imu.mag0))
+                readings['mag'].append(self.oversampler(self.cubesat.imu.mag1))
+                readings['accel'].append(self.oversampler(self.cubesat.imu.accel0))
+                readings['accel'].append(self.oversampler(self.cubesat.imu.accel1))
+        elif self.cfg['imu_sel'] == 1 or self.cfg['imu_sel'] == 2: # pib imu
             if self.cubesat.hardware['PIB']:
                 if self.cubesat.pib.hardware['IMU']:
-                    readings['gyro'][0] = self.oversampler(self.cubesat.pib.imu.gyro0)
-                    readings['gyro'][1] = self.oversampler(self.cubesat.pib.imu.gyro1)
-                    readings['mag'][0] = self.oversampler(self.cubesat.pib.imu.mag0)
-                    readings['mag'][1] = self.oversampler(self.cubesat.pib.imu.mag1)
-                    readings['accel'][0] = self.oversampler(self.cubesat.pib.imu.accel0)
-                    readings['accel'][1] = self.oversampler(self.cubesat.pib.imu.accel1)
-        elif self.cfg['imu_sel'] == 2: #both
-            if self.cubesat.hardware['IMU']:
-                readings['gyro'][0] = self.oversampler(self.cubesat.imu.gyro0)
-                readings['gyro'][1] = self.oversampler(self.cubesat.imu.gyro1)
-                readings['mag'][0] = self.oversampler(self.cubesat.imu.mag0)
-                readings['mag'][1] = self.oversampler(self.cubesat.imu.mag1)
-                readings['accel'][0] = self.oversampler(self.cubesat.imu.accel0)
-                readings['accel'][1] = self.oversampler(self.cubesat.imu.accel1)
-            if self.cubesat.hardware['PIB']:
-                if self.cubesat.pib.hardware['IMU']:
-                    readings['gyro'][2] = self.oversampler(self.cubesat.pib.imu.gyro0)
-                    readings['gyro'][3] = self.oversampler(self.cubesat.pib.imu.gyro1)
-                    readings['mag'][2] = self.oversampler(self.cubesat.pib.imu.mag0)
-                    readings['mag'][3] = self.oversampler(self.cubesat.pib.imu.mag1)
-                    readings['accel'][2] = self.oversampler(self.cubesat.pib.imu.accel0)
-                    readings['accel'][3] = self.oversampler(self.cubesat.pib.imu.accel1)
+                    readings['gyro'].append(self.oversampler(self.cubesat.pib.imu.gyro0))
+                    readings['gyro'].append(self.oversampler(self.cubesat.pib.imu.gyro1))
+                    readings['mag'].append(self.oversampler(self.cubesat.pib.imu.mag0))
+                    readings['mag'].append(self.oversampler(self.cubesat.pib.imu.mag1))
+                    readings['accel'].append(self.oversampler(self.cubesat.pib.imu.accel0))
+                    readings['accel'].append(self.oversampler(self.cubesat.pib.imu.accel1))
 
         readings['timestamp']= (time.time()-self.cubesat.BOOTTIME)
 
@@ -92,9 +77,9 @@ class task(Task):
     
     def oversampler(self, ptr):
         i=0
-        avg = self.samples
+        avg = self.cfg['samples']
         temp = [0,0,0]
-        while i < self.samples:
+        while i < self.cfg['samples']:
             temp2 = ptr
             try:
                 for axis in range(len(temp)):

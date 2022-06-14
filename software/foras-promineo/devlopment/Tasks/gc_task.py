@@ -15,9 +15,7 @@ class task(Task):
         #before = [gc.mem_alloc(), gc.mem_free()]
         gc.collect()
         after = [gc.mem_alloc(), gc.mem_free()]
-        #self.debug('Before the garbage man came:')
-        #self.debug('{} bytes allocated, {} bytes free'.format(before[0], before[1]), 2)
-        self.debug('After the garbage man came:')
-        self.debug('{} bytes allocated, {} bytes free'.format(after[0], after[1]), 1)
+
+        self.debug('{} bytes allocated, {} bytes free'.format(after[0], after[1]))
         
 

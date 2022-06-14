@@ -246,6 +246,7 @@ class IMU():
                         self.cubesat.log('[ERROR][{}}][{}}][ERROR COUNT EXCEEDED][TURNING DEVICE OFF]'.format(self.name, str(key)))
                         try:
                             self.cubesat.i2c_rst()
+                            self.cubesat.i2c_reinit()
                         except:
                             self.cubesat.log('[ERROR][{}][{}][I2C BUS RESET FAILED]]'.format(self.name, str(key)))
                         
