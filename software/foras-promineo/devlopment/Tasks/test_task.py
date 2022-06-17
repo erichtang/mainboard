@@ -16,4 +16,5 @@ class task(Task):
     schedule_later = True
 
     async def main_task(self):
+        self.cubesat.uart2.write(b"Test String Blah Blah Blah Blah")
         pass

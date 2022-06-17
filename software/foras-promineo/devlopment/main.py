@@ -37,7 +37,7 @@ for file in os.listdir('Tasks'):
     file=file[:-3]
 
     # ignore these files
-    if file in ("template_task", "test_task", "housekeeper_task", "pib_tester_task",
+    if file in ("template_task", "housekeeper_task", "pib_tester_task",
                         "irridium_task", "payload_task"):
         continue
 
