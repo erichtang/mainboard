@@ -1064,7 +1064,7 @@
     (property "Value" "1.5uH" (id 1) (at 171.5262 53.213 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "Inductor_SMD:L_Bourns_SRN8040TA" (id 2) (at 170.18 52.07 0)
+    (property "Footprint" "mainboard-SLI:L_Bourns_SRN8040TA" (id 2) (at 170.18 52.07 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "SRN8040TA-1R5Y" (id 3) (at 170.18 52.07 0)
