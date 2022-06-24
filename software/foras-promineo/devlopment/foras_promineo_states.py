@@ -1,6 +1,7 @@
 """
 these functions will handle most major state transitions for the cubesat.
 
+I  think this is superceded, so dont edit for now....
 """
 
 import time

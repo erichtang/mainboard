@@ -7,23 +7,25 @@ cmd = {
     b'\x12\x06': 'shutdown',
     b'8\x93': 'query',
     b'\x96\xa2': 'exec_cmd',
+   # Foras commands
+    b'\xf0' : 'connect'
 }
 
-tx_cmd = { #commands transmitted
-    
+resp = { #responses transmitted
+    "NACK" : "\xFF\xFF",
+    "ACK"  : "\xAA\xC1",
+    "ERROR": "\xEE\xEE"
 }
 
-rx_cmd = { #commands recieved
-    'connect' : b'\xf0'
-}
-
-rx_cmd_arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
+arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
+    'no-op' : 0,
     'connect' : 0
 }
 
 ########### commands without arguments ###########
 def noop(self):
     self.debug('no-op')
+    respond_ACK_no_args(self)
     pass
 
 def hreset(self):
@@ -84,7 +86,7 @@ def img_bst(self, args):
     self.cubesat.radio1.idle() #stop radio from listening for other packets
     pass
 
-
-
+def respond_ACK_no_args(self):
+    self.cubesat.radio1.send(resp["ACK"])
 
         
