@@ -4,7 +4,9 @@ modified code from beepsat_advanced code.
 
 this task will be modified by execution of certian commands sent to the sat...
 
-most of this code is unverified, but this is how i imagine it will execute...
+TODO:
+    single packet single cmd rx during beacon is verified
+    multiple packet, multiple cmd, connected mode, and payload mode are not done or verified....
 
 * Author: Caden Hillis
 Based upon beacon_task.py by Max Holliday
@@ -66,7 +68,10 @@ class task(Task):
             if rx is not None:
                 self.debug("Heard Something: ")
                 self.debug("{}".format(rx),2)
-                self.rx_handler(rx)
+                try:
+                    self.rx_handler(rx)
+                except:
+                    self.debug("rx problem remove me later")
             else:
                 self.cubesat.radio1.sleep()
 
@@ -97,20 +102,59 @@ class task(Task):
                         self.dc_cnt = 0
                         cdh.disconnect()
         
-    def assemble_header(self):
+    def assemble_header(self, listen_again = False, multiple_packets = False, multiple_cmds = False, packet_number = 0, outof = 0):
         """
-        tbr what the header will have. probably some flags ?
+        adds passcode, flags, and packet counters to packet. 
+        10 bytes total...
+        passcode:(4 bytes for now)
+             gets from pc.top_secret_code
+        flags: (2 bytes for now) 
+            b0 : tells reciever to listen again before no-op CMD. default : false
+            b1 : multiple packet flag
+            b2 : multiple cmd flag
+            b3 :
+            b4 :
+            b5 :
+            b6 : 1
+            b7 : 0
+            --
+            b8 :
+            ...
+            b14 : 1
+            b15 : 0
+        packet counter: (4 bytes for now)
+            not really implemented yet, 
+            something doesn't like pairs of unicode "\x00"'s so they're avoided...
         """
-        return "\xff"
+        header = bytearray(10)
+        #code
+        header[0] = pc.top_secret_code[0]
+        header[1] = pc.top_secret_code[1]
+        header[2] = pc.top_secret_code[2]
+        header[3] = pc.top_secret_code[3]
+        # flags
+        header[4] = 0
+        header[4] |= (listen_again & 0x1) 
+        header[4] |= (multiple_packets & 0x2) 
+        header[4] |= (multiple_cmds & 0x4) #TODO add more flags?
+        header[5] = 0
+        # multiple packets
+        if not multiple_packets:
+            header[6:10] = bytearray("beef".encode('utf-8'))
+        else:
+            pass
+        print(header)
+        return header
 
     def tx_beacon(self):
         #tries to initiate a downlink connection.
         # sends data and awaits a connect response from the GS.
-        packet = self.assemble_header() #TODO look into header instered on pycubed_rfm96 lib. maybe we can edit / minimize header length on our end.
-        packet += "Foras Promineo Cubesat Beacon"
+        packet = self.assemble_header()
+        packet += "Foras Promineo Cubesat Beacon Test Packet" # TODO Change for flight
         self.debug("Sending Packet:")
         self.debug("{}".format(packet), level=2)
-        self.cubesat.radio1.send(bytearray(packet, 'utf-8'), keep_listening=True)
+        if not self.cubesat.radio1.send(bytearray(packet), keep_listening=True):
+            self.debug("tx error")
     
     async def listen(self, timeout):
         self.debug("Listening {}s for response (non-blocking)".format(timeout))
@@ -126,46 +170,57 @@ class task(Task):
     def rx_handler(self, rx):
         # TODO
         # Have this function check a transmitted flag that says if there are multiple commands or not.
-        length = len(pc.top_secret_code)
-        if rx[:length] == pc.top_secret_code:
-            rx = rx[length-1:] #TODO check indexing
-            while rx:
-                if rx[:2] in self.cmd_dispatch: # looks for command
-                    cmd = self.cmd_dispatch[rx[:2]]
-                    args = None
-                    if cdh.rx_cmd_arg_len[cmd] != 0: # if / if not args are passed
-                        try: 
-                            args = rx[2:2+cdh.rx_cmd_arg_len[cmd]]
-                        except Exception as e:
-                            self.debug("args decoding error".format(e), 2)
-                    try: #try to execute
-                        if args is None:
-                            self.debug('running {} (no args)'.format(cmd), log=True)
-                            self.cmd_dispatch[cdh.rx_cmd[cmd]](self)
-                        else:
-                            self.debug('running {} (with args)'.format(cmd), log=True)
-                            self.debug('args: {})'.format(args), 2)
-                            self.cmd_dispatch[cdh.rx_cmd[cmd]](self,args)
-                    except Exception as e: #TODO implement a more concise error handler
-                        self.debug('something went wrong: {}'.format(e))
-                        error_packet = self.assemble_packet(self)
-                        error_packet.append(cdh.tx_cmd['ERROR'])
-                        self.cubesat.radio1.send(str(e).encode()) # THIS IS TEMPORARY, TODO CHANGE
-                    try:
-                        for b in range(2+cdh.rx_cmd_arg_len[cmd]):
-                            rx.pop() #removing this command and it's args
-                    except:
-                        self.debug('command decode error: {}'.format(e))
+        code = rx[:4]
+        if code == pc.top_secret_code:
+            h_flags = rx[4:6]
+            h_no = rx[6:8]
+            h_total = rx[8:10]
+            if h_flags[0] & 0x4 == 0: #checking multiple cmd's header... TODO : maybe implement a function to handle the header and guide execution after?
+                # single command execution
+                cmd = rx[10:12]
+                if cmd in cdh.cmd: # looks for command
+                    cmd = cdh.cmd[cmd] # re-assigning cmd to be key for cdh dict
                 else:
-                    self.debug("invalid command: {}".format(rx[:2])) 
-                    #transmit invalid command
-                    rx = None
+                    self.error_handler("invalid command: {}".format(cmd)) 
+                args = None
+                if cdh.arg_len[cmd] != 0: # if / if not args are passed
+                    try: 
+                        args = rx[12:12+cdh.arg_len[cmd]]
+                    except Exception as e:
+                        self.error_handler("args decoding error: {}".format(e))
+                try: #try to execute
+                    if args is None:
+                        self.debug('running {} (no args)'.format(cmd), log=True)
+                        self.cmd_dispatch[cmd](self)
+                    else:
+                        self.debug('running {} (with args)'.format(cmd), log=True)
+                        self.debug('args: {})'.format(args), 2)
+                        self.cmd_dispatch[cmd](self,args)
+                except Exception as e:
+                    self.error_handler("cmd execution error: {}".format(e))
+            else:
+                # multiple command execution
+                #not implemented yet....
+                """
+                try:
+                    for b in range(2+cdh.rx_cmd_arg_len[cmd]):
+                        rx.pop() #removing this command and it's args
+                except:
+                    self.debug('command decode error: {}'.format(e))
+                """
+                pass
+            # listen again flag handler
+                # implement handling for multiple packet tx's -- probably a part of listen again?
         else:
-            self.debug('bad passcode recieved: {}'.format(rx[:length]))
+            self.error_handler('bad passcode recieved: {}'.format(code))
             
-    def error_handler(self):
+    def error_handler(self, e):
         #records packet IDs of missing packets and requests them? IDK
         #TBR THIS WILL PROBABLY HAVE TO BE MUCH MORE SOPHISTICATED?
-        error_packet = self.assemble_header()
-        error_packet.append(cdh.tx_cmd['ERROR'])
-        self.cubesat.radio1.send(error_packet) # THIS IS TEMPORARY
+        self.debug(e)
+        error_packet = self.assemble_header(self)
+        error_packet += (cdh.resp['ERROR'])
+        error_packet += e
+        self.cubesat.radio1.send(error_packet, keep_listening=True) # THIS IS TEMPORARY, TODO CHANGE
+        # IF MULTIPLE PACKETS ARE SENT this needs to be SENT AFTER ALL PACKETS HAVE BEEN RX'd
+

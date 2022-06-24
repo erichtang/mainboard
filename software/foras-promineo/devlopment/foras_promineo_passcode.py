@@ -1,2 +1,2 @@
 
-top_secret_code = b'\x00'
+top_secret_code = b'code'
