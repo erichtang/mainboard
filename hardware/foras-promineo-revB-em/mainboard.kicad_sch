@@ -1168,7 +1168,7 @@
       (reference "Q16") (unit 2) (value "MMDT5551-7-F") (footprint "Package_TO_SOT_SMD:SOT-363_SC-70-6")
     )
     (path "/00000000-0000-0000-0000-00005ede7915/00000000-0000-0000-0000-0000609d554c"
-      (reference "Q17") (unit 1) (value "FJV992FMTF") (footprint "Package_TO_SOT_SMD:SOT-23")
+      (reference "Q17") (unit 1) (value "MMBT3906-7-F") (footprint "Package_TO_SOT_SMD:SOT-23")
     )
     (path "/00000000-0000-0000-0000-00005ede7915/00000000-0000-0000-0000-00005ee8b3b1"
       (reference "Q18") (unit 1) (value "BSS138DWQ-7") (footprint "mainboard:BSS138DWQ-7")
