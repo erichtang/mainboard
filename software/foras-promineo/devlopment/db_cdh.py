@@ -1,3 +1,10 @@
+"""
+TODO -- complete empty functions definitions
+            think of more possible commands to add for future debugging.
+USB debug commands from the cubesat host-pc.
+
+Author: C. Hillis
+"""
 import time
 import usb_cdc
 from debugcolor import co
@@ -19,7 +26,7 @@ def hreset(self):
 
     Returns:
         Success: Board re-initalization
-        Failure: "Reset Failed"
+        Failure: 'Reset Failed'
     """
     write('Resetting')
     try:

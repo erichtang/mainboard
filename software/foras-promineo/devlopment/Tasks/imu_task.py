@@ -1,11 +1,12 @@
 """
-imu_sampler.py
+TODO: this is functional but not great, I am still encountering some errors where the i2c bus gets lost.  I need to give this another pass through and work on the error handling.
+    TODO: TBR is error handling and how this task will play with the ADCS code.
 
-edits to the beepsat-advanced code 
+samples the IMU's on the mainboard and PIB for the most recent data.
 
 TODO add a mode setting where the task can be configured to use any 2 imu devices. have this task turn the unused IMU devices OFF.
 
-ch 4/5/22
+Author: C. Hillis
 """
 
 from Tasks.template_task import Task

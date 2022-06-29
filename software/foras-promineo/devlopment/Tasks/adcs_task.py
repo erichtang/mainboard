@@ -1,9 +1,9 @@
 """
-attidude control task:
+TODO: ADCS code needs to be ported from C.
+
+Attidude control conops are quite complex and need to be defined simpy here.
 
 FSM running all attitude control related data handling and execution
-
-
 """
 
 

@@ -1,6 +1,7 @@
 """
 Garbage collection task
 
+Author: C.Hillis
 """
 from Tasks.template_task import Task
 import gc

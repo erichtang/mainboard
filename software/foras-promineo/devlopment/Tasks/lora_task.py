@@ -1,15 +1,14 @@
 """
-LoRa radio operations 
-modified code from beepsat_advanced code.
+TODO -- lora radio conops and packet structure are still under devlopment. this will probably change.
+LoRa radio operations for beacon, connected, and payload satellite states.
 
 this task will be modified by execution of certian commands sent to the sat...
-
 TODO:
     single packet single cmd rx during beacon is verified
     multiple packet, multiple cmd, connected mode, and payload mode are not done or verified....
 
 * Author: Caden Hillis
-Based upon beacon_task.py by Max Holliday
+Based upon beacon_task.py by Max Holliday from beepsat_advanced devlopment branch.
 """
 
 from Tasks.template_task import Task

@@ -1,10 +1,7 @@
 """
-housekeeper_task.py
-
+TODO: not implemented. need to move battery_task.py code here and do additional handling for bad circumstances that the cubesat should react to.
 polling various values to direct satellite operating modes. monitors batteries, temps, and current.
     has elements of battery-task BUT has various thresholds for payload operation.
-
-WIP, only prints things right now...
 
 * Author: Caden Hillis
 """

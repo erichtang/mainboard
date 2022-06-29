@@ -1,5 +1,8 @@
-# print the time in seconds since boot every min
-
+"""
+TODO: implement more accurate timekeeping. 
+timekeeping task.
+    records/manages time down to the milisecond.
+"""
 from Tasks.template_task import Task
 import time
 
