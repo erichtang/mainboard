@@ -1,7 +1,8 @@
 """
 startup task for foras promineo.
-at startup, suspsends all non-critical tasks and preforms an initial startup procedure.
-at the end it will change eveything back to idle mode
+at startup, suspsends all non-critical tasks and preforms an initial startup / checkout procedure.
+
+at the end, it will instantiate all
 can go into lowbatt mode if nessesary
 
 TODO in progress

@@ -1,7 +1,7 @@
 """
-library for simulation class
+simulation class
 
-init'd in pycubed library so everything can referece it
+add description
 """
 
 import usb_cdc

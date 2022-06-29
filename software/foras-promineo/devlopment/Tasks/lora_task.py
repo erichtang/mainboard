@@ -14,7 +14,7 @@ Based upon beacon_task.py by Max Holliday
 
 from Tasks.template_task import Task
 import cdh
-import foras_promineo_passcode as pc
+import passcode as pc
 
 class task(Task):
     #priority = 2

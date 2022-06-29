@@ -3,10 +3,24 @@ import usb_cdc
 from debugcolor import co
 
 ########### commands without arguments ###########
+##################################################
 def noop(self):
+    """
+    A no-op command.
+
+    Returns:
+        'ACK'
+    """
     write(co('ACK', 'green'))
 
 def hreset(self):
+    """
+    Hard resets the MCU. (Powers off and on again)
+
+    Returns:
+        Success: Board re-initalization
+        Failure: "Reset Failed"
+    """
     write('Resetting')
     try:
         self.cubesat.micro.on_next_reset(self.cubesat.micro.RunMode.NORMAL)
@@ -14,13 +28,164 @@ def hreset(self):
     except:
         write('Reset Failed')
 
+def sreset(self):
+    """
+    TODO -- not implemented
+    Soft reset of the MCU (no power cycle)
+
+    Returns:
+        Success: Board re-initalization
+        Failure: "Reset Failed"
+    """
+
+def i2c_scan(self):
+    """
+    i2c device scan
+
+    prints detected i2c devices.
+    """
+    while not self.cubesat.i2c1.try_lock():
+        pass
+    try:
+        print(
+            "I2C addresses found:",
+            [hex(device_address) for device_address in self.cubesat.i2c1.scan()],
+        )
+    except Exception as e:
+        write('Execution failed... : {}'.format(e))
+
+def sd_ls(self):
+    """
+    TODO -- not implemented
+    lists folders and files on the SD card.
+    """
+    pass
+
+def print_logfile(self):
+    """
+    TODO -- not implemented
+    prints the logfile to the terminal. the host-pc software should take this data and output a file a user can read.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_mainboard_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionary of values for the mainboard telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_payload_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionary of values for the payload telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_pib_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionary of values for the pib telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_startracker_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionary of values for the startracker telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_adcs_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionary of values for the adcs telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_pwr_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionay of values for the satellite power telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_temperature_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionay of values for the satelite temperature telemetry.
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_state_telemetry(self):
+    """
+    TODO -- not implemented
+    prints a dictionay of values for the task execution states of the satellite.
+
+
+    Returns:
+        TBR
+    """
+    pass
+
+def print_time(self):
+    """
+    TODO -- not implemented
+    prints time in GMT
+
+    Returns:
+        TBR
+    """
+    pass
+
 ########### commands with arguments ###########
 
 def query(self,args):
+    """
+    runs python method eval(args)
+
+    Prints:
+        Success: results of eval
+        Failure: exeception / error
+    """
     write('query: {}'.format(args))
-    write(eval(bytes(args,'utf-8')))
+    try:
+        write(eval(bytes(args,'utf-8')))
+    except Exception as e:
+        write('Evaluation failed... : {}'.format(e))
 
 def exec_cmd(self,args):
+    """
+    runs python method eval(args)
+
+    Returns:
+        Success: nothing 
+        Failure: exeception / error
+    """
     arg = args[0]
     write('exec: {}'.format(arg))
     try:
@@ -28,207 +193,219 @@ def exec_cmd(self,args):
     except Exception as e:
         write('Execution failed... : {}'.format(e))
 
-def get_imu_offset(self, args):
+def stop_task(self, task): 
     """
-    records RAW offset's of imu paramaters.
-    write currently inimplemented (allowing automatic compensation of calculated offsets when it is)
-    args[0] = x : # of measurements taken and averaged
-    args[1] (default False) = wr : when True writes offsets to calibration dict. doesn't have to be passed.
-    """
-    #how to get offset with magnetometer?
-    #add tabple entries for PIB
-    polling_dict = {
-        'gyro0': self.cubesat.imu.gyro0_r_raw,
-        'gyro1': self.cubesat.imu.gyro1_r_raw,
-        'mag0' : self.cubesat.imu.mag0_r_raw,
-        'mag1' : self.cubesat.imu.mag1_r_raw,
-        'accel0': self.cubesat.imu.accel0_r_raw,
-        'accel1': self.cubesat.imu.accel1_r_raw,
-    }
-    #args extraction
-    x = int(args[0])
-    if len(args)==2:
-        wr = args[1]
-    else:
-        wr = False
-    #execution of function
-    for device in polling_dict:
-        #write(device)
-        i = 0
-        temp_avg = [0,0,0]
-        while i < x :
-            #get measurements
-            temp = polling_dict[device]
-            if temp is None:
-                write("Device {} returned None on i = {} out of {}".format(device, i, x))
-                temp_avg = None
-                break
-            else:
-                for meas in range(len(temp_avg)):
-                    temp_avg[meas] =+ temp[meas]
-            time.sleep(0.01)
-            i+=1
-        #average
-        if temp_avg is not None:
-            for num in range(len(temp_avg)):
-                temp_avg[num] = int(temp_avg[num]/x) #whole numbers, factional offsets would not make sense for a raw value.
-            #print 
-            write("Device {} Offset Calculation for {} readings: ".format(device, x) + co('{}'.format(temp_avg), 'green', 'bold'))
+    TODO -- Not implemented
+    stops task
 
-def startstoptask(self, args):
-    """
-    starts or stops specified task.
-    args[0] = task name
-    args[1] = "st" or "sp"
+    Paramaters:
+        task :: the task key in cubesat.scheduled_tasks dict
+
+    Returns:
+        None
     """
     pass
 
-def i2c_scan(self):
-    while not self.cubesat.i2c1.try_lock():
-        pass
-    try:
-        while True:
-            print(
-                "I2C addresses found:",
-                [hex(device_address) for device_address in self.cubesat.i2c1.scan()],
-            )
-            time.sleep(2)
-    finally:  # unlock the i2c bus when ctrl-c'ing out of the loop
-       self.cubesat.i2c1.unlock()
-
-def pib_verify(self):
+def start_task(self, task): 
     """
-    PIB checkout function to verify functionality on the PIB
+    TODO -- not implemented
+    starts task
+
+    Paramaters:
+        task :: the task key in cubesat.scheduled_tasks dict
+
+    Returns:
+        None
     """
-    # verify imu
-    write("verifing imu ....")
-    write("Gyro 0 : {}".format(self.cubesat.pib.imu.gyro0))
-    write("Gyro 1 : {}".format(self.cubesat.pib.imu.gyro1))
-    write("Mag 0 : {}".format(self.cubesat.pib.imu.mag0))
-    write("Mag 1 : {}".format(self.cubesat.pib.imu.mag1))
-    write("Accel 0 : {}".format(self.cubesat.pib.imu.accel0))
-    write("Accel 1 : {}".format(self.cubesat.pib.imu.accel1))
-    write("")
+    pass
 
+def change_task_priority(self, task):
+    """
+    TODO -- not implimented
+    changes task priority
 
-    # verify io exp
-    write("verifying io_exp... turning all outputs HIGH except SLP lines")
-    self.cubesat.pib.n_dac_lat0 = True
-    self.cubesat.pib.n_dac_lat0 = True
-    self.cubesat.pib.n_amp_shdn_xy = False
-    self.cubesat.pib.n_amp_shdn_z = False
-    self.cubesat.pib.drv_ph_x = True
-    self.cubesat.pib.drv_en_x = True
-    self.cubesat.pib.n_drv_slp_x = False
-    self.cubesat.pib.drv_ph_y = True
-    self.cubesat.pib.drv_en_y = True
-    self.cubesat.pib.n_drv_slp_y = False
-    self.cubesat.pib.drv_ph_z = True
-    self.cubesat.pib.drv_en_z = True
-    self.cubesat.pib.n_drv_slp_z = False
-    self.cubesat.pib.n_dac_rst = True
-    write("")
-    waitforinput()
+    Paramaters:
+        task :: the task key in cubesat.scheduled_tasks dict
+    
+    Returns:
+        None
+    """
+    pass
 
-    # verify dac
-    write("verifying dac")
-    write("setting all outputs to 1.25V")
-    self.cubesat.pib.dac.dac0 = 2^6
-    self.cubesat.pib.dac.dac1 = 2^6
-    self.cubesat.pib.dac.dac2 = 2^6
-    write("")
-    waitforinput()
+def change_task_frequency(self, task):
+    """
+    TODO -- not implemented
+    changes task frequency
 
-    # verify amp
-    write("verifing amp")
-    write("turning all outputs ON, output should be ~2.5V")
-    self.cubesat.pib.n_amp_shdn_xy = True
-    self.cubesat.pib.n_amp_shdn_z = True
-    write("")
-    waitforinput()
+    Paramaters:
+        task :: the task key in cubesat.scheduled_tasks dict
+    
+    Returns:
+        None
+    """
+    pass
 
-    # verify h-bridge
-    write("verifing h-bridge")
-    write("turning all outputs ON in + direction")
-    self.cubesat.pib.drv_ph_x = True
-    self.cubesat.pib.drv_ph_y = True
-    self.cubesat.pib.drv_ph_z = True
-    self.cubesat.pib.drv_en_x = True
-    self.cubesat.pib.drv_en_y = True
-    self.cubesat.pib.drv_en_z = True
-    self.cubesat.pib.n_drv_slp_x = True
-    self.cubesat.pib.n_drv_slp_y = True
-    self.cubesat.pib.n_drv_slp_z = True
-    write("")
-    waitforinput()
+def configure_file(self, name, *kwargs):
+    """
+    TODO -- not implimented
+    overwrites config file (dictionary) with provided kwargs
 
-    # verify i sen
-    write("verifing sense line")
-    write("sense resistor is not installed, so readings should be railed")
-    self.cubesat.pib.adc.ch = 0
-    write("CH0: {}".format(self.cubesat.pib.adc.read))
-    time.sleep(0.01)
-    write("CH0: {}".format(self.cubesat.pib.adc.read))
-    self.cubesat.pib.adc.ch = 1
-    write("CH1: {}".format(self.cubesat.pib.adc.read))
-    time.sleep(0.01)
-    write("CH1: {}".format(self.cubesat.pib.adc.read))
-    self.cubesat.pib.adc.ch = 2
-    write("CH2: {}".format(self.cubesat.pib.adc.read))
-    time.sleep(0.01)
-    write("CH2: {}".format(self.cubesat.pib.adc.read))
-    self.cubesat.pib.adc.ch = 0
-    write("")
-    waitforinput()
-       
-    # verify rockblock
-    write("rockblock verification not written")
+    Paramaters:
+        name    :: the name of the .bak config file
+        *kwargs :: keyword / argument pairs for this config file's dictionary.
+                        refer to the declaration of each config
+    
+    Returns:
+        None
+    """
+    pass
 
-    write("")
-    write("returning things to idle")
-    self.cubesat.pib.dac.dac0 = 0
-    self.cubesat.pib.dac.dac1 = 0
-    self.cubesat.pib.dac.dac2 = 0
-    self.cubesat.pib.n_amp_shdn_xy = False
-    self.cubesat.pib.n_amp_shdn_z = False
-    self.cubesat.pib.drv_ph_x = False
-    self.cubesat.pib.drv_ph_y = False
-    self.cubesat.pib.drv_ph_z = False
-    self.cubesat.pib.drv_en_x = False
-    self.cubesat.pib.drv_en_y = False
-    self.cubesat.pib.drv_en_z = False
-    self.cubesat.pib.n_drv_slp_x = False
-    self.cubesat.pib.n_drv_slp_y = False
-    self.cubesat.pib.n_drv_slp_z = False
-    write(" PIB checkout END")
-    write("")
+def upload_to_sd(self, path, name, file):
+    """
+    TODO -- not implimented
+    adds a file of name to the path specified on the sd.
+
+    Paramaters:
+        path :: the file locaton. leave blank for :/sd/ location
+        name :: file name.
+        file :: TODO idk how exactly this will work yet
+    
+    Returns:
+        None
+    """
+    pass
+
+def download_from_sd(self, path):
+    """
+    TODO -- not implimented
+    sends a file to the host-pc specified by the path provided
+
+    Paramaters:
+        part :: path to the file. :/sd/ is added to the front.
+    
+    Returns:
+       TODO idk how exactly this will work yet
+    """
+    pass
+
+def sd_rm(self, path):
+    """
+    TODO -- not implimented
+    deletes a fole from SD
+
+    Paramaters:
+        path :: path to the file. :/sd/ is added to the front.
+    
+    Returns:
+        None
+    """
+    pass
+
+def pl_cmd_arm(self, *args):
+    """
+    TODO -- not implimented
+    payload arm command. sends command to the payload of paramaters given
+
+    Paramaters:
+        *args :: mainboard <-> payload UART interface has yet to be defined.
+    
+    Returns:
+        None
+    """
+    pass
+
+def pl_cmd_photo(self, *args):
+    """
+    TODO -- not implimented
+    payload photo command. sends command to the payload of paramaters given
+
+    Paramaters:
+        *args ::  mainboard <-> payload UART interface has yet to be defined.
+    
+    Returns:
+        None
+    """
+    pass
+
+def pl_cmd(self, *args):
+    """
+    TODO -- not implimented
+    payload command. sends command to the payload of paramaters given
+
+    Paramaters:
+         *args ::  mainboard <-> payload UART interface has yet to be defined.
+    
+    Returns:
+        None
+    """
+    pass
 
 def simulate(self, *args):
     """
+    TODO -- ignore this while i work out simualation kinks
     simulate command. 
-    passed args are keys in the self.cubesat.sim.simulate dict
-    they TOGGLE simulation
+
+    Paramaters:
+        passed args are keys in the self.cubesat.sim.simulate dict
+        they TOGGLE simulation
+
+    Returns:
+        TBR
     """
     for arg in args:
         if arg in self.cubesat.sim.simulate:
             self.cubesat.sim.simulate[arg] = not self.cubesat.sim.simulate[arg]
             write("Simulation for value: {} set  to {}" .format(arg, str(self.cubesat.sim.simulate[arg])))
 
+def crc_file(self, path, crc):
+    """
+    TODO -- not implimented
+    computates a crc-32 checksum for the file at the given path and compares it with the crc provided.
+
+    Paramaters:
+        path :: path to file
+        crc  :: crc-32 checksum
+    
+    Returns:
+        TBR
+    """
+    pass
+
+def radio_cmd(self, cmd, *kwargs):
+    """
+    TODO -- not implimented
+    preforms radio command with given kwargs passed
+
+    Paramaters:
+        cmd :: the name of the command as seen in the cdh.dispatch dict.
+        *kwargs :: keyword arguments (if any) passed.
+    
+    Returns:
+        None
+    """
+    pass
+
+def deploy_antenna(self):
+    """
+    TODO -- not implimented
+    preforms antenna deployment.
+    """
+    pass
 ########### helper functions for using usb_cdc.data ###########
 
 def write(msg):
     """
     writes a string to usb_cdc.data
-    appends \r\n
+    appends \r\n tp passed string.
     """
     msg = msg + '\r\n'
     usb_cdc.data.write(bytes(msg, 'utf-8'))
-
 
 def waitforinput():
     """
     waits for ANY input then throws the data away
     useful for pib verification
+    i think this function can go away soon...
     """
     write("Press enter to continue")
     waitflag = True

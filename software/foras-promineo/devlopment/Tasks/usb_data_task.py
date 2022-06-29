@@ -10,7 +10,7 @@ rename this task and have it ask the host PC software for what simulated values
 
 """
 from Tasks.template_task import Task
-import db_cdh
+import db_cdh 
 from debugcolor import co
 import usb_cdc
 
@@ -23,21 +23,11 @@ class task(Task):
 
     schedule_later = False
 
-    db_cmd_dispatch = {
-        'no-op':        db_cdh.noop,
-        'hreset':       db_cdh.hreset,
-        'query':        db_cdh.query,
-        'exec_cmd':     db_cdh.exec_cmd,
-        # new
-        'get_imu_offset': db_cdh.get_imu_offset,
-        'pib_verify' : db_cdh.pib_verify,
-        'write':        db_cdh.write,
-        'i2c_scan': db_cdh.i2c_scan,
-        'simulate': db_cdh.simulate
-    }
+    
 
     def __init__(self,satellite):
         self.cubesat = satellite
+
         usb_cdc.data.reset_input_buffer
         usb_cdc.data.timeout = 0.1
         if usb_cdc.data.connected:
@@ -45,6 +35,21 @@ class task(Task):
             db_cdh.write(co("Debug USB Channel OPEN ! :)", 'green', 'bold'))
             db_cdh.write("-----------------------------------------------------------")
             usb_cdc.data.write(bytes(">>>", 'utf-8'))
+
+        self.usb_cdh = usb_cdh(self.cubesat)
+
+        self.dispatch = {
+        'no-op':                db_cdh.noop,
+        'hreset':               db_cdh.hreset,
+        'query':                db_cdh.query,
+        'exec_cmd':             db_cdh.exec_cmd,
+        # new
+        'get_imu_offset':       db_cdh.get_imu_offset,
+        'pib_verify' :          db_cdh.pib_verify,
+        'write':                db_cdh.write,
+        'i2c_scan':             db_cdh.i2c_scan,
+        'simulate':             db_cdh.simulate
+    }
 
     async def main_task(self):
         
@@ -75,7 +80,7 @@ class task(Task):
                         if args is None:
                             db_cdh.write(co('running {} (without args)'.format(cmd), 'orange'))
                             try:
-                                self.db_cmd_dispatch[cmd](self)
+                                self.dispatch[cmd](self)
                             except KeyError:
                                 db_cdh.write(co('invalid command', 'red', 'bold'))
                             except Exception as e:
@@ -83,7 +88,7 @@ class task(Task):
                         else:
                             db_cdh.write(co('running {} (with args: {})'.format(cmd,args), 'orange'))
                             try:
-                                self.db_cmd_dispatch[cmd](self, args)
+                                self.dispatch[cmd](self, args)
                             except KeyError:
                                 db_cdh.write(co('invalid command', 'red', 'bold'))
                             except Exception as e:
