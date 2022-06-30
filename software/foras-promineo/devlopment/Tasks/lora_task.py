@@ -74,32 +74,45 @@ class task(Task):
             else:
                 self.cubesat.radio1.sleep()
 
-        # self.connected the GS wants to have tight comms and a lot of data exchange
+        # burst mode has priority over connected mode
+        elif self.cubesat.radio1_burst_flag:# if we are bursting data
+            if self.cubesat.radio1_send_buff_flag: #if the buffer is ready to send
+                if self.cubesat.brst_pkt_num == 0: #if this is the first packet
+                    # assemble burst start packet
+                    brst_start_tx = self.assemble_header(listen_again=True)
+                    brst_start_tx += cdh.tx['BRST_ST'] 
+                    # send burst start command
+                    self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
+                    self.cubesat.radio1.send_fast(brst_start_tx, len(brst_start_tx))
+                # now send the buffer
+                # add the header to the send buffer
+                self.cubesat.send_buff[:10] = self.assemble_header(listen_again=True, multiple_packets=True, packet_number=self.cubesat.brst_pkt_num, outof = self.cubesat.brst_pkt_tot)
+                self.cubesat.send_buff_tx_len += 10 # increment send buffer length by beader length
+                # send packet
+                self.debug("Sending Burst Packet {}".format(self.cubesat.brst_pkt_num))
+                #self.debug("{}".format(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len]))
+                self.cubesat.radio1.send_fast(self.cubesat.send_buff[:self.send_buff_tx_len], self.send_buff_tx_len) # send this w/o radiohead header and things....
+                # reset flag
+                self.cubesat.send_buff_flag = False
+                if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot: # if that was the last packet
+                    # assemble burst start packet
+                    brst_end_tx = self.assemble_header()
+                    brst_end_tx += cdh.tx['BRST_END'] 
+                    # send burst start command
+                    self.debug("Transmitting Burst End: {}".format(brst_start_tx))
+                    self.cubesat.radio1.send_fast(brst_end_tx, len(brst_end_tx))
+
+            # self.connected the GS wants to have tight comms and a lot of data exchange
         elif self.connected:
-            if self.cubesat.payload.img_bst_flag: # if we are sending an image down 
-                """
-                maybe move this to a send_buff def?
-                """
-                if self.cubesat.payload.buff_send_flag: #if the buffer is ready to send
-                    self.debug("Sending Packet:")
-                    self.debug("{}".format(self.cubesat.payload.buf))
-                    self.cubesat.radio1.send_fast(self.cubesat.payload.read_buf)
-                    self.cubesat.payload.buff_send_flag = False
-                    if self.cubesat.payload.read_buf[247:248] == b'0xffff': # if this is the end turn off img bst mode
-                        self.cubesat.paylaod.img_bst = False
-                    #clear the buffer
-                    self.cubesat.payload.buf =  bytearray(248)
-                    self.cubesat.payload.read_buf =  memoryview(self.cubesat.payload.buf)
+            rx = self.listen(self.cfg['c_to']) # what timeout should we use if it is connected?
+            if rx is not None:
+                self.dc_cnt = 0
+                self.rx_handler(rx)
             else:
-                rx = self.listen(self.cfg['c_to']) # what timeout should we use if it is connected?
-                if rx is not None:
+                self.dc_count += 1
+                if self.dc_cnt >= self.dc_trig:
                     self.dc_cnt = 0
-                    self.rx_handler(rx)
-                else:
-                    self.dc_count += 1
-                    if self.dc_cnt >= self.dc_trig:
-                        self.dc_cnt = 0
-                        cdh.disconnect()
+                    cdh.disconnect()
         
     def assemble_header(self, listen_again = False, multiple_packets = False, multiple_cmds = False, packet_number = 0, outof = 0):
         """
@@ -142,7 +155,6 @@ class task(Task):
             header[6:10] = bytearray("beef".encode('utf-8'))
         else:
             pass
-        print(header)
         return header
 
     def tx_beacon(self):

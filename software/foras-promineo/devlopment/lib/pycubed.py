@@ -127,7 +127,7 @@ class Satellite:
         self.uart4 = busio.UART(board.TX4,board.RX4) # startracker UART
 
         # Define filesystem stuff
-        self.logfile="/log.txt"
+        #self.logfile="/log.txt"
 
         # Define GPS
         self.en_gps = digitalio.DigitalInOut(board.EN_GPS)
@@ -143,6 +143,15 @@ class Satellite:
         _rf_cs1.switch_to_output(value=True)
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
+
+        #burst radio mode
+        self.radio1_burst_flag = False
+        self.buff_ready = False
+        self.file_downlink_path = ""
+        self.file_downlink_size = 0
+        self.send_buff_tx_len = 0 # send buffer is always 252 bytes, but some tx's may be less.
+        self.brst_pkt_num = 0
+        self.brst_pkt_tot = 0
 
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
@@ -409,7 +418,7 @@ class Satellite:
         if self.hardware['SDcard']:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
-                f.write('{}, {}\n'.format(t,msg))
+                f.write('{}, {}\r\n'.format(t,msg))
         if print_flag: print(msg)
 
     def print_file(self,filedir=None,binary=False):

@@ -42,6 +42,13 @@ class task(Task):
         'exec_cmd':             db_cdh.exec_cmd,
         'write':                db_cdh.write,
         'i2c_scan':             db_cdh.i2c_scan,
+        'print_gyro':           db_cdh.print_gyro,
+        'print_mag':            db_cdh.print_mag,
+        'print_accel':          db_cdh.print_accel,
+        'print_chunks_test':    db_cdh.print_chunks_test,
+        'download_logfile':     db_cdh.download_logfile,
+        'upload':               db_cdh.upload,
+        'download':             db_cdh.download,
         'simulate':             db_cdh.simulate
     }
 

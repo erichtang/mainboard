@@ -1,5 +1,7 @@
 import time
 
+from sympy import N
+
 #generic pycubed commands, not edited.
 cmd = {
     b'\x8eb': 'no-op',
@@ -11,10 +13,12 @@ cmd = {
     b'\xf0' : 'connect'
 }
 
-resp = { #responses transmitted
-    "NACK" : "\xFF\xFF",
-    "ACK"  : "\xAA\xC1",
-    "ERROR": "\xEE\xEE"
+tx = { #transmitted codes
+    "NACK" : b"\xFF\xFF",
+    "ACK"  : b"\xAA\xC1",
+    "ERROR": b"\xEE\xEE",
+    "BRST_ST": b"BS",
+    "BRST_END": b'BE'
 }
 
 arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.

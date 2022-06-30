@@ -91,17 +91,11 @@ class IAM20380:
     def ON(self):
         #self.rst()
         self._smplrt_div = 99 # 100Hz sampling, sampling rate = 1kHz/(1+smplrt_div)
-        #print(self._smplrt_div)
-        self._dlpf_cfg = 4 #set to 20Hz LPF 1kHz sampling rate. if there is a 20Hz oscillation on this, there is a problm
-        #print(self._dlpf_cfg)
+        self._dlpf_cfg = 4 #set to 20Hz LPF 1kHz sampling rate
         self._fs_sel = 0 #+/- 250dps
-        #print(self._fs_sel)
         self._fchoice_b = 0 #dlpf NOT bypassed
-        #print(self._fchoice_b)
         self._drdy_int_en = 1
-        #print(self._drdy_int_en)
         self._sleep = 0 #it is intiallized as 1
-        #print(self._sleep)
 
     def SLEEP(self):
         self._sleep = 1
@@ -116,7 +110,7 @@ class IAM20380:
     @property
     def read(self):
         out = self.read_raw
-        for meas in enumerate(out):
+        for meas in range(len(out)):
             if (out[meas]>>15==1):
                 out[meas] = ((out[meas] ^ 0xFFFF) + 1) *(-1)
             out[meas] = float(out[meas]/131) # 131LSB/dps , hardcoded in sensitivty, sorry future self
@@ -127,7 +121,8 @@ class IAM20380:
         x = (self._gyro_xout_h << 8) + self._gyro_xout_l
         y = (self._gyro_yout_h << 8) + self._gyro_yout_l
         z = (self._gyro_zout_h << 8) + self._gyro_zout_l
-        return([x,y,z])
+        out = [ x, y, z]
+        return(out)
         
     @property
     def temp(self): # @25degc it reads 0
