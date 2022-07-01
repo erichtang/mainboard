@@ -23,25 +23,30 @@ class task(Task):
             if self.cubesat.brst_pkt_num == 0: # do some more things if this is the first packet we are grabbing
                 #get file size
                 self.cubesat.file_downlink_size = os.stat(self.cubesat.file_downlink_path)[6]
+                print(self.cubesat.file_downlink_size)
                 #figure out no. of packets we are sending
                 self.cubesat.brst_pkt_tot = (self.cubesat.file_downlink_size // 242) + (self.cubesat.file_downlink_size % 252 > 0)
+                print(self.cubesat.brst_pkt_tot)
 
             #figure out how many bytes to read at what index
             index = self.cubesat.brst_pkt_num * self.max_packet_len
+            print(index)
             if self.cubesat.brst_pkt_num < self.cubesat.brst_pkt_tot:
                 bytes2read = self.max_packet_len
             else:
                 bytes2read = (self.cubesat.brst_pkt_tot * self.max_packet_len) - self.cubesat.file_downlink_size
             
+            self.cubesat.send_buff_tx_len = bytes2read
             #get the data
-            with open(self.file_downlink_path, 'rb') as f:
+            with open(self.cubesat.file_downlink_path, 'rb') as f:
                 #move pointer to current index
                 f.seek(index)
-                self.cubesat.send_buf[10:] = f.read(bytes2read)
+                self.cubesat.send_buff[10:] = f.read(self.max_packet_len)
                 f.close()
             
             #flag to the lora task that this is ready to send
             self.cubesat.send_buff_ready_flag = True
+            #print("Send buff rdy")
 
 
 

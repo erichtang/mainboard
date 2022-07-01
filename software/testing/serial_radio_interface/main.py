@@ -14,10 +14,11 @@ cmd_codes = {
     'query' : b'8\x93',
     'exec_cmd' : b'\x96\xa2',
     'connect' : b'\xf0',
+    'burst_test': b'ab'
 }
 
 #serial and file
-ser = serial.Serial('COM6', 115200, timeout=0)
+ser = serial.Serial('COM11', 115200, timeout=0)
 #ser.open()
 logfile = open("serial_log.txt", "w", encoding = "utf-8")
 

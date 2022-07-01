@@ -49,6 +49,7 @@ class task(Task):
         'download_logfile':     db_cdh.download_logfile,
         'upload':               db_cdh.upload,
         'download':             db_cdh.download,
+        'sd_rm'    :            db_cdh.sd_rm,
         'simulate':             db_cdh.simulate
     }
 

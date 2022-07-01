@@ -153,6 +153,8 @@ class Satellite:
         self.brst_pkt_num = 0
         self.brst_pkt_tot = 0
         self.burst_st_time = 0
+        self.beacon = True
+
 
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
@@ -420,6 +422,7 @@ class Satellite:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
                 f.write('{}, {}\r\n'.format(t,msg))
+                f.close()
         if print_flag: print(msg)
 
     def print_file(self,filedir=None,binary=False):
