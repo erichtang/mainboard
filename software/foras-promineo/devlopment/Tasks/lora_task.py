@@ -11,6 +11,7 @@ TODO:
 Based upon beacon_task.py by Max Holliday from beepsat_advanced devlopment branch.
 """
 
+import time
 from Tasks.template_task import Task
 import cdh
 import passcode as pc
@@ -61,7 +62,7 @@ class task(Task):
 
         if self.beacon:
             #we we are not connected, send a beacon
-            #self.debug("Sending beacon")
+            self.debug("Sending beacon")
             self.tx_beacon()
             rx = await self.listen(self.cfg['b_to'])
             if rx is not None:
@@ -71,38 +72,50 @@ class task(Task):
                     self.rx_handler(rx)
                 except:
                     self.debug("rx problem remove me later")
-            else:
-                self.cubesat.radio1.sleep()
 
         # burst mode has priority over connected mode
-        elif self.cubesat.radio1_burst_flag:# if we are bursting data
-            if self.cubesat.radio1_send_buff_flag: #if the buffer is ready to send
-                if self.cubesat.brst_pkt_num == 0: #if this is the first packet
-                    # assemble burst start packet
-                    brst_start_tx = self.assemble_header(listen_again=True)
-                    brst_start_tx += cdh.tx['BRST_ST'] 
-                    # send burst start command
-                    self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
-                    self.cubesat.radio1.send_fast(brst_start_tx, len(brst_start_tx))
-                # now send the buffer
-                # add the header to the send buffer
-                self.cubesat.send_buff[:10] = self.assemble_header(listen_again=True, multiple_packets=True, packet_number=self.cubesat.brst_pkt_num, outof = self.cubesat.brst_pkt_tot)
-                self.cubesat.send_buff_tx_len += 10 # increment send buffer length by beader length
-                # send packet
-                self.debug("Sending Burst Packet {}".format(self.cubesat.brst_pkt_num))
-                #self.debug("{}".format(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len]))
-                self.cubesat.radio1.send_fast(self.cubesat.send_buff[:self.send_buff_tx_len], self.send_buff_tx_len) # send this w/o radiohead header and things....
-                # reset flag
-                self.cubesat.send_buff_flag = False
-                if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot: # if that was the last packet
-                    # assemble burst start packet
-                    brst_end_tx = self.assemble_header()
-                    brst_end_tx += cdh.tx['BRST_END'] 
-                    # send burst start command
-                    self.debug("Transmitting Burst End: {}".format(brst_start_tx))
-                    self.cubesat.radio1.send_fast(brst_end_tx, len(brst_end_tx))
+        # if we are bursting data and the buffer is ready
+        elif self.cubesat.radio1_burst_flag and self.cubesat.send_buff_ready_flag:
 
-            # self.connected the GS wants to have tight comms and a lot of data exchange
+            if self.cubesat.brst_pkt_num == 0: #if this is the first packet
+                # assemble burst start packet
+                brst_start_tx = self.assemble_header(listen_again=True)
+                brst_start_tx += cdh.tx['BRST_ST'] 
+                # send burst start command
+                self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
+                self.cubesat.radio1.send_fast(brst_start_tx, len(brst_start_tx))
+                # record time of start
+                self.cubesat.burst_st_time = time.monotonic()
+
+            # now send the buffer
+            # add the header to the send buffer
+            self.cubesat.send_buff[:10] = self.assemble_header(listen_again=True, multiple_packets=True, packet_number=self.cubesat.brst_pkt_num, outof = self.cubesat.brst_pkt_tot)
+            self.cubesat.send_buff_tx_len += 10 # increment send buffer length by header length
+
+            # send packet
+            self.debug("Sending Burst Packet {}".format(self.cubesat.brst_pkt_num))
+            #self.debug("{}".format(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len]))
+            self.cubesat.radio1.send_fast(self.cubesat.send_buff[:self.send_buff_tx_len], self.send_buff_tx_len) # send this w/o radiohead header and things....
+            
+            # if that was the last packet
+            if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot: 
+                time_elapsed = time.monotonic() - self.cubesat.burst_st_time
+                # assemble burst end packet
+                brst_end_tx = self.assemble_header()
+                brst_end_tx += cdh.tx['BRST_END'] 
+                # send burst end command
+                self.debug("Transmitting Burst End: {}".format(brst_start_tx))
+                self.cubesat.radio1.send_fast(brst_end_tx, len(brst_end_tx))
+                #turn the bursting off
+                self.cubesat.send_buff_flag = False
+                self.cubesat.radio1_burst_flag = False
+                self.debug("Burst Done. Transmitted {} bytes in {} seconds".format(self.cubesat.file_downlink_size, time_elapsed))
+            
+            else:  # reset flag and increment packet counter for getter task to get next set of data         
+                self.cubesat.brst_pkt_num += 1
+                self.cubesat.send_buff_flag = False
+
+        # self.connected the GS wants to have tight comms and a lot of data exchange
         elif self.connected:
             rx = self.listen(self.cfg['c_to']) # what timeout should we use if it is connected?
             if rx is not None:
@@ -114,7 +127,7 @@ class task(Task):
                     self.dc_cnt = 0
                     cdh.disconnect()
         
-    def assemble_header(self, listen_again = False, multiple_packets = False, multiple_cmds = False, packet_number = 0, outof = 0):
+    def assemble_header(self, listen_again = False, multiple_packets = False, packet_number = 0, outof = 0):
         """
         adds passcode, flags, and packet counters to packet. 
         10 bytes total...
@@ -148,11 +161,14 @@ class task(Task):
         header[4] = 0
         header[4] |= (listen_again & 0x1) 
         header[4] |= (multiple_packets & 0x2) 
-        header[4] |= (multiple_cmds & 0x4) #TODO add more flags?
+        #header[4] |= (multiple_cmds & 0x4) #TODO add more flags?
         header[5] = 0
         # multiple packets
         if not multiple_packets:
-            header[6:10] = bytearray("beef".encode('utf-8'))
+            header[6] = (packet_number >> 8) & 0xff
+            header[7] = (packet_number ) & 0xff
+            header[8] = (outof >> 8) & 0xff
+            header[9] = outof & 0xff
         else:
             pass
         return header
@@ -172,45 +188,48 @@ class task(Task):
         heard_something = await self.cubesat.radio1.await_rx(timeout=timeout)
         if heard_something:
             # retrieve response
-            response = self.cubesat.radio1.receive(keep_listening=True,with_ack=True)
+            response = self.cubesat.radio1.receive(keep_listening=True,with_ack=True, with_header=True, timeout=timeout)
             if response is not None:
                 self.debug('msg: {}, RSSI: {}'.format(response,self.cubesat.radio1.last_rssi-137),2)
                 self.cubesat.c_gs_resp+=1
                 return response
 
     def rx_handler(self, rx):
-        # TODO
-        # Have this function check a transmitted flag that says if there are multiple commands or not.
+
         code = rx[:4]
+        #code has to be right if rx will handle
         if code == pc.top_secret_code:
             h_flags = rx[4:6]
             h_no = rx[6:8]
             h_total = rx[8:10]
-            if h_flags[0] & 0x4 == 0: #checking multiple cmd's header... TODO : maybe implement a function to handle the header and guide execution after?
-                # single command execution
-                cmd = rx[10:12]
-                if cmd in cdh.cmd: # looks for command
-                    cmd = cdh.cmd[cmd] # re-assigning cmd to be key for cdh dict
-                else:
-                    self.error_handler("invalid command: {}".format(cmd)) 
-                args = None
-                if cdh.arg_len[cmd] != 0: # if / if not args are passed
-                    try: 
-                        args = rx[12:12+cdh.arg_len[cmd]]
-                    except Exception as e:
-                        self.error_handler("args decoding error: {}".format(e))
-                try: #try to execute
-                    if args is None:
-                        self.debug('running {} (no args)'.format(cmd), log=True)
-                        self.cmd_dispatch[cmd](self)
-                    else:
-                        self.debug('running {} (with args)'.format(cmd), log=True)
-                        self.debug('args: {})'.format(args), 2)
-                        self.cmd_dispatch[cmd](self,args)
-                except Exception as e:
-                    self.error_handler("cmd execution error: {}".format(e))
+
+            cmd = rx[10:12]
+            if cmd in cdh.cmd: # looks for command
+                cmd = cdh.cmd[cmd] # re-assigning cmd to be key for cdh dict
             else:
-                # multiple command execution
+                self.error_handler("invalid command: {}".format(cmd)) 
+            args = None
+            if cdh.arg_len[cmd] & 4 != 0: # if / if not args are passed
+                try: 
+                    args = rx[12:]
+                except Exception as e:
+                    self.error_handler("args decoding error: {}".format(e))
+            try: #try to execute
+                if args is None:
+                    self.debug('running {} (no args)'.format(cmd), log=True)
+                    self.cmd_dispatch[cmd](self.cubesat)
+                else:
+                    self.debug('running {} (with args)'.format(cmd), log=True)
+                    self.debug('args: {})'.format(args), 2)
+                    self.cmd_dispatch[cmd](self.cubesat,args)
+            except Exception as e:
+                self.error_handler("cmd execution error: {}".format(e))
+
+            # if listen again flag
+            if rx[4] & 0x3 == 0x3:
+
+                
+                # multiple command / multiple packet execution
                 #not implemented yet....
                 """
                 try:
@@ -220,6 +239,8 @@ class task(Task):
                     self.debug('command decode error: {}'.format(e))
                 """
                 pass
+
+            
             # listen again flag handler
                 # implement handling for multiple packet tx's -- probably a part of listen again?
         else:

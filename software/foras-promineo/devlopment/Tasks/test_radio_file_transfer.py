@@ -18,7 +18,7 @@ class task(Task):
         """
         if we are in image burst mode, get next chunk of file and flag that it send is ready
         """
-        if self.cubesat.radio1_burst_flag and not self.cubesat.send_buff_flag: 
+        if self.cubesat.radio1_burst_flag and not self.cubesat.send_buff_ready_flag: 
             
             if self.cubesat.brst_pkt_num == 0: # do some more things if this is the first packet we are grabbing
                 #get file size
@@ -36,21 +36,12 @@ class task(Task):
             #get the data
             with open(self.file_downlink_path, 'rb') as f:
                 #move pointer to current index
-                self.cubesat.send_buf[10:] = 
+                f.seek(index)
+                self.cubesat.send_buf[10:] = f.read(bytes2read)
+                f.close()
+            
+            #flag to the lora task that this is ready to send
+            self.cubesat.send_buff_ready_flag = True
 
-
-                self.cubesat.uart2.write(self.cubesat.payload.cmd_dispatch['next_pkt'])
-                bytes_rx = self.cubesat.uart2.readinto(self.cubesat.payload.buf)
-                self.debug("Data chunk recieved from payload:")
-                self.debug("{}".format(self.cubesat.payload.buf_read), 2)
-                if bytes_rx == 244: # if correct number of bytes recieved
-                    self.cubesat.payload.send_buff_flag = True
-                elif bytes_rx < 244: # if less than correct number
-                    if self.cubesat.payload.read_buf[2:3] == self.cubesat.payload.read_buf[4:5]: # if it is the last chunk
-                        self.cubesat.payload.buf[247:248] = b'0xffff' #assign the end flag
-                        self.debug("End of photo burst detected :)")
-                        self.cubesat.payload.send_buff_flag = True
-                    else:
-                        self.debug("Invalid data from payload durng burst")
 
 

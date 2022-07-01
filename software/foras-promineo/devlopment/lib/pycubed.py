@@ -146,12 +146,13 @@ class Satellite:
 
         #burst radio mode
         self.radio1_burst_flag = False
-        self.buff_ready = False
+        self.send_buff_ready_flag = False
         self.file_downlink_path = ""
         self.file_downlink_size = 0
         self.send_buff_tx_len = 0 # send buffer is always 252 bytes, but some tx's may be less.
         self.brst_pkt_num = 0
         self.brst_pkt_tot = 0
+        self.burst_st_time = 0
 
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
