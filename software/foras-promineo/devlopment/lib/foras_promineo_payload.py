@@ -30,7 +30,7 @@ class PAYLOAD():
             #other payload devices ? openMV should handle it's own devices...
         }
 
-        self.buf = bytearray(248) # [:2] empty space [2:3] packet no. [4:5] number of packets [6:246] image data [246:247] will be asserted to 0xff at the end of a burst cycle.
+        self.buf = bytearray(240) # 240 bytes of image data. last byte is always 
         self.buf_read = memoryview(self.buf)
         
         self.img_bst_flag = False # indication busrt mode is active

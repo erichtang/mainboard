@@ -39,7 +39,7 @@ from micropython import const
 class IMU():
     #remove i2c paramater as it is self.cubesat.i2c1
 
-    err_trig = const(1) #this is very low right now so i can see things happen
+    err_trig = const(100) #this is very low right now so i can see things happen
 
     def __init__(self, satellite, imu_name, mux_addr=0x70, gyro_addr=0x69,mag_addr=0x30, accel_addr=0x15): #insert optional variables for ignoring devices?
         """
@@ -220,8 +220,8 @@ class IMU():
     """
 
     def _read_device(self, key, ch, device_obj):
-        try_again_flag = True
-        while try_again_flag:
+        try_again_cnt = 0
+        while try_again_cnt <= 2:
             try:
                 if ch == 0:
                     self.mux.set_ch0()
@@ -237,13 +237,13 @@ class IMU():
                     raise Exception('read value is None')
                 return ret
             except Exception as e:
-                if try_again_flag:
-                    try_again_flag = False
+                if try_again_cnt < 2:
+                    try_again_cnt += 1
                 else:
                     print('[WARNING][{}][{}]: {}'.format(self.name, str(key), e))
                     self.err_cnt[key] += 1
                     if self.err_cnt[key] >= self.err_trig:
-                        self.cubesat.log('[ERROR][{}}][{}}][ERROR COUNT EXCEEDED][TURNING DEVICE OFF]'.format(self.name, str(key)))
+                        self.cubesat.log('[ERROR][{}][{}][ERROR COUNT EXCEEDED][TURNING DEVICE OFF]'.format(self.name, str(key)))
                         try:
                             self.cubesat.i2c_rst()
                             self.cubesat.i2c_reinit()

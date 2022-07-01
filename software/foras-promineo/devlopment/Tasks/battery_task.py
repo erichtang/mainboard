@@ -1,4 +1,5 @@
 """
+TODO: this code needs to move to housekeeper task. it will not be in the flight code.
 battery monitoring task that turns the sat to low power mode if battery low enough
 
 working through this right now.

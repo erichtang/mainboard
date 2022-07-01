@@ -1,13 +1,12 @@
 
 """
-usb_cdc.data task thru usb_cdc lib called in boot.py
+uses the usb_cdc.data USB as an interface for recieving commands from the host-pc.
+        polls the usb_cdc.data channel actively for new utf-8 encoded commands and args.
+        #TODO working on file tx/rx that will NOT be utf-8 encoded but that is TBR
 
-uses the usb_cdc DATA usb comms, not the CONSOLE used by the REPL
+all references to usb_cdc DATA are kept within this task. other files in this repository SHALL NOT reference usb_cdc.data at all.
 
-all references to usb_cdc DATA are kept within this task
-
-rename this task and have it ask the host PC software for what simulated values 
-
+Author: C.Hillis
 """
 from Tasks.template_task import Task
 import db_cdh 
@@ -36,18 +35,20 @@ class task(Task):
             db_cdh.write("-----------------------------------------------------------")
             usb_cdc.data.write(bytes(">>>", 'utf-8'))
 
-        self.usb_cdh = usb_cdh(self.cubesat)
-
-        self.dispatch = {
+        self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
         'no-op':                db_cdh.noop,
         'hreset':               db_cdh.hreset,
         'query':                db_cdh.query,
         'exec_cmd':             db_cdh.exec_cmd,
-        # new
-        'get_imu_offset':       db_cdh.get_imu_offset,
-        'pib_verify' :          db_cdh.pib_verify,
         'write':                db_cdh.write,
         'i2c_scan':             db_cdh.i2c_scan,
+        'print_gyro':           db_cdh.print_gyro,
+        'print_mag':            db_cdh.print_mag,
+        'print_accel':          db_cdh.print_accel,
+        'print_chunks_test':    db_cdh.print_chunks_test,
+        'download_logfile':     db_cdh.download_logfile,
+        'upload':               db_cdh.upload,
+        'download':             db_cdh.download,
         'simulate':             db_cdh.simulate
     }
 

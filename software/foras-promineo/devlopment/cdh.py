@@ -1,20 +1,21 @@
 import time
 
-#generic pycubed commands, not edited.
-cmd = {
+rx = { #recieved codes
     b'\x8eb': 'no-op',
     b'\xd4\x9f': 'hreset',
     b'\x12\x06': 'shutdown',
     b'8\x93': 'query',
     b'\x96\xa2': 'exec_cmd',
-   # Foras commands
-    b'\xf0' : 'connect'
+    b'\xf0' : 'connect',
+    b'\xab' : 'burst_test'
 }
 
-resp = { #responses transmitted
-    "NACK" : "\xFF\xFF",
-    "ACK"  : "\xAA\xC1",
-    "ERROR": "\xEE\xEE"
+tx = { #transmitted codes
+    "NACK" : b"\xFF\xFF",
+    "ACK"  : b"\xAA\xC1",
+    "ERROR": b"\xEE\xEE",
+    "BRST_ST": b"BS",
+    "BRST_END": b'BE'
 }
 
 arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
@@ -79,6 +80,12 @@ def exec_cmd(self,args):
 def payload_start(self, args):
     # arg frequnecy will determine how often the payload will look for a transmission
     pass
+
+def test_burst(self):
+    # set flags and counters for the test_radio_file_transfer task to start
+    self.cubesat.radio1_burst_flag = True
+    self.file_downlink_path = self.cubesat.logfile
+    self.brst_pkt_num = 0
 
 def img_bst(self, args):
     self.cubesat.payload.img_bst_flag = True

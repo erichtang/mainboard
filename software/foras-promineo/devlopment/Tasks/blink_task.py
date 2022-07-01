@@ -1,14 +1,18 @@
-# Blink the RGB LED
+"""
+controls the onboard neopixel RGB LED on the mainboard.
+
+"""
 
 from Tasks.template_task import Task
 
 class task(Task):
     priority = 255
-    frequency = .5 # twice per second
+    frequency = 10 
     name='blink'
     color = 'pink'
 
     rgb_on = False
+
     async def main_task(self):
         #self.debug("blinky :)")
         if self.rgb_on:

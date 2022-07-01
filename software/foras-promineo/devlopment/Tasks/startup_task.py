@@ -1,16 +1,19 @@
 """
-startup task for foras promineo.
-at startup, suspsends all non-critical tasks and preforms an initial startup / checkout procedure.
+TODO -- foras promineo state definiton, transition, and execution is still being devloped. I have no doubt this could change.
+startup task for foras promineo. 
+    Refer to the state transition table for mission operating states.
 
-at the end, it will instantiate all
-can go into lowbatt mode if nessesary
+at startup, stops all non-critical tasks and preforms an initial startup / checkout procedure.
+at the end, it will release the satellite to idle mode, by starting all the tasks that were stopped initally.
 
-TODO in progress
-currently just bypasses itself...
+this task is not-blocking, it will change settings for other task execution i.e. ADCS detumble / calibration
+    also, it will permimately not do inital startup actions if the NVM flag is set. (i.e. burn wires...)
+
+can go into safe mode from here.
 
 * Author: Caden Hillis
 """
-import usb_cdc
+import usb_cdc # TODO remove reference to usb_cdc, as simulation mode is now implemented differently than imagined here... Implement startup simulation task TOO!!
 from Tasks.template_task import Task
 
 class task(Task):

@@ -1,4 +1,12 @@
+"""
+TODO -- complete empty functions definitions
+            think of more possible commands to add for future debugging.
+USB debug commands from the cubesat host-pc.
+
+Author: C. Hillis
+"""
 import time
+import os
 import usb_cdc
 from debugcolor import co
 
@@ -19,7 +27,7 @@ def hreset(self):
 
     Returns:
         Success: Board re-initalization
-        Failure: "Reset Failed"
+        Failure: 'Reset Failed'
     """
     write('Resetting')
     try:
@@ -54,6 +62,33 @@ def i2c_scan(self):
     except Exception as e:
         write('Execution failed... : {}'.format(e))
 
+def print_gyro(self):
+    """
+    prints gyroscope data.
+    """
+    write("gyro0 : {}".format(self.cubesat.imu.gyro0))
+    write("gyro1 : {}".format(self.cubesat.imu.gyro1))
+    write("gyro2 : {}".format(self.cubesat.pib.imu.gyro0))
+    write("gyro3 : {}".format(self.cubesat.pib.imu.gyro1))
+
+def print_mag(self):
+    """
+    prints magnetometer data.
+    """
+    write("mag0 : {}".format(self.cubesat.imu.mag0))
+    write("mag1 : {}".format(self.cubesat.imu.mag1))
+    write("mag2 : {}".format(self.cubesat.pib.imu.mag0))
+    write("mag3 : {}".format(self.cubesat.pib.imu.mag1))
+
+def print_accel(self):
+    """
+    prints accelerometer data.
+    """
+    write("accel0 : {}".format(self.cubesat.imu.accel0))
+    write("accel1 : {}".format(self.cubesat.imu.accel1))
+    write("accel2 : {}".format(self.cubesat.pib.imu.accel0))
+    write("accel3 : {}".format(self.cubesat.pib.imu.accel1))
+
 def sd_ls(self):
     """
     TODO -- not implemented
@@ -61,15 +96,29 @@ def sd_ls(self):
     """
     pass
 
-def print_logfile(self):
+def print_chunks_test(self):
+    #temporary file print test function. prints file data in 256 byte chunks so this code can be portable to the radio and payload interface with minor modifications...
+    chunk_size = 256
+    length = os.stat(self.cubesat.logfile)[6]
+    with open(self.cubesat.logfile, "rb") as f:
+        write("Printing Logfile. Length {} bytes. {} {} byte packets".format(length, chunk_size, int(length/240)))
+    
+        write("FILE_START:")
+        while True:
+            chunk = f.read(chunk_size)
+            if chunk == b"":
+                break
+            usb_cdc.data.write(chunk)
+        write(":FILE_END")
+        
+def download_logfile(self):
     """
-    TODO -- not implemented
     prints the logfile to the terminal. the host-pc software should take this data and output a file a user can read.
 
     Returns:
-        TBR
+        see download_from_sd def.
     """
-    pass
+    download(self, self.cubesat.logfile)
 
 def print_mainboard_telemetry(self):
     """
@@ -260,32 +309,66 @@ def configure_file(self, name, *kwargs):
     """
     pass
 
-def upload_to_sd(self, path, name, file):
+def upload(self, path):
     """
-    TODO -- not implimented
+    TODO -- not tested.
     adds a file of name to the path specified on the sd.
+        this is a special command, as the file must be passed AFTER th \r\n of the original cmd and args!! this 
 
     Paramaters:
-        path :: the file locaton. leave blank for :/sd/ location
-        name :: file name.
-        file :: TODO idk how exactly this will work yet
+        path :: the file locaton. /sd/ added to begining location
     
     Returns:
         None
     """
-    pass
+    to = usb_cdc.data.timeout
+    usb_cdc.data.timeout = .1
 
-def download_from_sd(self, path):
+    if path[:4] != "/sd/":
+        path = "/sd/" + path
+
+    chunk_size = 256
+    with open(path, 'ab') as f:
+        while True:
+            waiting = usb_cdc.data.in_waiting
+            if waiting < chunk_size:
+                f.write(usb_cdc.data.read(waiting))
+                break
+            else:
+                f.write(usb_cdc.data.read(chunk_size))
+        f.close()
+    usb_cdc.data.timeout = to
+
+    write("File uploaded to {}".format(path))
+    write("To verify file integrety, execute cmd crc_file.")
+
+def download(self, path):
     """
-    TODO -- not implimented
     sends a file to the host-pc specified by the path provided
 
     Paramaters:
         part :: path to the file. :/sd/ is added to the front.
     
     Returns:
-       TODO idk how exactly this will work yet
+        a file
+            start string "FILE_START:"
+            end string ":FILE_END\r\n"
+            bytes data. encoding is dependent on file.
     """
+    if path[:4] != "/sd/":
+        path = "/sd/" + path
+    chunk_size = 256
+    length = os.stat(path)[6]
+    write("Printing {}. Length {} bytes. {} {} byte packets".format(path, length, chunk_size, int(length/240)))
+    with open(path, "rb") as f:
+        usb_cdc.data.write("FILE_START:".encode('utf-8'))
+        while True:
+            chunk = f.read(chunk_size)
+            if chunk == b"":
+                break
+            usb_cdc.data.write(chunk)
+        usb_cdc.data.write(':FILE_END\r\n'.encode('utf-8'))
+        f.close()
     pass
 
 def sd_rm(self, path):

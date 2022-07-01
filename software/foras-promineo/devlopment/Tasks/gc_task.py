@@ -1,12 +1,13 @@
 """
 Garbage collection task
 
+Author: C.Hillis
 """
 from Tasks.template_task import Task
 import gc
 
 class task(Task):
-    priority = 2
+    priority = 4
     frequency = 1
     name='gc'
     color = 'pink'
