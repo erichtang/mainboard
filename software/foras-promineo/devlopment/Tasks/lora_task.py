@@ -2,10 +2,27 @@
 TODO -- lora radio conops and packet structure are still under devlopment. this will probably change.
 LoRa radio operations for beacon, connected, and payload satellite states.
 
-this task will be modified by execution of certian commands sent to the sat...
-TODO:
-    single packet single cmd rx during beacon is verified
-    multiple packet, multiple cmd, connected mode, and payload mode are not done or verified....
+Functionalities:
+    Beacon Mode: LoRa transmits a repeating message and listens for responses.
+        beacon tx --> rx command --> ex cmd
+    Burst Mode: LoRa transmits data in a quick succession.
+        tx chunk 0 --> tx chunk 1 --> tx chunk 2 ......
+    Connected Mode: LoRa listens more frequenctly to recieve successive commands from the ground station
+        rx command --> ex cmd --> rx cmd --> ex cmd......
+
+Implementation status:
+    Header -- still a work in progress, but workable for now
+    Beacon -- Single packet tx and rx have been verified.
+    Burst -- working on verifying burst with test_radio_file_transfer.py
+    Connected -- WIP
+
+Notes:
+    I have some flags defined in pycubed.py for burst mode transmission, thouse should probably go and live somewhere else eventually.
+
+Wishlist:
+    multiple packets flag / counter for recieveing args for a command longer than 242 bytes
+    implementing a "command queue" task that queues radio commands and their args so that the radio can just focus on listening.
+    file burst uplink similar to burst downlink
 
 * Author: Caden Hillis
 Based upon beacon_task.py by Max Holliday from beepsat_advanced devlopment branch.
@@ -17,8 +34,6 @@ import cdh
 import passcode as pc
 
 class task(Task):
-    #priority = 2
-    #frequency = 1/30 # once every 30s
     name='LoRa'
     color = 'teal'
 
@@ -32,10 +47,6 @@ class task(Task):
         'dc_t' : 1,
         'c_to' : .1 # connected timeout
     }
-
-    # our 4 byte codee to authorize commands
-    # pass-code for DEMO PURPOSES ONLY
-    super_secret_code = b'p\xba\xb8C'
 
     cmd_dispatch = {
         'no-op':        cdh.noop,
@@ -123,7 +134,7 @@ class task(Task):
                 self.rx_handler(rx)
             else:
                 self.dc_count += 1
-                if self.dc_cnt >= self.dc_trig:
+                if self.dc_cnt >= self.config['dc_t']:
                     self.dc_cnt = 0
                     cdh.disconnect()
         
