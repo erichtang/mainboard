@@ -92,28 +92,24 @@ void loop() {
     }
   }
 
-  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-  uint8_t len = sizeof(buf);
+uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+uint8_t len = sizeof(buf);
 
-  if (rf95.available()) {
     // Wait for a message addressed to us from the client
-    if (rf95.recv(buf, &len)) {
-      Serial.print("RX START :::");
-      Serial.write(buf, len);
-      Serial.println("::: RX END");
-      Serial.print("RSSI: ");
-      Serial.println(rf95.lastRssi(), DEC);
-      if (tx_flag == true) {  // transmit packet
-        Serial.print("TX START :::");
-        Serial.write(tx_buf, bytes2read);
-        rf95.send(tx_buf, bytes2read);
-        rf95.waitPacketSent();
-        Serial.println("::: TX END");
-        tx_flag = false;
-      }
-    } else {
-      Serial.println("[RX FAIL]");
+  if (rf95.recv(buf, &len)) {
+    Serial.print("RX START :::");
+    Serial.write(buf, len);
+    Serial.println("::: RX END");
+    Serial.print("RSSI: ");
+    Serial.println(rf95.lastRssi(), DEC);
+    if (tx_flag == true) {  // transmit packet
+      Serial.print("TX START :::");
+      Serial.write(tx_buf, bytes2read);
+      rf95.send(tx_buf, bytes2read);
+      rf95.waitPacketSent();
+      Serial.println("::: TX END");
+      tx_flag = false;
     }
-    delay(50);
   }
+    rf95.setModeRx();
 }

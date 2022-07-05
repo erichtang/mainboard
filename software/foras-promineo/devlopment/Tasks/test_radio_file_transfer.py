@@ -12,7 +12,7 @@ class task(Task):
     name='file transfer'
     color = 'blue'
 
-    max_packet_len = 242
+    max_packet_len = 238
 
     async def main_task(self):
         """
@@ -30,18 +30,21 @@ class task(Task):
 
             #figure out how many bytes to read at what index
             index = self.cubesat.brst_pkt_num * self.max_packet_len
-            print(index)
-            if self.cubesat.brst_pkt_num < self.cubesat.brst_pkt_tot:
+            # if not last packet
+            if self.cubesat.brst_pkt_num < self.cubesat.brst_pkt_tot - 1:
                 bytes2read = self.max_packet_len
+            #if last packet
             else:
-                bytes2read = (self.cubesat.brst_pkt_tot * self.max_packet_len) - self.cubesat.file_downlink_size
-            
+                bytes2read = self.cubesat.file_downlink_size - ((self.cubesat.brst_pkt_tot -1) * self.max_packet_len)
+            #print("Packets Left: {}".format(self.cubesat.brst_pkt_tot - self.cubesat.brst_pkt_num))
+            #print("Bytes 2 read: {}".format(bytes2read))
             self.cubesat.send_buff_tx_len = bytes2read
+            
             #get the data
             with open(self.cubesat.file_downlink_path, 'rb') as f:
                 #move pointer to current index
                 f.seek(index)
-                self.cubesat.send_buff[10:] = f.read(self.max_packet_len)
+                self.cubesat.send_buff[10:10+bytes2read] = f.read(bytes2read)
                 f.close()
             
             #flag to the lora task that this is ready to send

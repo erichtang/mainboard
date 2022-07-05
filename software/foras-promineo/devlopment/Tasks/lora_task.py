@@ -87,36 +87,39 @@ class task(Task):
 
             if self.cubesat.brst_pkt_num == 0: #if this is the first packet
                 # assemble burst start packet
-                brst_start_tx = self.assemble_header(listen_again=True)
+                brst_start_tx = self.assemble_header(multiple_packets=True)
                 brst_start_tx += cdh.tx['BRST_ST'] 
                 # send burst start command
                 self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
-                self.cubesat.radio1.send_fast(brst_start_tx, len(brst_start_tx))
+                self.cubesat.radio1.send(brst_start_tx, keep_listening=False)
                 # record time of start
                 self.cubesat.burst_st_time = time.monotonic()
 
             # now send the buffer
             # add the header to the send buffer
-            self.cubesat.send_buff[:10] = self.assemble_header(listen_again=True, multiple_packets=True, packet_number=self.cubesat.brst_pkt_num, outof = self.cubesat.brst_pkt_tot)
+            self.cubesat.send_buff[:10] = self.assemble_header(multiple_packets=True, packet_number=self.cubesat.brst_pkt_num+1, outof = self.cubesat.brst_pkt_tot+2)
             self.cubesat.send_buff_tx_len += 10 # increment send buffer length by header length
 
             # send packet
             self.debug("Sending Burst Packet {}".format(self.cubesat.brst_pkt_num))
-            self.cubesat.radio1.send_fast(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len], self.cubesat.send_buff_tx_len) # send this w/o radiohead header and things.... # this needs to be sebd_fast but reciever doesnt suport that rn
+            #self.debug('{}'.format(bytearray(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len])))
+
+            if not self.cubesat.radio1.send(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len], keep_listening=False):
+                self.debug("Burst Packet Tx FAIL")
             # if that was the last packet
-            if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot: 
+            if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot - 1: 
                 time_elapsed = time.monotonic() - self.cubesat.burst_st_time
                 # assemble burst end packet
-                brst_end_tx = self.assemble_header()
+                brst_end_tx = self.assemble_header(multiple_packets=True, packet_number=self.cubesat.brst_pkt_tot+2, outof=self.cubesat.brst_pkt_tot+2)
                 brst_end_tx += cdh.tx['BRST_END'] 
                 # send burst end command
                 self.debug("Transmitting Burst End: {}".format(brst_end_tx))
-                self.cubesat.radio1.send(brst_end_tx, len(brst_end_tx))
+                self.cubesat.radio1.send(brst_end_tx)
                 #turn the bursting off
                 self.cubesat.send_buff_ready_flag = False
                 self.cubesat.radio1_burst_flag = False
                 self.cubesat.beacon = True
-                self.cubesat.scheduled_tasks['LoRa'].change_rate(self.config['frequency'])
+                self.cubesat.scheduled_tasks['LoRa'].change_rate(self.cfg['frequency'])
                 self.debug("Burst Done. Transmitted {} bytes in {} seconds".format(self.cubesat.file_downlink_size, time_elapsed))
             
             else:  # reset flag and increment packet counter for getter task to get next set of data         
@@ -167,8 +170,8 @@ class task(Task):
         header[3] = pc.top_secret_code[3]
         # flags
         header[4] = 0
-        #header[4] |= (listen_again & 0x1) 
-        #header[4] |= (multiple_packets & 0x2) 
+        header[4] |= (listen_again & 0x1) 
+        header[4] |= (multiple_packets & 0x2) 
         #header[4] |= (multiple_cmds & 0x4) #TODO add more flags?
         header[5] = 0
         # multiple packets
@@ -182,10 +185,11 @@ class task(Task):
         return header
 
     def tx_beacon(self):
-        #tries to initiate a downlink connection.
+        # tries to initiate a downlink connection.
         # sends data and awaits a connect response from the GS.
         packet = self.assemble_header()
-        packet += "Foras Promineo Cubesat Beacon Test Packet" # TODO Change for flight
+        packet += cdh.tx['BEACON'] 
+        # figure out what telemetry we want to send via beacon...
         self.debug("Sending Beacon:")
         self.debug("{}".format(packet), level=2)
         if not self.cubesat.radio1.send(bytearray(packet), keep_listening=True):

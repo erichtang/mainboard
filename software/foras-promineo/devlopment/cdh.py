@@ -14,8 +14,9 @@ tx = { #transmitted codes
     "NACK" : b"\xFF\xFF",
     "ACK"  : b"\xAA\xC1",
     "ERROR": b"\xEE\xEE",
+    "BEACON": b"\xbe\xac",
     "BRST_ST": b"BS",
-    "BRST_END": b'BE'
+    "BRST_END": b"BE",
 }
 
 arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
@@ -85,7 +86,7 @@ def burst_test(self):
     # set flags and counters for the test_radio_file_transfer task to start
     self.cubesat.beacon=False
     self.cubesat.radio1_burst_flag = True
-    self.cubesat.file_downlink_path = "/sd/log.txt"
+    self.cubesat.file_downlink_path = "/sd/cat.jpg"
     self.cubesat.brst_pkt_num = 0
     self.cubesat.scheduled_tasks['LoRa'].change_rate(100)
 
