@@ -54,6 +54,7 @@ class task(Task):
         'shutdown':     cdh.shutdown,
         'query':        cdh.query,
         'exec_cmd':     cdh.exec_cmd,
+        'burst_test':   cdh.burst_test,
     }
 
     def __init__(self,satellite):
@@ -65,24 +66,20 @@ class task(Task):
         self.cfg = self.d_cfg
         self.load_cfg(self.cfg, self.name)
 
-        self.beacon = True
+        #self.beacon = True
         self.connected = False
         self.dc_cnt = 0 # number of cycles without a response
 
     async def main_task(self):
 
-        if self.beacon:
+        if self.cubesat.beacon:
             #we we are not connected, send a beacon
-            self.debug("Sending beacon")
             self.tx_beacon()
             rx = await self.listen(self.cfg['b_to'])
             if rx is not None:
                 self.debug("Heard Something: ")
                 self.debug("{}".format(rx),2)
-                try:
-                    self.rx_handler(rx)
-                except:
-                    self.debug("rx problem remove me later")
+                self.rx_handler(rx)
 
         # burst mode has priority over connected mode
         # if we are bursting data and the buffer is ready
@@ -90,41 +87,44 @@ class task(Task):
 
             if self.cubesat.brst_pkt_num == 0: #if this is the first packet
                 # assemble burst start packet
-                brst_start_tx = self.assemble_header(listen_again=True)
+                brst_start_tx = self.assemble_header(multiple_packets=True)
                 brst_start_tx += cdh.tx['BRST_ST'] 
                 # send burst start command
                 self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
-                self.cubesat.radio1.send_fast(brst_start_tx, len(brst_start_tx))
+                self.cubesat.radio1.send(brst_start_tx, keep_listening=False)
                 # record time of start
                 self.cubesat.burst_st_time = time.monotonic()
 
             # now send the buffer
             # add the header to the send buffer
-            self.cubesat.send_buff[:10] = self.assemble_header(listen_again=True, multiple_packets=True, packet_number=self.cubesat.brst_pkt_num, outof = self.cubesat.brst_pkt_tot)
+            self.cubesat.send_buff[:10] = self.assemble_header(multiple_packets=True, packet_number=self.cubesat.brst_pkt_num+1, outof = self.cubesat.brst_pkt_tot+2)
             self.cubesat.send_buff_tx_len += 10 # increment send buffer length by header length
 
             # send packet
             self.debug("Sending Burst Packet {}".format(self.cubesat.brst_pkt_num))
-            #self.debug("{}".format(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len]))
-            self.cubesat.radio1.send_fast(self.cubesat.send_buff[:self.send_buff_tx_len], self.send_buff_tx_len) # send this w/o radiohead header and things....
-            
+            #self.debug('{}'.format(bytearray(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len])))
+
+            if not self.cubesat.radio1.send(self.cubesat.send_buff[:self.cubesat.send_buff_tx_len], keep_listening=False):
+                self.debug("Burst Packet Tx FAIL")
             # if that was the last packet
-            if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot: 
+            if self.cubesat.brst_pkt_num == self.cubesat.brst_pkt_tot - 1: 
                 time_elapsed = time.monotonic() - self.cubesat.burst_st_time
                 # assemble burst end packet
-                brst_end_tx = self.assemble_header()
+                brst_end_tx = self.assemble_header(multiple_packets=True, packet_number=self.cubesat.brst_pkt_tot+2, outof=self.cubesat.brst_pkt_tot+2)
                 brst_end_tx += cdh.tx['BRST_END'] 
                 # send burst end command
-                self.debug("Transmitting Burst End: {}".format(brst_start_tx))
-                self.cubesat.radio1.send_fast(brst_end_tx, len(brst_end_tx))
+                self.debug("Transmitting Burst End: {}".format(brst_end_tx))
+                self.cubesat.radio1.send(brst_end_tx)
                 #turn the bursting off
-                self.cubesat.send_buff_flag = False
+                self.cubesat.send_buff_ready_flag = False
                 self.cubesat.radio1_burst_flag = False
+                self.cubesat.beacon = True
+                self.cubesat.scheduled_tasks['LoRa'].change_rate(self.cfg['frequency'])
                 self.debug("Burst Done. Transmitted {} bytes in {} seconds".format(self.cubesat.file_downlink_size, time_elapsed))
             
             else:  # reset flag and increment packet counter for getter task to get next set of data         
                 self.cubesat.brst_pkt_num += 1
-                self.cubesat.send_buff_flag = False
+                self.cubesat.send_buff_ready_flag = False
 
         # self.connected the GS wants to have tight comms and a lot of data exchange
         elif self.connected:
@@ -185,11 +185,12 @@ class task(Task):
         return header
 
     def tx_beacon(self):
-        #tries to initiate a downlink connection.
+        # tries to initiate a downlink connection.
         # sends data and awaits a connect response from the GS.
         packet = self.assemble_header()
-        packet += "Foras Promineo Cubesat Beacon Test Packet" # TODO Change for flight
-        self.debug("Sending Packet:")
+        packet += cdh.tx['BEACON'] 
+        # figure out what telemetry we want to send via beacon...
+        self.debug("Sending Beacon:")
         self.debug("{}".format(packet), level=2)
         if not self.cubesat.radio1.send(bytearray(packet), keep_listening=True):
             self.debug("tx error")
@@ -199,7 +200,7 @@ class task(Task):
         heard_something = await self.cubesat.radio1.await_rx(timeout=timeout)
         if heard_something:
             # retrieve response
-            response = self.cubesat.radio1.receive(keep_listening=True,with_ack=True, with_header=True, timeout=timeout)
+            response = self.cubesat.radio1.receive(keep_listening=True,with_ack=True, with_header=False, timeout=timeout)
             if response is not None:
                 self.debug('msg: {}, RSSI: {}'.format(response,self.cubesat.radio1.last_rssi-137),2)
                 self.cubesat.c_gs_resp+=1
@@ -215,24 +216,27 @@ class task(Task):
             h_total = rx[8:10]
 
             cmd = rx[10:12]
-            if cmd in cdh.cmd: # looks for command
-                cmd = cdh.cmd[cmd] # re-assigning cmd to be key for cdh dict
+            if cmd in cdh.rx: # looks for command
+                cmd = cdh.rx[cmd] # re-assigning cmd to be key for cdh dict
             else:
-                self.error_handler("invalid command: {}".format(cmd)) 
+                self.error_handler("invalid command: {}".format(cmd))
+                return 
             args = None
-            if cdh.arg_len[cmd] & 4 != 0: # if / if not args are passed
-                try: 
-                    args = rx[12:]
-                except Exception as e:
-                    self.error_handler("args decoding error: {}".format(e))
+            """
+            Re-write next section to be compatable with new change caden ()n mkade
+            """
+            try: 
+                args = rx[12:]
+            except Exception as e:
+                self.error_handler("args decoding error: {}".format(e))
             try: #try to execute
-                if args is None:
+                if len(args) == 0:
                     self.debug('running {} (no args)'.format(cmd), log=True)
-                    self.cmd_dispatch[cmd](self.cubesat)
+                    self.cmd_dispatch[cmd](self)
                 else:
                     self.debug('running {} (with args)'.format(cmd), log=True)
                     self.debug('args: {})'.format(args), 2)
-                    self.cmd_dispatch[cmd](self.cubesat,args)
+                    self.cmd_dispatch[cmd](self,args)
             except Exception as e:
                 self.error_handler("cmd execution error: {}".format(e))
 
@@ -262,7 +266,7 @@ class task(Task):
         #TBR THIS WILL PROBABLY HAVE TO BE MUCH MORE SOPHISTICATED?
         self.debug(e)
         error_packet = self.assemble_header(self)
-        error_packet += (cdh.resp['ERROR'])
+        error_packet += (cdh.tx['ERROR'])
         error_packet += e
         self.cubesat.radio1.send(error_packet, keep_listening=True) # THIS IS TEMPORARY, TODO CHANGE
         # IF MULTIPLE PACKETS ARE SENT this needs to be SENT AFTER ALL PACKETS HAVE BEEN RX'd

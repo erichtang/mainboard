@@ -382,7 +382,8 @@ def sd_rm(self, path):
     Returns:
         None
     """
-    pass
+    write(path[0])
+    os.remove(path[0])
 
 def pl_cmd_arm(self, *args):
     """

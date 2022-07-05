@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "env": { "PYTHONPATH": "C:/Users/cjhillis/Anaconda3/coda "}
+            "env": { "PYTHONPATH": "C:/Users/cjhillis/Anaconda3/envs/env-01/python.exe"}
         }
     ]
 }

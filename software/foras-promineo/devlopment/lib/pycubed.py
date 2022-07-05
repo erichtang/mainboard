@@ -144,7 +144,7 @@ class Satellite:
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
 
-        #burst radio mode
+        #burst radio mode --- these should probably move to another location....
         self.radio1_burst_flag = False
         self.send_buff_ready_flag = False
         self.file_downlink_path = ""
@@ -153,6 +153,8 @@ class Satellite:
         self.brst_pkt_num = 0
         self.brst_pkt_tot = 0
         self.burst_st_time = 0
+        self.beacon = True
+
 
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
@@ -231,12 +233,12 @@ class Satellite:
         # TODO Edit this for our mission spec. CH
         try:
             self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
-                433.0,code_rate=8,baudrate=1320000)
+                435.0,code_rate=6,baudrate=1320000)
             # Default LoRa Modulation Settings
             # Frequency: 433 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
             self.radio1.dio0=self.radio1_DIO0
             self.radio1.enable_crc=True
-            self.radio1.ack_delay=0.2
+            self.radio1.ack_delay=0.1
             self.radio1.sleep()
             self.radio1.node = self.cfg['id'] # our ID
             self.radio1.destination = self.cfg['gs'] # target's ID
@@ -420,6 +422,7 @@ class Satellite:
             with open(self.logfile, "a+") as f:
                 t=int(time.monotonic())
                 f.write('{}, {}\r\n'.format(t,msg))
+                f.close()
         if print_flag: print(msg)
 
     def print_file(self,filedir=None,binary=False):

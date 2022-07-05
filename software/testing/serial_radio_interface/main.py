@@ -14,10 +14,11 @@ cmd_codes = {
     'query' : b'8\x93',
     'exec_cmd' : b'\x96\xa2',
     'connect' : b'\xf0',
+    'burst_test': b'ab'
 }
 
 #serial and file
-ser = serial.Serial('COM6', 115200, timeout=0)
+ser = serial.Serial('COM11', 115200, timeout=0)
 #ser.open()
 logfile = open("serial_log.txt", "w", encoding = "utf-8")
 
@@ -26,35 +27,28 @@ def serial_data_getter():
     while True:
         if ser.in_waiting:
             rx_data = ser.read(1023) # radio packets are ~248, the radio interface adds 34 bytes of char 300 for margin
-            print(rx_data)
-            try:
-                start_seq = ("RX START :::").encode("utf-8")
-                endmsg_seq = ("::: RX END\r\n").encode("utf-8")
-                rssi_seq = ("RSSI: ").encode("utf-8")
-                end_seq = ("\r\n").encode("utf-8")
-                start_i = rx_data.find(start_seq)
-                endmsg_i = rx_data.find(endmsg_seq, start_i)
-                rssi_i = rx_data.find(rssi_seq, endmsg_i)
-                end_i = rx_data.find(end_seq, rssi_i)
-                msg = rx_data[start_i + len(start_seq) : endmsg_i]
-                header = msg[:10]
-                msg = msg[10:]
-                print(header)
-                print(msg)
-                rssi = rx_data[rssi_i + len(rssi_seq) : end_i]
-                print(rssi)
-                extra = rx_data[end_i + len(end_seq):]
-                if extra:
-                    tx_start_seq = ("TX START :::").encode("utf-8")
-                    tx_end_seq = ("::: TX END\r\n").encode("utf-8")
-                    tx_start_i = rx_data.find(tx_start_seq, end_i)
-                    tx_end_i = rx_data.find(tx_end_seq, tx_start_i)
-                    if tx_start_i != -1 and tx_end_i != -1:
-                        tx_msg = rx_data[tx_start_i + len(tx_start_seq) : tx_end_i]
-                        print(tx_msg)
-            except Exception as e:
-                print(e)
-        time.sleep(.1)
+            while len(rx_data) > 10:
+                try:
+                    #print(rx_data)
+                    start_seq = ("RX START :::").encode("utf-8")
+                    endmsg_seq = ("::: RX END\r\n").encode("utf-8")
+                    rssi_seq = ("RSSI: ").encode("utf-8")
+                    end_seq = ("\r\n").encode("utf-8")
+                    start_i = rx_data.find(start_seq)
+                    endmsg_i = rx_data.find(endmsg_seq, start_i)
+                    rssi_i = rx_data.find(rssi_seq, endmsg_i)
+                    end_i = rx_data.find(end_seq, rssi_i)
+                    msg = rx_data[start_i + len(start_seq) : endmsg_i]
+                    header = msg[:10]
+                    msg = msg[10:]
+                    #print(header)
+                    print(msg)
+                    rssi = rx_data[rssi_i + len(rssi_seq) : end_i]
+                    #print(rssi)
+                    rx_data = rx_data[end_i:]
+                except Exception as e:
+                    print(e)
+        time.sleep(1)
 
 def end():
     ser.close()

@@ -7,15 +7,16 @@ rx = { #recieved codes
     b'8\x93': 'query',
     b'\x96\xa2': 'exec_cmd',
     b'\xf0' : 'connect',
-    b'\xab' : 'burst_test'
+    b'ab' : 'burst_test'
 }
 
 tx = { #transmitted codes
     "NACK" : b"\xFF\xFF",
     "ACK"  : b"\xAA\xC1",
     "ERROR": b"\xEE\xEE",
+    "BEACON": b"\xbe\xac",
     "BRST_ST": b"BS",
-    "BRST_END": b'BE'
+    "BRST_END": b"BE",
 }
 
 arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
@@ -81,11 +82,13 @@ def payload_start(self, args):
     # arg frequnecy will determine how often the payload will look for a transmission
     pass
 
-def test_burst(self):
+def burst_test(self):
     # set flags and counters for the test_radio_file_transfer task to start
+    self.cubesat.beacon=False
     self.cubesat.radio1_burst_flag = True
-    self.file_downlink_path = self.cubesat.logfile
-    self.brst_pkt_num = 0
+    self.cubesat.file_downlink_path = "/sd/cat.jpg"
+    self.cubesat.brst_pkt_num = 0
+    self.cubesat.scheduled_tasks['LoRa'].change_rate(100)
 
 def img_bst(self, args):
     self.cubesat.payload.img_bst_flag = True
@@ -94,6 +97,6 @@ def img_bst(self, args):
     pass
 
 def respond_ACK_no_args(self):
-    self.cubesat.radio1.send(resp["ACK"])
+    self.cubesat.radio1.send(bytearray(tx["ACK"]), keep_listening=True)
 
         
