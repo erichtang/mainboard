@@ -233,7 +233,7 @@ class Satellite:
         # TODO Edit this for our mission spec. CH
         try:
             self.radio1 = pycubed_rfm9x.RFM9x(self.spi, _rf_cs1, _rf_rst1,
-                435.0,code_rate=6,baudrate=1320000)
+                433.0,code_rate=8,baudrate=1320000)
             # Default LoRa Modulation Settings
             # Frequency: 433 MHz, SF7, BW125kHz, CR4/8, Preamble=8, CRC=True
             self.radio1.dio0=self.radio1_DIO0
