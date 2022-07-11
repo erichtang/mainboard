@@ -1,6 +1,7 @@
 """
 controls the onboard neopixel RGB LED on the mainboard.
 
+TODO I want to change this to be a rainbow
 """
 
 from Tasks.template_task import Task

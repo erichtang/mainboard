@@ -1,6 +1,20 @@
+"""
+radio transmit and recieve commands.
+
+radio recieves the following packet structure:
+
+10 bytes header
+2 bytes cmd code
+x bytes after are args to the command.
+
+args formatting is defined on a per-command basis.
+"""
 import time
 
-rx = { #recieved codes
+rx = {
+    """
+    2-byte command codes of recieved commands here
+    """
     b'\x8eb': 'no-op',
     b'\xd4\x9f': 'hreset',
     b'\x12\x06': 'shutdown',
@@ -10,7 +24,10 @@ rx = { #recieved codes
     b'ab' : 'burst_test'
 }
 
-tx = { #transmitted codes
+tx = {
+    """
+    2-byte command codes of transmitted commands here
+    """
     "NACK" : b"\xFF\xFF",
     "ACK"  : b"\xAA\xC1",
     "ERROR": b"\xEE\xEE",
@@ -19,18 +36,19 @@ tx = { #transmitted codes
     "BRST_END": b"BE",
 }
 
-arg_len = { #number of bytes of args after each rx command. useful for multiple commands in one packet.
-    'no-op' : 0,
-    'connect' : 0
-}
-
 ########### commands without arguments ###########
 def noop(self):
-    self.debug('no-op')
-    respond_ACK_no_args(self)
+    """
+    Returns ACK via radio 
+    """
+    self.debug('no-op command recieved')
+    self.cubesat.radio1.send(tx['ACK'])
     pass
 
 def hreset(self):
+    """
+    Hard resets the satellite.
+    """
     self.debug('Resetting')
     try:
         self.cubesat.radio1.send(data=b'resetting')
@@ -39,19 +57,37 @@ def hreset(self):
     except:
         pass
 
-def connect(self):
-    self.connected = True
-    # do a settings load?
+def connect(self): 
+    """
+    initates the radio "connected" state
+    """
+    pass
 
 def disconnect(self):
-    self.connected = False
-    self.cubesat.radio1.sleep()
-    # change other task settings
+    """
+    deinitiates the radio "connected" state
+    """
+    pass
+
+def print_telemetry(self):
+    """
+    transmits important telemetry down to the ground
+    """
+    pass
+
+def download_log(self):
+    """
+    transmits logfile down to the ground
+    """
+    pass
 
 ########### commands with arguments ###########
 
 def shutdown(self,args):
-    # make shutdown require yet another pass-code
+    """
+    TODO: refer to PyCubed website for further additions to this command
+    Shutdown command, turns off satellite for specified period of time
+    """
     if args == b'\x0b\xfdI\xec':
         self.debug('valid shutdown command received')
         # set shutdown NVM bit flag
@@ -71,18 +107,74 @@ def shutdown(self,args):
             time.sleep(100000)
 
 def query(self,args):
+    """
+    sends valued queried over radio
+    """
     self.debug('query: {}'.format(args))
     self.cubesat.radio1.send(data=str(eval(args)))
 
 def exec_cmd(self,args):
+    """
+    TODO: refer to PyCubed website for further additions to this command
+    executes command passed
+    """
     self.debug('exec: {}'.format(args))
     exec(args)
 
 def payload_start(self, args):
+    """
+    TODO
+    Shutdown command, turns off satellite for specified period of time
+    """
     # arg frequnecy will determine how often the payload will look for a transmission
     pass
 
+def pl_cmd_arm(self, args):
+    """
+    command to payload arm
+    """
+    pass
+
+def pl_cmd_photo(self, args):
+    """
+    command the payload to take a photo
+    """
+    pass
+
+def pl_cmd_download_photo(self, args):
+    """
+    command the payload to send photo chunk
+    """
+    pass
+
+def download_file(self, args):
+    """
+    download a file from the mainboard's SD card
+    """
+    pass
+
+def upload_file(self, args):
+    """
+    upload a file to the mainboard's SD card
+    """
+    pass
+
+def download_configs(self, args):
+    """
+    download a config for a specified task
+    """
+    pass
+
+def upload_configs(self, args):
+    """
+    upload a config for a specified task
+    """
+    pass
+
 def burst_test(self):
+    """
+    a test command to burst a photo down
+    """
     # set flags and counters for the test_radio_file_transfer task to start
     self.cubesat.beacon=False
     self.cubesat.radio1_burst_flag = True
@@ -90,13 +182,5 @@ def burst_test(self):
     self.cubesat.brst_pkt_num = 0
     self.cubesat.scheduled_tasks['LoRa'].change_rate(100)
 
-def img_bst(self, args):
-    self.cubesat.payload.img_bst_flag = True
-    self.cubesat.uart2.write(self.cubesat.payload.cmd_dispatch['brst'])
-    self.cubesat.radio1.idle() #stop radio from listening for other packets
-    pass
-
-def respond_ACK_no_args(self):
-    self.cubesat.radio1.send(bytearray(tx["ACK"]), keep_listening=True)
 
         
