@@ -13,7 +13,7 @@ Based upon def's in pycubed.py by Max Holliday
 
 import msgpack
 
-def load_cfg(cfg, name, log, sd=False):
+def load_cfg(cfg, name, log, sd=True):
     try:
         if sd:
             path = "/sd/cfg/{}.bak".format(name)
@@ -26,7 +26,7 @@ def load_cfg(cfg, name, log, sd=False):
     except Exception as e:
         log("[ERROR][LOAD CONFIG FOR {} FAIL]".format(name))
     
-def save_cfg(cfg, name, log, sd=False):
+def save_cfg(cfg, name, log, sd=True):
         # binary pack config and save it
         try:
             if sd:

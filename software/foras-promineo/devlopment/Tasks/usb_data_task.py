@@ -1,8 +1,9 @@
 
 """
 uses the usb_cdc.data USB as an interface for recieving commands from the host-pc.
-        polls the usb_cdc.data channel actively for new utf-8 encoded commands and args.
+        polls the usb_cdc.data channel actively for new commands/
         #TODO working on file tx/rx that will NOT be utf-8 encoded but that is TBR
+        #TODO work on simulation interface
 
 all references to usb_cdc DATA are kept within this task. other files in this repository SHALL NOT reference usb_cdc.data at all.
 
@@ -30,11 +31,9 @@ class task(Task):
         usb_cdc.data.reset_input_buffer
         usb_cdc.data.timeout = 0.1
         if usb_cdc.data.connected:
-            db_cdh.write("\r\n-----------------------------------------------------------")
-            db_cdh.write(co("Debug USB Channel OPEN ! :)", 'green', 'bold'))
-            db_cdh.write("-----------------------------------------------------------")
-            usb_cdc.data.write(bytes(">>>", 'utf-8'))
+            db_cdh.write(self, 'init')
 
+        #TODO this shall also change to be single byte command codes for recieveing.
         self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
         'no-op':                db_cdh.noop,
         'hreset':               db_cdh.hreset,
@@ -59,46 +58,40 @@ class task(Task):
         Checks if there are any commands in waiting.
 
         cmd structure:
-        all commands will be terminated with \n (i.e. a single line and \r is optional), ASCII encoded
-        all args passed shall be separated with "," NOT ", "
+        3 byte header:
+            1 byte cmd code
+            1 byte msg len
+            1 byte checksum
+        x bytes of msg
         """
         if usb_cdc.data.connected:
             """
             If usb_cdc.data is connected, it looks for commands and data
             """
-            heard_cmd = usb_cdc.data.in_waiting
+            #listen for command
             rx=None
+            heard_cmd = usb_cdc.data.in_waiting
             if heard_cmd >= 1:
-                rx = usb_cdc.data.readline()
-                if rx is not None:
-                    rx = rx.decode('utf-8')
-                    rx = rx.replace('\r', '')
-                    rx = rx.split(' ', 1)
-                    try:  cmd =  rx[0]
-                    except: cmd = None
-                    try: args = rx[1].split(",")
-                    except: args=None
-                    if cmd is not None:
-                        if args is None:
-                            db_cdh.write(co('running {} (without args)'.format(cmd), 'orange'))
-                            try:
-                                self.dispatch[cmd](self)
-                            except KeyError:
-                                db_cdh.write(co('invalid command', 'red', 'bold'))
-                            except Exception as e:
-                                db_cdh.write(co('valid command, but execution failed: {}'.format(e), 'red', 'bold'))
-                        else:
-                            db_cdh.write(co('running {} (with args: {})'.format(cmd,args), 'orange'))
-                            try:
-                                self.dispatch[cmd](self, args)
-                            except KeyError:
-                                db_cdh.write(co('invalid command', 'red', 'bold'))
-                            except Exception as e:
-                                db_cdh.write(co('valid command, but execution failed: {}'.format(e), 'red', 'bold'))
-                usb_cdc.data.write(bytes(">>>", 'utf-8'))
-        else:
-            """
-            if usb_cdc.data is NOT connected this task sets self.simulate values to False
-            """
-            for value in self.cubesat.sim.simulate:
-                value = False
+                # get header
+                header = usb_cdc.data.read(size=3)
+                if header[1] > 0:
+                    #get data if it exists
+                    rx = usb_cdc.data.read(size=header[1])
+
+                #write code to compute checksum rx[2]
+
+                if header[0] in db_cdh.rx:
+                    # execute cmd with no args
+                    if rx is None:
+                        try:
+                            self.dispatch[db_cdh.rx[header[0]]](self)
+                        except Exception as e:
+                            db_cdh.write(self, 'ERROR', str(e))
+                    # execute cmd with args
+                    else:
+                        try:
+                            self.dispatch[db_cdh.rx[header[0]]](self, rx)
+                        except Exception as e:
+                            db_cdh.write(self, 'ERROR', str(e))
+                else:
+                    db_cdh.write(self, 'ERROR', 'invalid cmd code')

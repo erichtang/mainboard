@@ -12,7 +12,7 @@ only pertains to the payload, see foras_promineo_pib.py for things on the PIB.
 class PAYLOAD():
 
     cmd_dispatch = {
-        'noop' : b'f',
+        'noop' : b'\x00',
         'photo' : b'c',
         'move'  : b'm',
         'brst'  : b'b',

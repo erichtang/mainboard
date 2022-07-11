@@ -1,7 +1,8 @@
 """
 TODO -- complete empty functions definitions
             think of more possible commands to add for future debugging.
-USB debug commands from the cubesat host-pc.
+TODO -- all of the write() responses need to be re-wrote
+USB debug commands from the cubesat host-pc. commands are called from usb_debug_task.py's distpatch{} dict
 
 Author: C. Hillis
 """
@@ -10,8 +11,30 @@ import os
 import usb_cdc
 from debugcolor import co
 
+rx = { # recieved codes from host PC
+   'noop'       : b'\x00',
+   'hreset'     : b'\x01',
+   'sreset'     : b'\x02',
+   'i2c_scan'   : b'\x03',
+   'print_gyro' : b'\x04',
+   'print_mag'  : b'\x05',
+   'print_accel': b'\x06',
+}
+
+tx = { # transmitted to host PC
+    'ACK'           : b'\x00',
+    'INIT'          : b'\x01',
+    'NACK'          : b'\xff',
+    'ERROR'         : b'\xf0',
+    'BUSRT_ST'      : b'\xb0',
+    'BURST_DATA'    : b'\xbd',
+    'BURST_END'     : b'\x0b',
+    'CMD_RESPONSE'  : b'0\xe5' #general command response code, like for print commands.
+}
+
 ########### commands without arguments ###########
 ##################################################
+
 def noop(self):
     """
     A no-op command.
@@ -19,7 +42,7 @@ def noop(self):
     Returns:
         'ACK'
     """
-    write(co('ACK', 'green'))
+    write(self, 'ACK')
 
 def hreset(self):
     """
@@ -29,12 +52,12 @@ def hreset(self):
         Success: Board re-initalization
         Failure: 'Reset Failed'
     """
-    write('Resetting')
+    write(self, 'CMD_RESPONSE', 'resetting...')
     try:
         self.cubesat.micro.on_next_reset(self.cubesat.micro.RunMode.NORMAL)
         self.cubesat.micro.reset()
     except:
-        write('Reset Failed')
+        write(self, 'NACK')
 
 def sreset(self):
     """
@@ -60,10 +83,11 @@ def i2c_scan(self):
             [hex(device_address) for device_address in self.cubesat.i2c1.scan()],
         )
     except Exception as e:
-        write('Execution failed... : {}'.format(e))
+        write(self, 'ERROR', 'Execution failed... : {}'.format(e))
 
 def print_gyro(self):
     """
+    TODO change
     prints gyroscope data.
     """
     write("gyro0 : {}".format(self.cubesat.imu.gyro0))
@@ -73,7 +97,7 @@ def print_gyro(self):
 
 def print_mag(self):
     """
-    prints magnetometer data.
+    TODO change
     """
     write("mag0 : {}".format(self.cubesat.imu.mag0))
     write("mag1 : {}".format(self.cubesat.imu.mag1))
@@ -95,21 +119,6 @@ def sd_ls(self):
     lists folders and files on the SD card.
     """
     pass
-
-def print_chunks_test(self):
-    #temporary file print test function. prints file data in 256 byte chunks so this code can be portable to the radio and payload interface with minor modifications...
-    chunk_size = 256
-    length = os.stat(self.cubesat.logfile)[6]
-    with open(self.cubesat.logfile, "rb") as f:
-        write("Printing Logfile. Length {} bytes. {} {} byte packets".format(length, chunk_size, int(length/240)))
-    
-        write("FILE_START:")
-        while True:
-            chunk = f.read(chunk_size)
-            if chunk == b"":
-                break
-            usb_cdc.data.write(chunk)
-        write(":FILE_END")
         
 def download_logfile(self):
     """
@@ -311,7 +320,7 @@ def configure_file(self, name, *kwargs):
 
 def upload(self, path):
     """
-    TODO -- not tested.
+    TODO -- not tested. -- doesnt work. use def download as a good example for upload.
     adds a file of name to the path specified on the sd.
         this is a special command, as the file must be passed AFTER th \r\n of the original cmd and args!! this 
 
@@ -347,29 +356,44 @@ def download(self, path):
     sends a file to the host-pc specified by the path provided
 
     Paramaters:
-        part :: path to the file. :/sd/ is added to the front.
+        utf-8 encoded string of the path to the file. /sd/ is added to the front.
     
     Returns:
-        a file
-            start string "FILE_START:"
-            end string ":FILE_END\r\n"
-            bytes data. encoding is dependent on file.
+        BURST_ST CMD
+            [0:3] 4 byte integer of number of bytes
+            [4:5] 2 byte integer of number of chunks
+
+        BURST_DATA CMD
+            [0:252] this chunk of data.
+
+        BURST_END_CMD
     """
+    #get path
+    if isinstance(path, bytearray):
+        path = path.decode('utf-8')
     if path[:4] != "/sd/":
         path = "/sd/" + path
-    chunk_size = 256
-    length = os.stat(path)[6]
-    write("Printing {}. Length {} bytes. {} {} byte packets".format(path, length, chunk_size, int(length/240)))
+    
+    #send start
+    chunk_size = 253
+    length = os.stat(path)[6] 
+    chunks = int(length / chunk_size)
+    start_msg = bytearray(6)
+    start_msg[0:3] = length.to_bytes(4, 'big')
+    start_msg[4:5] = chunks.to_bytes(2, 'big')
+    write(self, 'BURST_ST', start_msg)
+
+    #send chunks
     with open(path, "rb") as f:
-        usb_cdc.data.write("FILE_START:".encode('utf-8'))
         while True:
-            chunk = f.read(chunk_size)
-            if chunk == b"":
-                break
-            usb_cdc.data.write(chunk)
-        usb_cdc.data.write(':FILE_END\r\n'.encode('utf-8'))
+            write(self, 'BURST_DATA', f.read(chunk_size))
+            chunks -= 1
+            if chunks <= 0: break
         f.close()
-    pass
+    
+    #send end cmd
+    write(self, 'BURST_END')
+
 
 def sd_rm(self, path):
     """
@@ -385,6 +409,19 @@ def sd_rm(self, path):
     write(path[0])
     os.remove(path[0])
 
+def pl_noop(self):
+    """
+    TODO -- WIP psudeocode only
+    sends no-op command to payload, waits for ACK, then sends ACK to host PC, if no ACK is rx'd in 1 second, this command will send NACK to the host pc.
+    
+    Returns ACK or NACK
+    """
+    if pyld_cdh.noop(self):
+        #TOD write code here to respond ACK
+        write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    else:
+        write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    
 def pl_cmd_arm(self, *args):
     """
     TODO -- not implimented
@@ -477,25 +514,22 @@ def deploy_antenna(self):
     pass
 ########### helper functions for using usb_cdc.data ###########
 
-def write(msg):
+def write(cmd, data=None):
     """
-    writes a string to usb_cdc.data
-    appends \r\n tp passed string.
+    writes a formatted message over usb_cdc.data to the host PC
     """
-    msg = msg + '\r\n'
-    usb_cdc.data.write(bytes(msg, 'utf-8'))
+    if data is None:
+        length = 0
+    else:
+        length = len(data)
 
-def waitforinput():
-    """
-    waits for ANY input then throws the data away
-    useful for pib verification
-    i think this function can go away soon...
-    """
-    write("Press enter to continue")
-    waitflag = True
-    while waitflag:
-        if usb_cdc.data.in_waiting:
-            rx = usb_cdc.data.readline()
-            if rx:
-                waitflag = False
-        time.sleep(1)
+    msg = bytearray(3+length)
+    msg[0] = tx[cmd]
+    msg[1] = length
+    msg[2] = 0
+    if length > 0:
+        if not isinstance(data, bytearray):
+            data = data.encode('utf-8')
+        msg[3:] = data
+
+    usb_cdc.data.write(msg)
