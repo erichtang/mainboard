@@ -356,7 +356,7 @@ class Satellite:
             print('[WARNING][Bus Power monitor not initialized]')
 
     @property
-    def current_draw(self):
+    def bus_current(self):
         """
         current FROM batteries
         NOT accurate if powered via USB
@@ -396,13 +396,88 @@ class Satellite:
     # look at this
     @property
     def batt_charge_current(self):
-        return self.charge_current - self.current_draw
+        return self.charge_current - self.bus_current
 
     # look at this
     @property
     def solar_charging(self):
         return not self._chrg.value
     
+    @property
+    def payload_voltage(self):
+        #IMPLEMENT ME!
+        return 5
+
+    @property
+    def rf_voltage(self):
+        #IMPLEMENT ME!
+        return 5
+
+    @property
+    def solar_voltage(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def solar_tle_1(self):
+        #IMPLEMENT ME!
+        return 0
+    
+    @property
+    def solar_tle_2(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def solar_tle_3(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def solar_tle_4(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def battery_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def charger_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def payload_reg_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def rf_reg_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def ntc1_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def ntc2_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def ntc3_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
+    @property
+    def ntc4_temperature(self):
+        #IMPLEMENT ME!
+        return 0
+
     @property
     def reset_vbus(self):
         # unmount SD card to avoid errors

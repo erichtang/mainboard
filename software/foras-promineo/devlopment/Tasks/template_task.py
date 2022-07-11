@@ -18,6 +18,11 @@ class Task:
     name = 'template'
     color = 'gray'
 
+    d_cfg = {
+        'priority' : 10,
+        'frequency' : 1,
+    }
+
     def __init__(self, satellite):
         """
         Initialize the Task using the PyCubed cubesat object.
@@ -27,6 +32,9 @@ class Task:
 
         """
         self.cubesat = satellite
+
+        self.cfg = self.d_cfg
+        self.load_cfg(self.cfg, self.name)
         
     def debug(self,msg,level=1,log=False):
         """
@@ -53,7 +61,7 @@ class Task:
         """
         pass
     
-    def load_cfg(self, cfg, name, sd=False):
+    def load_cfg(self, cfg, name, sd=True):
         #loading of different named configs for different operating modes is possible by passing differnet names
         #load prev prio and freq if they exist
         try:
@@ -73,7 +81,7 @@ class Task:
         except:
             self.cubesat.log("[ERROR][PRIORITY / FREQ UPDATE][{}][FAIL]".format(name))
 
-    def save_cfg(self, cfg, name, sd=False):
+    def save_cfg(self, cfg, name, sd=True):
         #literally the same for save cfg i think.
         config.save_config(cfg, name, self.cubesat.log, sd)
 

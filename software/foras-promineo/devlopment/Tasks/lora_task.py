@@ -57,14 +57,8 @@ class task(Task):
         'burst_test':   cdh.burst_test,
     }
 
-    def __init__(self,satellite):
-        self.cubesat = satellite
-        # set our radiohead node ID so we can get ACKs
-        #self.cubesat.radio1.node = 0xFA # our ID
-        #self.cubesat.radio1.destination = 0xAB # target's ID
-
-        self.cfg = self.d_cfg
-        self.load_cfg(self.cfg, self.name)
+    def __init__(self):
+        super().__init__('task')
 
         #self.beacon = True
         self.connected = False
