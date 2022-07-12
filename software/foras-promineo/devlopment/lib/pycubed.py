@@ -401,7 +401,8 @@ class Satellite:
     # look at this
     @property
     def solar_charging(self):
-        return not self._chrg.value
+        # temporar untill self._chrg_shdn is implemented...
+        return(not self._chrg.value)
     
     @property
     def payload_voltage(self):

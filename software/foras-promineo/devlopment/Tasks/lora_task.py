@@ -58,7 +58,7 @@ class task(Task):
     }
 
     def __init__(self):
-        super().__init__('task')
+        super().__init__('Task')
 
         #self.beacon = True
         self.connected = False

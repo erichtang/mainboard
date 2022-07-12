@@ -10,15 +10,14 @@ from Tasks.template_task import Task
 import time
 
 class task(Task):
-    priority = 2
-    frequency = 1/10
     name = 'power monitor'
     color = 'orange'
 
     d_cfg = {
         'priority' : 2,
         'frequency' : 1/60,
-        'timeout' : 60*60
+        'timeout' : 60*60,
+        'vhb'   : 8.15
     }
 
     async def main_task(self):
@@ -35,16 +34,40 @@ class task(Task):
             'timestamp'             : (time.time()-self.cubesat.BOOTTIME)
         }
 
+        """
+        This new section for soft limits on overcharge needs to be debugged when the FW is updated.
+        """
+        # TODO check for soft limits on battery ovp
+        # if we are charging and nearing 80% charge TODO calc voltage this is at
+        if power_telemetry['charging'] & (power_telemetry['battery_voltage'] > self.cfg['vhb']):
+            # turn off charger
+            # not in FW yet
+            pass
+        #if we are not charging and below 80% charge
+        elif (not power_telemetry['charging']) & (power_telemetry['battery_voltage'] > self.cfg['vhb']):
+            # turn on charger
+            # not in FW yet
+            pass
+
         # log if charging started/stopped
         if power_telemetry['charging'] != self.cubesat.data_cache['power']['charging']:
             self.debug('charging = {}'.format(power_telemetry['charging']), log=True)
-    
-        #update data cache
+        
+        # update data cache
         self.cubesat.data_cache.update({'power':power_telemetry})
 
-        self.debug("Voltage of battery = " + str(power_telemetry['battery_voltage'])  + " Threshold = " + str(self.cubesat.config['vlb']))
+        # debug print
+        for key in power_telemetry:
+            self.debug('{} : {}'.format(str(key), str(power_telemetry[key])))
 
-        # checking > vlowbatt
+        """
+        checking > vlowbatt
+        if < vlowbat this task will enter a low-battery timeout state where:
+            it will stop all other tasks.
+            sleep, check voltage
+            if timeout amount of time has been exceeded, the device enters a "low battery timeout" where it exits the mode and returns to normal operations.
+                if it times out, it will also do an emergency beacon.
+        """
         if power_telemetry['battery_voltage'] < self.cubesat.config['vlb']:
             # setting a nvm flag that persists through power cycles
             self.cubesat.f_lowbatt=True
@@ -96,6 +119,9 @@ class task(Task):
                 self.cubesat.powermode('normal')
                 # give everything a moment to power up
                 time.sleep(3)
-                # restart all tasks
+
+                # TODO  add an emergency beacon here
+
+                # restart all tasks 
                 for t in self.cubesat.scheduled_tasks:
                     self.cubesat.scheduled_tasks[t].start()
