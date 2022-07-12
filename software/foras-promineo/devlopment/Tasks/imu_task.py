@@ -71,7 +71,7 @@ class task(Task):
         self.cubesat.data_cache.update({'imu':readings})
 
         # print the readings with some fancy formatting
-        self.debug('IMU readings (x,y,z), dps, uT, g')
+        self.debug('IMU Telemetry: (x,y,z), dps, uT, g')
         for imu_type in self.cubesat.data_cache['imu']:
             self.debug('{:>5} {}'.format(imu_type,self.cubesat.data_cache['imu'][imu_type]),2)
         pass

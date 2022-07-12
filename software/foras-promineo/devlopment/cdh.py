@@ -11,11 +11,11 @@ args formatting is defined on a per-command basis.
 """
 import time
 
-rx = {
-    """
+"""
     2-byte command codes of recieved commands here
-    """
-    b'\x8eb': 'no-op',
+"""
+rx = {
+    b"\x8eb" : "no_op",
     b'\xd4\x9f': 'hreset',
     b'\x12\x06': 'shutdown',
     b'8\x93': 'query',

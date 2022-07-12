@@ -57,8 +57,8 @@ class task(Task):
         'burst_test':   cdh.burst_test,
     }
 
-    def __init__(self):
-        super().__init__('Task')
+    def __init__(self, cubesat):
+        super().__init__(cubesat)
 
         #self.beacon = True
         self.connected = False
