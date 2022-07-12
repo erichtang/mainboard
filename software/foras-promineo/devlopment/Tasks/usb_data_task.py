@@ -48,7 +48,8 @@ class task(Task):
         'upload':               db_cdh.upload,
         'download':             db_cdh.download,
         'sd_rm'    :            db_cdh.sd_rm,
-        'simulate':             db_cdh.simulate
+        'simulate':             db_cdh.simulate,
+        'pl_noop' :             db_cdh.pl_noop,
     }
 
     async def main_task(self):
@@ -78,8 +79,8 @@ class task(Task):
                     rx = usb_cdc.data.read(header[1])
 
                 #write code to compute checksum rx[2]
-
-                if header[0] in db_cdh.rx:
+                self.debug(header)
+                if header[0:1] in db_cdh.rx:
                     # execute cmd with no args
                     if rx is None:
                         try:
