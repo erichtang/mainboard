@@ -10,7 +10,7 @@ from Tasks.template_task import Task
 import time
 
 class task(Task):
-    name = 'temperature monitor'
+    name = 'temp'
     color = 'orange'
 
     d_cfg = {
@@ -47,8 +47,9 @@ class task(Task):
         self.cubesat.data_cache.update({'temp':temp_telemetry})
 
         # print
+        self.debug("Temperature Telemetry: ")
         for key in temp_telemetry:
-            self.debug('{} : {}'.format(str(key), str(temp_telemetry[key])))
+            self.debug('{} : {}'.format(str(key), str(temp_telemetry[key])),2)
 
         # check for otp's
         for key in temp_telemetry:

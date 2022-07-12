@@ -10,7 +10,7 @@ from Tasks.template_task import Task
 import time
 
 class task(Task):
-    name = 'power monitor'
+    name = 'power'
     color = 'orange'
 
     d_cfg = {
@@ -49,16 +49,18 @@ class task(Task):
             # not in FW yet
             pass
 
-        # log if charging started/stopped
-        if power_telemetry['charging'] != self.cubesat.data_cache['power']['charging']:
-            self.debug('charging = {}'.format(power_telemetry['charging']), log=True)
+        if 'power' in self.cubesat.data_cache:
+            # log if charging started/stopped
+            if power_telemetry['charging'] != self.cubesat.data_cache['power']['charging']:
+                self.debug('charging = {}'.format(power_telemetry['charging']), log=True)
         
         # update data cache
         self.cubesat.data_cache.update({'power':power_telemetry})
 
         # debug print
+        self.debug("Power Telemetry: ")
         for key in power_telemetry:
-            self.debug('{} : {}'.format(str(key), str(power_telemetry[key])))
+            self.debug('{} : {}'.format(str(key), str(power_telemetry[key])), 2)
 
         """
         checking > vlowbatt

@@ -524,7 +524,7 @@ def write(cmd, data=None):
         length = len(data)
 
     msg = bytearray(3+length)
-    msg[0] = tx[cmd]
+    msg[0] = tx[cmd][0]
     msg[1] = length
     msg[2] = 0
     if length > 0:

@@ -31,7 +31,7 @@ class task(Task):
         usb_cdc.data.reset_input_buffer
         usb_cdc.data.timeout = 0.1
         if usb_cdc.data.connected:
-            db_cdh.write(self, 'init')
+            db_cdh.write('INIT')
 
         #TODO this shall also change to be single byte command codes for recieveing.
         self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
@@ -44,7 +44,6 @@ class task(Task):
         'print_gyro':           db_cdh.print_gyro,
         'print_mag':            db_cdh.print_mag,
         'print_accel':          db_cdh.print_accel,
-        'print_chunks_test':    db_cdh.print_chunks_test,
         'download_logfile':     db_cdh.download_logfile,
         'upload':               db_cdh.upload,
         'download':             db_cdh.download,
@@ -73,10 +72,10 @@ class task(Task):
             heard_cmd = usb_cdc.data.in_waiting
             if heard_cmd >= 1:
                 # get header
-                header = usb_cdc.data.read(size=3)
+                header = usb_cdc.data.read(3)
                 if header[1] > 0:
                     #get data if it exists
-                    rx = usb_cdc.data.read(size=header[1])
+                    rx = usb_cdc.data.read(header[1])
 
                 #write code to compute checksum rx[2]
 
@@ -86,12 +85,12 @@ class task(Task):
                         try:
                             self.dispatch[db_cdh.rx[header[0]]](self)
                         except Exception as e:
-                            db_cdh.write(self, 'ERROR', str(e))
+                            db_cdh.write('ERROR', str(e))
                     # execute cmd with args
                     else:
                         try:
                             self.dispatch[db_cdh.rx[header[0]]](self, rx)
                         except Exception as e:
-                            db_cdh.write(self, 'ERROR', str(e))
+                            db_cdh.write('ERROR', str(e))
                 else:
-                    db_cdh.write(self, 'ERROR', 'invalid cmd code')
+                    db_cdh.write('ERROR', 'invalid cmd code')
