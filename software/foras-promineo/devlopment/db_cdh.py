@@ -10,15 +10,17 @@ import time
 import os
 import usb_cdc
 from debugcolor import co
+import pyld_cdh
 
 rx = { # recieved codes from host PC
-   'noop'       : b'\x00',
-   'hreset'     : b'\x01',
-   'sreset'     : b'\x02',
-   'i2c_scan'   : b'\x03',
-   'print_gyro' : b'\x04',
-   'print_mag'  : b'\x05',
-   'print_accel': b'\x06',
+    b'\x00' : 'noop',
+    b'\x07' :'hreset',
+    b'\x02' : 'sreset',
+    b'\x03' : 'i2c_scan',
+    b'\x04' : 'print_gyro',
+    b'\x05' : 'print_mag',
+    b'\x06' : 'print_accel',
+    b'\x01' : 'pl_noop',
 }
 
 tx = { # transmitted to host PC
