@@ -20,7 +20,7 @@ import pycubed_rfm9x # Radio
 import neopixel # RGB LED
 import bq25883 # USB Charger
 import adm1176 # Power Monitor
-import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
+import imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
 import foras_promineo_pib
 import foras_promineo_payload
@@ -214,7 +214,7 @@ class Satellite:
 
         # Initialize IMU
         try:
-            self.imu = sli_imu.IMU(self, 'IMU')
+            self.imu = imu.IMU(self, 'IMU')
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
@@ -282,6 +282,7 @@ class Satellite:
             self.log('[INIT][PAYLOAD]')
         except Exception as e:
             self.log('[ERROR][INIT][PAYLOAD]: {}'.format(e))
+        """
 
         #init simulation class
         #TODO WIP
@@ -290,10 +291,10 @@ class Satellite:
             self.log('[INIT][SIMULATION]')
         except Exception as e:
             self.log('[ERROR][INIT][SIMULATION]: {}'.format(e))
-
+        """
         # set PyCubed power mode # TODO CHANGE THIS FOR FP
         self.power_mode = 'normal'
-
+        
     def reinit(self,dev):
         dev=dev.lower()
         if   dev=='gps':
