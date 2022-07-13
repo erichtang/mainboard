@@ -24,7 +24,7 @@ import imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
 import foras_promineo_pib
 import foras_promineo_payload
-import simulation
+import lib.simulation.simulation as simulation
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
 # Common CircuitPython Libs

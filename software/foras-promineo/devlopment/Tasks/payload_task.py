@@ -1,5 +1,5 @@
 """
-TODO -- foras promineo payload devlopment is still onging. this is a first pass
+TODO -- foras promineo payload devlopment is still onging. this is a first pass. This task is currently ignored
 
 this task currently (unverified-ily) handles getting photo chunks from the openMV camera and putting them in a buffer for lora_task.py to beam down.
 not of this is verified to work, but is code of how i imagine it would operate.

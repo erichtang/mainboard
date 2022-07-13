@@ -30,7 +30,7 @@ Based upon beacon_task.py by Max Holliday from beepsat_advanced devlopment branc
 
 import time
 from Tasks.template_task import Task
-import cdh
+import lora_cmds
 import passcode as pc
 
 class task(Task):
@@ -49,12 +49,12 @@ class task(Task):
     }
 
     cmd_dispatch = {
-        'no-op':        cdh.noop,
-        'hreset':       cdh.hreset,
-        'shutdown':     cdh.shutdown,
-        'query':        cdh.query,
-        'exec_cmd':     cdh.exec_cmd,
-        'burst_test':   cdh.burst_test,
+        'no-op':        lora_cmds.noop,
+        'hreset':       lora_cmds.hreset,
+        'shutdown':     lora_cmds.shutdown,
+        'query':        lora_cmds.query,
+        'exec_cmd':     lora_cmds.exec_cmd,
+        'burst_test':   lora_cmds.burst_test,
     }
 
     def __init__(self, cubesat):
@@ -82,7 +82,7 @@ class task(Task):
             if self.cubesat.brst_pkt_num == 0: #if this is the first packet
                 # assemble burst start packet
                 brst_start_tx = self.assemble_header(multiple_packets=True)
-                brst_start_tx += cdh.tx['BRST_ST'] 
+                brst_start_tx += lora_cmds.tx['BRST_ST'] 
                 # send burst start command
                 self.debug("Transmitting Burst Start: {}".format(brst_start_tx))
                 self.cubesat.radio1.send(brst_start_tx, keep_listening=False)
@@ -105,7 +105,7 @@ class task(Task):
                 time_elapsed = time.monotonic() - self.cubesat.burst_st_time
                 # assemble burst end packet
                 brst_end_tx = self.assemble_header(multiple_packets=True, packet_number=self.cubesat.brst_pkt_tot+2, outof=self.cubesat.brst_pkt_tot+2)
-                brst_end_tx += cdh.tx['BRST_END'] 
+                brst_end_tx += lora_cmds.tx['BRST_END'] 
                 # send burst end command
                 self.debug("Transmitting Burst End: {}".format(brst_end_tx))
                 self.cubesat.radio1.send(brst_end_tx)
@@ -130,7 +130,7 @@ class task(Task):
                 self.dc_count += 1
                 if self.dc_cnt >= self.config['dc_t']:
                     self.dc_cnt = 0
-                    cdh.disconnect()
+                    lora_cmds.disconnect()
         
     def assemble_header(self, listen_again = False, multiple_packets = False, packet_number = 0, outof = 0):
         """
@@ -182,7 +182,7 @@ class task(Task):
         # tries to initiate a downlink connection.
         # sends data and awaits a connect response from the GS.
         packet = self.assemble_header()
-        packet += cdh.tx['BEACON'] 
+        packet += lora_cmds.tx['BEACON'] 
         # figure out what telemetry we want to send via beacon...
         self.debug("Sending Beacon:")
         self.debug("{}".format(packet), level=2)
@@ -210,8 +210,8 @@ class task(Task):
             h_total = rx[8:10]
 
             cmd = rx[10:12]
-            if cmd in cdh.rx: # looks for command
-                cmd = cdh.rx[cmd] # re-assigning cmd to be key for cdh dict
+            if cmd in lora_cmds.rx: # looks for command
+                cmd = lora_cmds.rx[cmd] # re-assigning cmd to be key for cdh dict
             else:
                 self.error_handler("invalid command: {}".format(cmd))
                 return 
@@ -260,7 +260,7 @@ class task(Task):
         #TBR THIS WILL PROBABLY HAVE TO BE MUCH MORE SOPHISTICATED?
         self.debug(e)
         error_packet = self.assemble_header(self)
-        error_packet += (cdh.tx['ERROR'])
+        error_packet += (lora_cmds.tx['ERROR'])
         error_packet += e
         self.cubesat.radio1.send(error_packet, keep_listening=True) # THIS IS TEMPORARY, TODO CHANGE
         # IF MULTIPLE PACKETS ARE SENT this needs to be SENT AFTER ALL PACKETS HAVE BEEN RX'd
