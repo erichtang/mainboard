@@ -35,7 +35,7 @@ class task(Task):
 
         #TODO this shall also change to be single byte command codes for recieveing.
         self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
-        'no-op':                db_cdh.noop,
+        'noop':                db_cdh.noop,
         'hreset':               db_cdh.hreset,
         'query':                db_cdh.query,
         'exec_cmd':             db_cdh.exec_cmd,
@@ -74,24 +74,29 @@ class task(Task):
             if heard_cmd >= 1:
                 # get header
                 header = usb_cdc.data.read(3)
-                if header[1] > 0:
+                if header[1] > 3: #header size is 3
                     #get data if it exists
                     rx = usb_cdc.data.read(header[1])
 
                 #write code to compute checksum rx[2]
-                self.debug(header)
+                self.debug(header[0:1])
                 if header[0:1] in db_cdh.rx:
                     # execute cmd with no args
                     if rx is None:
                         try:
-                            self.dispatch[db_cdh.rx[header[0]]](self)
+                            self.debug(db_cdh.rx[header[0:1]])
+                            self.dispatch[db_cdh.rx[header[0:1]]](self)
                         except Exception as e:
                             db_cdh.write('ERROR', str(e))
                     # execute cmd with args
                     else:
                         try:
-                            self.dispatch[db_cdh.rx[header[0]]](self, rx)
+                            
+                            self.dispatch[db_cdh.rx[header[0:1]]](self, rx)
                         except Exception as e:
+                            
                             db_cdh.write('ERROR', str(e))
+                            
+
                 else:
                     db_cdh.write('ERROR', 'invalid cmd code')

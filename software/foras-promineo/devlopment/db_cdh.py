@@ -516,7 +516,7 @@ def deploy_antenna(self):
     pass
 ########### helper functions for using usb_cdc.data ###########
 
-def write(cmd, data=None):
+def write(self, cmd, data=None):
     """
     writes a formatted message over usb_cdc.data to the host PC
     """
