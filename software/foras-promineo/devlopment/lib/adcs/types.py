@@ -140,51 +140,6 @@ class ekf_data_t:
     A               : float[3] # [m^2] projected areas
     rcp             : float[3] # [m] center of pressure
 
-# main ADCS information storage container
-@dataclass
-class info:
-
-    # State machine informational control
-    status                  : status_t  # ok (nominal) or error
-    state                   : state_t   # current state
-    commanded_state         : state_t   # last user-commanded state
-    go_to_commanded_state   : bool      # flag for determining whether to go to user-commanded state
-    state_attempt           : int       # number of times current state attempted with error
-    next_time               : float     # [s] time after TLE epoch
-
-    # Attitude model constants
-    i_depoloyed             : float[3][3]
-    is_deployed             : bool
-
-    # Sensor measurement
-    mag1_meas               : ring_meas_t # [tesla] filtered measurements from IMU
-    mag2_meas               : ring_meas_t # [tesla] filtered measurements from IMU
-    gyro1_meas              : ring_meas_t # [rad/s] filtered measurement from IMU
-    gyro2_meas              : ring_meas_t # [rad/s] filtered measurement from IMU
-
-    # State estimate
-    bdot_est                : float[3]      # [tesla/s]
-    ekf_data                : ekf_data_t
-    ekf_data_rst            : ekf_data_t    # values to reset ekf_data to if ekf needs restarting
-
-    # Guidance (desired state calculated as part of control algorithm)
-    q_des                   : float[4]
-    ang_vel_des             : float[3]
-    fuzzy_guidance_option   : fuzzy_guidance_options_t
-
-    # Controller information
-    controller_option       : controller_options_t
-    bdot_control            : float                 # control constant
-    k_primary               : modern_controller_t   # modern/optimal control gain matrices
-    k_secondary             : modern_controller_t
-    # fuzzy controllers primary and secondary defined in cryoCubeFISdef.h
-
-    # Control output
-    m_moment_cmd            : float[3] # [A*m^2]
-    max_m_moment_cmd        : float[3] # [A*m^2]
-
-
-
 @dataclass
 class control_state_t:
     action      : int
@@ -253,40 +208,3 @@ data_enum_map = {
     data_t.IRGF_H                : self.irgf_h,
     # TODO fill in the reset of this dict
 }
-
-@dataclass
-class basic_telemetry: # what is the difference between this and def info?
-
-    # state machine information/control
-    status                  : status_t
-    state                   : state_t
-    commanded_state         : state_t
-    state_attempt           : int
-    next_time               : float
-    
-    is_deployed             : bool
-
-    # sensor measurement
-    mag1_meas               : ring_meas_t
-    mag2_meas               : ring_meas_t
-    gyro1_meas              : float[3]
-    gyro2_meas              : float[3]
-
-    # state estimate
-    bdot_est                : float[3]
-    ekf_and_vel_meas1       : float[3]
-    ekf_and_vel_meas2       : float[3]
-    ekf_mag_meas1           : float[3]
-    ekf_mag_meas2           : float[3]
-    ekf_m                   : float[3]
-
-    # guidance
-    q_des                   : float[3]
-    ang_vel_des             : float[3]
-    fuzzy_guidance_option   : fuzzy_guidance_options_t
-
-    # controller information
-    controller_option       : controller_options_t
-
-    # control output
-    m_moment_cmd            : float[3]
