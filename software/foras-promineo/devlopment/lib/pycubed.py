@@ -20,11 +20,11 @@ import pycubed_rfm9x # Radio
 import neopixel # RGB LED
 import bq25883 # USB Charger
 import adm1176 # Power Monitor
-import sli_imu # SLI added IMU lib, abstracted due to it also being on the PIB.
+import imu # SLI added IMU lib, abstracted due to it also being on the PIB.
 import adafruit_gps #need to play with gps reading procedure. 
 import foras_promineo_pib
 import foras_promineo_payload
-import simulation
+import lib.simulation.simulation as simulation
 #from smart_buffer import smart_buffer # the buffer protocol -- commented out for now
 
 # Common CircuitPython Libs
@@ -144,18 +144,6 @@ class Satellite:
         _rf_rst1.switch_to_output(value=True)
         self.radio1_DIO0.switch_to_input()
 
-        #burst radio mode --- these should probably move to another location....
-        self.radio1_burst_flag = False
-        self.send_buff_ready_flag = False
-        self.file_downlink_path = ""
-        self.file_downlink_size = 0
-        self.send_buff_tx_len = 0 # send buffer is always 252 bytes, but some tx's may be less.
-        self.brst_pkt_num = 0
-        self.brst_pkt_tot = 0
-        self.burst_st_time = 0
-        self.beacon = True
-
-
         # Initialize SD card (always init SD before anything else on spi bus)
         try:
             # Baud rate depends on the card, 4MHz should be safe
@@ -214,7 +202,7 @@ class Satellite:
 
         # Initialize IMU
         try:
-            self.imu = sli_imu.IMU(self, 'IMU')
+            self.imu = imu.IMU(self, 'IMU')
             self.hardware['IMU'] = True
             self.log('[INIT][IMU]')
         except Exception as e:
@@ -282,18 +270,10 @@ class Satellite:
             self.log('[INIT][PAYLOAD]')
         except Exception as e:
             self.log('[ERROR][INIT][PAYLOAD]: {}'.format(e))
-
-        #init simulation class
-        #TODO WIP
-        try:
-            self.sim = simulation.Simulation(self)
-            self.log('[INIT][SIMULATION]')
-        except Exception as e:
-            self.log('[ERROR][INIT][SIMULATION]: {}'.format(e))
-
+        
         # set PyCubed power mode # TODO CHANGE THIS FOR FP
         self.power_mode = 'normal'
-
+        
     def reinit(self,dev):
         dev=dev.lower()
         if   dev=='gps':
@@ -563,7 +543,7 @@ class Satellite:
             if self.hardware['CHRG_PWR']:
                 self.chrg_pwr.config('V_CONT,I_CONT')
             if self.hardware['GPS']:
-                self.en_gps.value = True
+                self.en_gps.value = False # gps is enabled on init of Satellite(), but is disabled by GPS_task.py when the sufficient measurement has been made.
             if self.hardware['PIB']:
                 self.pib.powermode('norm')
             if self.hardware['PAYLOAD']:
@@ -963,7 +943,7 @@ class Satellite:
         """
         I2C reinit procedure
 
-        TODO this is wip
+        TODO this is wip. verifiy this!!!
         """
         
         self.i2c1 = busio.I2C(board.SCL,board.SDA, frequency=400000)
