@@ -31,7 +31,7 @@ class task(Task):
 
         #TODO this shall also change to be single byte command codes for recieveing.
         self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
-        'no-op':                db_cmds.noop,
+        'noop':                db_cmds.noop,
         'hreset':               db_cmds.hreset,
         'query':                db_cmds.query,
         'exec_cmd':             db_cmds.exec_cmd,
@@ -80,13 +80,13 @@ class task(Task):
                     # execute cmd with no args
                     if rx is None:
                         try:
-                            self.dispatch[db_cmds.rx[header[0]]](self)
+                            self.dispatch[db_cmds.rx[header[0:1]]](self)
                         except Exception as e:
                             db_cmds.write('ERROR', str(e))
                     # execute cmd with args
                     else:
                         try:
-                            self.dispatch[db_cmds.rx[header[0]]](self, rx)
+                            self.dispatch[db_cmds.rx[header[0:1]]](self, rx)
                         except Exception as e:
                             db_cmds.write('ERROR', str(e))
                 else:
