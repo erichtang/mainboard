@@ -1,4 +1,4 @@
-import adcs
+from adcs import ADCS
 
 """
 TODO: ADCS code needs to be ported from C.
@@ -21,7 +21,7 @@ class task(Task):
 
     def __init__(self):
         super().__init__('Task')
-        self.adcs = adcs(self.cubesat)
+        self.adcs = ADCS(self.cubesat)
 
     async def main_task(self):
 

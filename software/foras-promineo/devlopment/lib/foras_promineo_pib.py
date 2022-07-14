@@ -10,7 +10,7 @@ only pertains to the pib, see foras_promineo_payload.py for things on the payloa
 
 """
 
-import sli_imu
+import imu
 import max7311
 import mcp47fvb24
 import ad7091r5
@@ -39,7 +39,7 @@ class PIB():
         
         # Initialize IMU
         try:
-            self.imu = sli_imu.IMU(self.cubesat, 'PIB][IMU', mux_addr=0x71)
+            self.imu = imu.IMU(self.cubesat, 'PIB][IMU', mux_addr=0x71)
             self.hardware['IMU'] = True
             self.cubesat.log('[INIT][PIB][IMU]')
         except Exception as e:
