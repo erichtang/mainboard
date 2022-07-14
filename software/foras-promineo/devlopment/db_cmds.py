@@ -44,7 +44,7 @@ def noop(self):
     Returns:
         'ACK'
     """
-    write(self, 'ACK')
+    write('ACK')
 
 def hreset(self):
     """
@@ -520,6 +520,8 @@ def write(cmd, data=None):
     """
     writes a formatted message over usb_cdc.data to the host PC
     """
+
+
     if data is None:
         length = 0
     else:

@@ -15,7 +15,7 @@ class task(Task):
     
     priority = 2
     frequency = 50
-    name='burst transfer'
+    name='burst_transfer'
     color = 'blue'
 
     chunk_size = 238
@@ -29,7 +29,7 @@ class task(Task):
     }
 
     def __init__(self, satellite):
-        super().__init__(self, satellite)
+        super().__init__(satellite)
 
         self.burst_f = False
         self.buffer_ready_f = False
@@ -44,9 +44,7 @@ class task(Task):
         self.t0 = 0
         self.t1 = 0
 
-        # after init, this task stops itself since it is only needed when a command is recieved.
-        with self.cubesat.scheduled_tasks[self.name] as task:
-            task.stop()
+        
 
     async def main_task(self):
 
@@ -65,6 +63,10 @@ class task(Task):
                 # this should be put in a try - except clause when it is working sufficiently!!!!
                 self.source_func_map[self.source](self)
 
+        else:
+            # after init, this task stops itself since it is only needed when a command is recieved.
+            self.cubesat.scheduled_tasks[self.name].stop()
+            
     def sd_source(self):
 
         # if this is the first chunk we are getting...
