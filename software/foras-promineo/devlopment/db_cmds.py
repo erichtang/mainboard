@@ -21,6 +21,7 @@ rx = { # recieved codes from host PC
     b'\x05' : 'print_mag',
     b'\x06' : 'print_accel',
     b'\x01' : 'pl_noop',
+    b'\x08' : 'pl_cmd_photo',
 }
 
 tx = { # transmitted to host PC
@@ -44,7 +45,7 @@ def noop(self):
     Returns:
         'ACK'
     """
-    write(self, 'ACK')
+    write('ACK')
 
 def hreset(self):
     """
@@ -418,10 +419,13 @@ def pl_noop(self):
     
     Returns ACK or NACK
     """
+    # self.debug('dbcmds')
     if payload_cmds.noop(self):
         #TOD write code here to respond ACK
+        
         write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
     else:
+        
         write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
     
 def pl_cmd_arm(self, *args):
@@ -436,6 +440,20 @@ def pl_cmd_arm(self, *args):
         None
     """
     pass
+
+def usb_cmd_payload_photo_burst(self):
+    self.cubesat.scheduled_tasks['burst_transfer'].source = 'payload'
+    self.cubesat.scheduled_tasks['burst_transfer'].destination = 'usb'
+    self.cubesat.scheduled_tasks['burst_transfer'].burst_f = True
+    self.cubesat.scheduled_tasks['burst_transfer'].chunk_i = 0
+    self.cubesat.scheduled_tasks['burst_transfer'].buffer_ready_f = False
+    self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
+    
+
+
+    write('BUSRT_ST' )
+
+    
 
 def pl_cmd_photo(self, *args):
     """
@@ -520,11 +538,13 @@ def write(cmd, data=None):
     """
     writes a formatted message over usb_cdc.data to the host PC
     """
+
+
     if data is None:
         length = 0
     else:
         length = len(data)
-
+    
     msg = bytearray(3+length)
     msg[0] = tx[cmd][0]
     msg[1] = length
@@ -533,5 +553,9 @@ def write(cmd, data=None):
         if not isinstance(data, bytearray):
             data = data.encode('utf-8')
         msg[3:] = data
-
+    #     print(data)
+    # print(msg)
+    # for i in range(length + 3):
+    #     print(i)
+    #     print( msg[i])
     usb_cdc.data.write(msg)

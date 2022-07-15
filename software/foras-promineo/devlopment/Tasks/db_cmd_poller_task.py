@@ -31,7 +31,7 @@ class task(Task):
 
         #TODO this shall also change to be single byte command codes for recieveing.
         self.dispatch = { # TODO update this dictionary IN ORDER of cmds in db_cdh.py.
-        'no-op':                db_cmds.noop,
+        'noop':                db_cmds.noop,
         'hreset':               db_cmds.hreset,
         'query':                db_cmds.query,
         'exec_cmd':             db_cmds.exec_cmd,
@@ -46,6 +46,7 @@ class task(Task):
         'sd_rm'    :            db_cmds.sd_rm,
         'simulate':             db_cmds.simulate,
         'pl_noop' :             db_cmds.pl_noop,
+        'pl_photo' :            db_cmds.usb_cmd_payload_photo_burst,
     }
 
     async def main_task(self):
@@ -70,7 +71,7 @@ class task(Task):
             if heard_cmd >= 1:
                 # get header
                 header = usb_cdc.data.read(3)
-                if header[1] > 0:
+                if header[1] > 3: #header size is 3
                     #get data if it exists
                     rx = usb_cdc.data.read(header[1])
 
@@ -80,13 +81,16 @@ class task(Task):
                     # execute cmd with no args
                     if rx is None:
                         try:
-                            self.dispatch[db_cmds.rx[header[0]]](self)
+                            # self.debug(db_cmds.rx[header[0:1]])
+                            self.dispatch[db_cmds.rx[header[0:1]]](self)
+                            
                         except Exception as e:
+                            
                             db_cmds.write('ERROR', str(e))
                     # execute cmd with args
                     else:
                         try:
-                            self.dispatch[db_cmds.rx[header[0]]](self, rx)
+                            self.dispatch[db_cmds.rx[header[0:1]]](self, rx)
                         except Exception as e:
                             db_cmds.write('ERROR', str(e))
                 else:
