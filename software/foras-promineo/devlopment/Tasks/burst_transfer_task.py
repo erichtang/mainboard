@@ -113,7 +113,7 @@ class task(Task):
             self.chunk_calc()
 
         # request chunk from payload
-        self.buffer_size = pl_cmds.request_chunk(self, self.chunk_i, self.chunk_size) # this function will return the size of the data it puts in the buffer
+        self.buffer_size = pl_cmds.request_chunk(self, self.chunk_i, self.chunk_size) # this function will return the size of the data it puts in the buffer, # it puts the data in the buffer too
 
         # flag that the buffer is ready to send on the next call of this task
         self.buffer_ready_f = True
