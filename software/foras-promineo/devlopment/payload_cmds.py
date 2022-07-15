@@ -17,13 +17,17 @@ tx = { # transmitted to payload
 ########### commands without arguments ###########
 
 def noop(self):
+
+
     # send no-op
     write(self, 'noop')
     # look for a resonse
     self.cubesat.uart2.timeout = 0.01
-    response = self.cubesat.uart2.read(nbytes=3)
+    response = self.cubesat.uart2.read(3)        #ERROR
+
     try:
         if rx[response[0]] == 'ACK':
+            
             return True
         else:
             return False
@@ -85,6 +89,8 @@ def take_photo(self, args):
 
 def request_photo_chunk(self, args):
     pass
+def request_photo_size(self):
+    pass
 
 ################################################################
 
@@ -97,13 +103,13 @@ def write(self, cmd, data=None):
         length = 0
     else:
         length = len(data)
-
+    
     #assemble header
     msg = bytearray(3+length)
-    msg[0] = tx[cmd]
+    # self.debug(tx[cmd][0])
+    msg[0] = tx[cmd][0]
     msg[1] = length
     msg[2] = 0
     if length > 0:
         msg[3:] = data
-
     self.cubesat.uart2.write(msg)

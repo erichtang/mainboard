@@ -46,6 +46,7 @@ class task(Task):
         'sd_rm'    :            db_cmds.sd_rm,
         'simulate':             db_cmds.simulate,
         'pl_noop' :             db_cmds.pl_noop,
+        'pl_photo' :            db_cmds.usb_cmd_payload_photo_burst,
     }
 
     async def main_task(self):

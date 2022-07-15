@@ -10,6 +10,7 @@ import time
 import os
 import payload_cmds as pl_cmds
 import lora_cmds
+import db_cmds
 
 class task(Task):
     
@@ -22,10 +23,12 @@ class task(Task):
 
     source_func_map = {
         # fill me in !
+        'payload' : self.payload_source
     }
 
     destination_func_map = {
         # fill me in !
+        'usb' : self.usb_desination
     }
 
     def __init__(self, satellite):
@@ -141,16 +144,22 @@ class task(Task):
         # if this is the first burst 
         if self.chunk_i == 0:
             # call usb_cmds.write('BURST_START', self.source_size)
+            db_cmds.write('BURST_START', self.source_size)
             pass
 
         # send chunk 
         # call usb_cmds.write('BURST', self.cubesat.send_buff[:self.buffer_size])
-
+        db_cmds.write('BURST', self.cubesat.send_buff[:self.buffer_size])
         #reset flags for next chunk
+
+        self.buffer_ready_f = False     #is this the right flag?
         
         # if that was the last chunk
-
-        pass
+        if(self.chunk_i == self.chunk_t - 1):
+            self.burst_f = False
+            self.buffer_ready_f = False
+            db_cmds.write('BURST_END')
+        
 
     def lora_destination(self):
         """
