@@ -21,15 +21,7 @@ class task(Task):
 
     chunk_size = 238
 
-    source_func_map = {
-        # fill me in !
-        'payload' : self.payload_source
-    }
-
-    destination_func_map = {
-        # fill me in !
-        'usb' : self.usb_desination
-    }
+    
 
     def __init__(self, satellite):
         super().__init__(satellite)
@@ -47,7 +39,15 @@ class task(Task):
         self.t0 = 0
         self.t1 = 0
 
-        
+        self.source_func_map = {
+            # fill me in !
+            'payload' : self.payload_source
+        }
+
+        self.destination_func_map = {
+            # fill me in !
+            'usb' : self.usb_destination
+        }
 
     async def main_task(self):
 
@@ -159,6 +159,7 @@ class task(Task):
             self.burst_f = False
             self.buffer_ready_f = False
             db_cmds.write('BURST_END')
+        self.chunk_i += 1
         
 
     def lora_destination(self):

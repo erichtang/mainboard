@@ -71,7 +71,7 @@ class task(Task):
             if heard_cmd >= 1:
                 # get header
                 header = usb_cdc.data.read(3)
-                if header[1] > 3: #header size is 3
+                if header[1] > 0: 
                     #get data if it exists
                     rx = usb_cdc.data.read(header[1])
 
