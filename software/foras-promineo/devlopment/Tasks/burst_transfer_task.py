@@ -46,7 +46,7 @@ class task(Task):
 
         self.destination_func_map = {
             # fill me in !
-            'usb' : self.usb_desination
+            'usb' : self.usb_destination
         }
 
     async def main_task(self):

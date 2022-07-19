@@ -8,10 +8,13 @@ Commands to and from the Foras Promineo Payload
 import time
 
 rx = { # recieved codes from payload 
-   b'\xff' : 'ACK'
+   b'\xff' : 'ACK',
+   b'\x01' : 'size'
 }
 tx = { # transmitted to payload
-    'noop' : b'\x00'
+    'noop'          : b'\x00',
+    'req_size'      : b'\xfe',
+    'req_next_chunk': b'\xfd',
 }
 
 ########### commands without arguments ###########
@@ -87,10 +90,42 @@ def set_stepper_ctrl(self, args):
 def take_photo(self, args):
     pass
 
-def request_photo_chunk(self, args):
-    pass
+def request_photo_chunk(self, chunk_i):
+
+#CONVERT INT TO BYTES
+
+    ind = chunk_i.to_bytes(2,'big')
+
+    write(self, 'req_next_chunk', ind)
+    # look for a resonse
+    self.cubesat.uart2.timeout = 0.01
+    response = self.cubesat.uart2.read(3)        #ERROR
+    len = int(response[1])
+    msg = int(self.cubesat.uart2.read(len))
+    try:
+        if rx[response[0]] == 'cmd_response':
+            
+            return msg
+        else:
+            return None
+    except Exception as e:
+        return False
+
 def request_photo_size(self):
-    pass
+    write(self, 'req_size')
+    # look for a resonse
+    self.cubesat.uart2.timeout = 0.01
+    response = self.cubesat.uart2.read(3)        #ERROR
+    len = int(response[1])
+    msg = int(self.cubesat.uart2.read(len))
+    try:
+        if rx[response[0]] == 'size':
+            
+            return msg
+        else:
+            return None
+    except Exception as e:
+        return False
 
 ################################################################
 

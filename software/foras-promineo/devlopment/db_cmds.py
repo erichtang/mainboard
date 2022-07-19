@@ -29,7 +29,7 @@ tx = { # transmitted to host PC
     'INIT'          : b'\x01',
     'NACK'          : b'\xff',
     'ERROR'         : b'\xf0',
-    'BUSRT_ST'      : b'\xb0',
+    'BURST_ST'      : b'\xb0',
     'BURST_DATA'    : b'\xbd',
     'BURST_END'     : b'\x0b',
     'CMD_RESPONSE'  : b'0\xe5' #general command response code, like for print commands.
@@ -451,7 +451,7 @@ def usb_cmd_payload_photo_burst(self):
     
 
 
-    write('BUSRT_ST' )
+    write('BURST_ST' )
 
     
 
