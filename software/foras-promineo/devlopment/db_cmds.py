@@ -422,11 +422,11 @@ def pl_noop(self):
     # self.debug('dbcmds')
     if payload_cmds.noop(self):
         #TOD write code here to respond ACK
-        self.debug(52346634634634376)
+        
         
         write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
     else:
-        self.debug('shreshrhrsshrsrtsh')
+        
         write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
     
 def pl_cmd_arm(self, *args):
