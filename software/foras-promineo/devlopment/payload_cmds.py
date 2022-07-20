@@ -7,6 +7,7 @@ Commands to and from the Foras Promineo Payload
 
 import time
 
+
 rx = { # recieved codes from payload 
    b'\xff' : 'ACK',
    b'\x01' : 'size'
@@ -25,12 +26,24 @@ def noop(self):
     # send no-op
     write(self, 'noop')
     # look for a resonse
-    self.cubesat.uart2.timeout = 0.01
-    response = self.cubesat.uart2.read(3)        #ERROR
+    self.cubesat.uart4.timeout = 0.01
+    response = bytearray(3)
+    
+    response = self.cubesat.uart4.read(3)        #ERROR
+    # x = self.cubesat.uart4.read(3)        #ERROR
+    # y = self.cubesat.uart4.read(3)  
+    # print('asdfghjklasdhjklasdfghjklsdfghjkasdfghjklasdfghjklasdfghjkl')
+    # print(response)
+    # self.debug(len(response))
+    # print(x,y)
+
+    # self.debug(response + 'response')
+    # self.debug(response[0:1])
+    # self.debug(rx[255])
 
     try:
-        if rx[response[0]] == 'ACK':
-            
+        if rx[response[0:1]] == 'ACK':
+            self.debug('ack')
             return True
         else:
             return False
@@ -147,4 +160,5 @@ def write(self, cmd, data=None):
     msg[2] = 0
     if length > 0:
         msg[3:] = data
-    self.cubesat.uart2.write(msg)
+    self.cubesat.uart4.write(msg)
+    # self.debug(msg)
