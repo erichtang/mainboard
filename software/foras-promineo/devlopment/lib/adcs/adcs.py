@@ -159,8 +159,8 @@ class ADCS:
         pass
 
     # see cryocubefunptrrpl.c
-    def executeADCSaction(self, action : int):
-        match action:
+    def executeADCSaction(self, state : int):
+        match state:
             case state_t.SAFE1:
                 state_actions.safe1(self)
                 
