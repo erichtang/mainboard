@@ -62,6 +62,9 @@ class task(Task):
                 self.destination_func_map[self.destination](self)
 
             else:
+
+                self.debug(456789765)
+
                 # fill the buffer from the source
                 # this should be put in a try - except clause when it is working sufficiently!!!!
                 self.source_func_map[self.source](self)
@@ -106,19 +109,21 @@ class task(Task):
 
     def payload_source(self):
 
+        self.debug('plsrs')
+
         if self.chunk_i == 0:
 
             # get t0
             self.t0 = time.monotonic_ns()
 
             # ask for photo size in bytes from payload with payload_cmds.request_picture_size
-            self.source_size = pl_cmds.request_picture_size(self)
+            self.source_size = pl_cmds.request_photo_size(self)
 
             # calculate chunks
             self.chunk_calc()
 
         # request chunk from payload
-        self.buffer_size = pl_cmds.request_chunk(self, self.chunk_i, self.chunk_size) # this function will return the size of the data it puts in the buffer
+        self.buffer_size = pl_cmds.request_photo_chunk(self, self.chunk_i, self.chunk_size) # this function will return the size of the data it puts in the buffer
 
         # flag that the buffer is ready to send on the next call of this task
         self.buffer_ready_f = True
@@ -141,6 +146,9 @@ class task(Task):
         pass
 
     def usb_destination(self):
+
+        self.debug('usbdst')
+
         # if this is the first burst 
         if self.chunk_i == 0:
             # call usb_cmds.write('BURST_START', self.source_size)

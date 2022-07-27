@@ -24,6 +24,9 @@ def noop(self):
 
 
     # send no-op
+
+    self.debug('plcmds')
+
     write(self, 'noop')
     # look for a resonse
     self.cubesat.uart4.timeout = 0.01
@@ -33,7 +36,7 @@ def noop(self):
     # x = self.cubesat.uart4.read(3)        #ERROR
     # y = self.cubesat.uart4.read(3)  
     # print('asdfghjklasdhjklasdfghjklsdfghjkasdfghjklasdfghjklasdfghjkl')
-    # print(response)
+    print(response)
     # self.debug(len(response))
     # print(x,y)
 
@@ -104,10 +107,10 @@ def take_photo(self, args):
     pass
 
 def request_photo_chunk(self, chunk_i):
-
+    self.debug('reqchunk')
 #CONVERT INT TO BYTES
 
-    ind = chunk_i.to_bytes(2,'big')
+    ind = chunk_i.to_bytes(3,'big')
 
     write(self, 'req_next_chunk', ind)
     # look for a resonse
@@ -127,10 +130,18 @@ def request_photo_chunk(self, chunk_i):
 def request_photo_size(self):
     write(self, 'req_size')
     # look for a resonse
-    self.cubesat.uart2.timeout = 0.01
-    response = self.cubesat.uart2.read(3)        #ERROR
+    self.cubesat.uart4.timeout = 0.01
+
+    self.debug('reqsize')
+
+    response = self.cubesat.uart4.read(3)        #ERROR
+
+    # self.debug(response)
+    
     len = int(response[1])
-    msg = int(self.cubesat.uart2.read(len))
+    # self.debug(len)
+    msg = int.from_bytes(self.cubesat.uart4.read(len), 'big')
+    self.debug(msg)
     try:
         if rx[response[0]] == 'size':
             

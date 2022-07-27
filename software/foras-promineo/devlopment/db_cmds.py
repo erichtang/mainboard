@@ -419,7 +419,7 @@ def pl_noop(self):
     
     Returns ACK or NACK
     """
-    # self.debug('dbcmds')
+    self.debug('dbcmds')
     if payload_cmds.noop(self):
         #TOD write code here to respond ACK
         
@@ -448,8 +448,8 @@ def usb_cmd_payload_photo_burst(self):
     self.cubesat.scheduled_tasks['burst_transfer'].burst_f = True
     self.cubesat.scheduled_tasks['burst_transfer'].chunk_i = 0
     self.cubesat.scheduled_tasks['burst_transfer'].buffer_ready_f = False
-    self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
-    
+    # self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
+    self.cubesat.scheduled_tasks['burst_transfer'].start()
 
 
     write('BURST_ST' )
