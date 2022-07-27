@@ -24,5 +24,4 @@ class task(Task):
         self.adcs = ADCS(self.cubesat)
 
     async def main_task(self):
-
-        pass
+        self.adcs.processADCSevents()
