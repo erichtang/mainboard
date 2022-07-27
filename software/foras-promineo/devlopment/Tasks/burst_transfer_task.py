@@ -10,26 +10,21 @@ import time
 import os
 import payload_cmds as pl_cmds
 import lora_cmds
+import db_cmds
 
 class task(Task):
     
     priority = 2
     frequency = 50
-    name='burst transfer'
+    name='burst_transfer'
     color = 'blue'
 
     chunk_size = 238
 
-    source_func_map = {
-        # fill me in !
-    }
-
-    destination_func_map = {
-        # fill me in !
-    }
+    
 
     def __init__(self, satellite):
-        super().__init__(self, satellite)
+        super().__init__(satellite)
 
         self.burst_f = False
         self.buffer_ready_f = False
@@ -44,9 +39,15 @@ class task(Task):
         self.t0 = 0
         self.t1 = 0
 
-        # after init, this task stops itself since it is only needed when a command is recieved.
-        with self.cubesat.scheduled_tasks[self.name] as task:
-            task.stop()
+        self.source_func_map = {
+            # fill me in !
+            'payload' : self.payload_source
+        }
+
+        self.destination_func_map = {
+            # fill me in !
+            'usb' : self.usb_destination
+        }
 
     async def main_task(self):
 
@@ -65,6 +66,10 @@ class task(Task):
                 # this should be put in a try - except clause when it is working sufficiently!!!!
                 self.source_func_map[self.source](self)
 
+        else:
+            # after init, this task stops itself since it is only needed when a command is recieved.
+            self.cubesat.scheduled_tasks[self.name].stop()
+            
     def sd_source(self):
 
         # if this is the first chunk we are getting...
@@ -139,16 +144,23 @@ class task(Task):
         # if this is the first burst 
         if self.chunk_i == 0:
             # call usb_cmds.write('BURST_START', self.source_size)
+            db_cmds.write('BURST_START', self.source_size)
             pass
 
         # send chunk 
         # call usb_cmds.write('BURST', self.cubesat.send_buff[:self.buffer_size])
-
+        db_cmds.write('BURST', self.cubesat.send_buff[:self.buffer_size])
         #reset flags for next chunk
+
+        self.buffer_ready_f = False     #is this the right flag?
         
         # if that was the last chunk
-
-        pass
+        if(self.chunk_i == self.chunk_t - 1):
+            self.burst_f = False
+            self.buffer_ready_f = False
+            db_cmds.write('BURST_END')
+        self.chunk_i += 1
+        
 
     def lora_destination(self):
         """

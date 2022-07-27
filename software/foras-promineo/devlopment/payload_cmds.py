@@ -7,23 +7,43 @@ Commands to and from the Foras Promineo Payload
 
 import time
 
+
 rx = { # recieved codes from payload 
-   b'\xff' : 'ACK'
+   b'\xff' : 'ACK',
+   b'\x01' : 'size'
 }
 tx = { # transmitted to payload
-    'noop' : b'\x00'
+    'noop'          : b'\x00',
+    'req_size'      : b'\xfe',
+    'req_next_chunk': b'\xfd',
 }
 
 ########### commands without arguments ###########
 
 def noop(self):
+
+
     # send no-op
     write(self, 'noop')
     # look for a resonse
-    self.cubesat.uart2.timeout = 0.01
-    response = self.cubesat.uart2.read(nbytes=3)
+    self.cubesat.uart4.timeout = 0.01
+    response = bytearray(3)
+    
+    response = self.cubesat.uart4.read(3)        #ERROR
+    # x = self.cubesat.uart4.read(3)        #ERROR
+    # y = self.cubesat.uart4.read(3)  
+    # print('asdfghjklasdhjklasdfghjklsdfghjkasdfghjklasdfghjklasdfghjkl')
+    # print(response)
+    # self.debug(len(response))
+    # print(x,y)
+
+    # self.debug(response + 'response')
+    # self.debug(response[0:1])
+    # self.debug(rx[255])
+
     try:
-        if rx[response[0]] == 'ACK':
+        if rx[response[0:1]] == 'ACK':
+            self.debug('ack')
             return True
         else:
             return False
@@ -83,8 +103,42 @@ def set_stepper_ctrl(self, args):
 def take_photo(self, args):
     pass
 
-def request_photo_chunk(self, args):
-    pass
+def request_photo_chunk(self, chunk_i):
+
+#CONVERT INT TO BYTES
+
+    ind = chunk_i.to_bytes(2,'big')
+
+    write(self, 'req_next_chunk', ind)
+    # look for a resonse
+    self.cubesat.uart2.timeout = 0.01
+    response = self.cubesat.uart2.read(3)        #ERROR
+    len = int(response[1])
+    msg = int(self.cubesat.uart2.read(len))
+    try:
+        if rx[response[0]] == 'cmd_response':
+            
+            return msg
+        else:
+            return None
+    except Exception as e:
+        return False
+
+def request_photo_size(self):
+    write(self, 'req_size')
+    # look for a resonse
+    self.cubesat.uart2.timeout = 0.01
+    response = self.cubesat.uart2.read(3)        #ERROR
+    len = int(response[1])
+    msg = int(self.cubesat.uart2.read(len))
+    try:
+        if rx[response[0]] == 'size':
+            
+            return msg
+        else:
+            return None
+    except Exception as e:
+        return False
 
 ################################################################
 
@@ -97,13 +151,14 @@ def write(self, cmd, data=None):
         length = 0
     else:
         length = len(data)
-
+    
     #assemble header
     msg = bytearray(3+length)
-    msg[0] = tx[cmd]
+    # self.debug(tx[cmd][0])
+    msg[0] = tx[cmd][0]
     msg[1] = length
     msg[2] = 0
     if length > 0:
         msg[3:] = data
-
-    self.cubesat.uart2.write(msg)
+    self.cubesat.uart4.write(msg)
+    # self.debug(msg)
