@@ -10,7 +10,7 @@ import time
 
 rx = { # recieved codes from payload 
    b'\xff' : 'ACK',
-   b'\x01' : 'size'
+   b'\xe5' : 'CMD_RESPONSE' 
 }
 tx = { # transmitted to payload
     'noop'          : b'\x00',
@@ -32,8 +32,8 @@ def noop(self):
     self.cubesat.uart4.timeout = 0.01
     response = bytearray(3)
     
-    response = self.cubesat.uart4.read(3)        #ERROR
-    # x = self.cubesat.uart4.read(3)        #ERROR
+    response = self.cubesat.uart4.read(3)        
+    # x = self.cubesat.uart4.read(3)       
     # y = self.cubesat.uart4.read(3)  
     # print('asdfghjklasdhjklasdfghjklsdfghjkasdfghjklasdfghjklasdfghjkl')
     print(response)
@@ -116,6 +116,10 @@ def request_photo_chunk(self, chunk_i):
     # look for a resonse
     self.cubesat.uart2.timeout = 0.01
     response = self.cubesat.uart2.read(3)        #ERROR
+
+    self.debug(response)
+
+
     len = int(response[1])
     msg = int(self.cubesat.uart2.read(len))
     try:
@@ -133,23 +137,29 @@ def request_photo_size(self):
     self.cubesat.uart4.timeout = 0.01
 
     self.debug('reqsize')
+    self.cubesat.uart4.timeout = 0.01
+
+    
 
     response = self.cubesat.uart4.read(3)        #ERROR
 
-    # self.debug(response)
-    
+    self.debug(response)
+
     len = int(response[1])
-    # self.debug(len)
+    self.debug(len)
     msg = int.from_bytes(self.cubesat.uart4.read(len), 'big')
+    self.debug('msg')
     self.debug(msg)
     try:
-        if rx[response[0]] == 'size':
+        if rx[response[0]] == 'CMD_RESPONSE':
             
             return msg
         else:
             return None
     except Exception as e:
         return False
+
+    
 
 ################################################################
 
