@@ -46,7 +46,7 @@ class task(Task):
         'sd_rm'    :            db_cmds.sd_rm,
         'simulate':             db_cmds.simulate,
         'pl_noop' :             db_cmds.pl_noop,
-        'pl_photo' :            db_cmds.usb_cmd_payload_photo_burst,
+        'pl_cmd_photo' :            db_cmds.usb_cmd_payload_photo_burst,
     }
 
     async def main_task(self):
@@ -85,7 +85,7 @@ class task(Task):
                             self.dispatch[db_cmds.rx[header[0:1]]](self)
                             
                         except Exception as e:
-                            
+                            self.debug(str(e))
                             db_cmds.write('ERROR', str(e))
                     # execute cmd with args
                     else:
@@ -93,5 +93,6 @@ class task(Task):
                             self.dispatch[db_cmds.rx[header[0:1]]](self, rx)
                         except Exception as e:
                             db_cmds.write('ERROR', str(e))
+                            self.debug(str(e))
                 else:
                     db_cmds.write('ERROR', 'invalid cmd code')

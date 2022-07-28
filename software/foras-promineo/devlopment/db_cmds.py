@@ -32,7 +32,7 @@ tx = { # transmitted to host PC
     'BURST_ST'      : b'\xb0',
     'BURST_DATA'    : b'\xbd',
     'BURST_END'     : b'\x0b',
-    'CMD_RESPONSE'  : b'0\xe5' #general command response code, like for print commands.
+    'CMD_RESPONSE'  : b'\xe5' #general command response code, like for print commands.
 }
 
 ########### commands without arguments ###########
@@ -419,7 +419,7 @@ def pl_noop(self):
     
     Returns ACK or NACK
     """
-    # self.debug('dbcmds')
+    self.debug('dbcmds')
     if payload_cmds.noop(self):
         #TOD write code here to respond ACK
         
@@ -443,13 +443,25 @@ def pl_cmd_arm(self, *args):
     pass
 
 def usb_cmd_payload_photo_burst(self):
-    self.cubesat.scheduled_tasks['burst_transfer'].source = 'payload'
-    self.cubesat.scheduled_tasks['burst_transfer'].destination = 'usb'
-    self.cubesat.scheduled_tasks['burst_transfer'].burst_f = True
-    self.cubesat.scheduled_tasks['burst_transfer'].chunk_i = 0
-    self.cubesat.scheduled_tasks['burst_transfer'].buffer_ready_f = False
-    self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
-    
+
+    self.debug('usbcmdpldhtpbrsty')
+
+    # self.cubesat.scheduled_tasks['burst_transfer'].source = 'payload'
+    # self.cubesat.scheduled_tasks['burst_transfer'].destination = 'usb'
+    # self.cubesat.scheduled_tasks['burst_transfer'].burst_f = True
+    # self.cubesat.scheduled_tasks['burst_transfer'].chunk_i = 0
+    # self.cubesat.scheduled_tasks['burst_transfer'].buffer_ready_f = False
+    # # self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
+    # self.cubesat.scheduled_tasks['burst_transfer'].start()
+
+    self.cubesat.source = 'payload'
+    self.cubesat.destination = 'usb'
+    self.cubesat.burst_f = True
+    self.cubesat.chunk_i = 0
+    self.cubesat.buffer_ready_f = False
+    self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
+    # self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
+    self.cubesat.scheduled_tasks['burst_transfer'].start()
 
 
     write('BURST_ST' )

@@ -65,6 +65,23 @@ class Satellite:
     f_deployed = bitFlag(register=_FLAG, bit=6)
 
     def __init__(self):
+
+        #temp burst transfer task flags
+        self.burst_f = False
+        self.buffer_ready_f = False
+        self.chunk_i = 0
+        self.chunk_t = 0
+        self.source_size = 0
+        self.buffer_size = 0 # number of bytes filled in the buffer. 
+        self.source = ""
+        self.destination = ""
+        self.source_path = "" # only used for sd card source / destinations
+        self.destination_path = "" # only used for sd card source / destinations
+        self.t0 = 0
+        self.t1 = 0
+
+
+
         """
         Big init routine as the whole board is brought up.
         """
@@ -124,7 +141,7 @@ class Satellite:
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
         self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000, receiver_buffer_size=256) # payload UART              #TODO DEBUG THIS
         self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
-        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.1, baudrate=256000, receiver_buffer_size=256) # startracker UART          #TODO GET RID OF STUFF AFTER RX4
+        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.1, baudrate=9600, receiver_buffer_size=256) # startracker UART          #TODO GET RID OF STUFF AFTER RX4
 
         # Define filesystem stuff
         #self.logfile="/log.txt"
