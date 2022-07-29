@@ -66,7 +66,7 @@ class task(Task):
                 self.debug('usb dest')
                 # send the buffer to the destination
                 # this should be put in a try - except clause when it is working sufficiently!!!!
-                self.destination_func_map[self.destination]()
+                self.destination_func_map[self.cubesat.destination]()
 
             else:
 
@@ -135,6 +135,8 @@ class task(Task):
         # request chunk from payload
         self.cubesat.buffer_size = pl_cmds.request_photo_chunk(self, self.cubesat.chunk_i) # this function will return the size of the data it puts in the buffer
 
+        
+
         # flag that the buffer is ready to send on the next call of this task
         self.cubesat.buffer_ready_f = True
         
@@ -162,12 +164,12 @@ class task(Task):
         # if this is the first burst 
         if self.cubesat.chunk_i == 0:
             # call usb_cmds.write('BURST_START', self.cubesat.source_size)
-            db_cmds.write('BURST_START', self.cubesat.source_size)
+            db_cmds.write('BURST_ST', self.cubesat.chunk_t.to_bytes(3,'big'))
             pass
 
         # send chunk 
         # call usb_cmds.write('BURST', self.cubesat.send_buff[:self.cubesat.buffer_size])
-        db_cmds.write('BURST', self.cubesat.send_buff[:self.cubesat.buffer_size])
+        db_cmds.write('BURST_DATA', self.cubesat.send_buff[:self.cubesat.buffer_size])
         #reset flags for next chunk
 
         self.cubesat.buffer_ready_f = False     #is this the right flag?

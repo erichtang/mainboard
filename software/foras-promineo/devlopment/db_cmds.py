@@ -428,6 +428,15 @@ def pl_noop(self):
     else:
         
         write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    # time.sleep(2)
+    # if payload_cmds.testnoop(self):
+    #     #TOD write code here to respond ACK
+        
+        
+    #     write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    # else:
+        
+    #     write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
     
 def pl_cmd_arm(self, *args):
     """
@@ -441,6 +450,8 @@ def pl_cmd_arm(self, *args):
         None
     """
     pass
+
+
 
 def usb_cmd_payload_photo_burst(self):
 
@@ -563,7 +574,7 @@ def write(cmd, data=None):
     msg[1] = length
     msg[2] = 0
     if length > 0:
-        if not isinstance(data, bytearray):
+        if not isinstance(data, bytearray) and not isinstance(data, bytes):         #why needed?
             data = data.encode('utf-8')
         msg[3:] = data
     #     print(data)
@@ -572,4 +583,4 @@ def write(cmd, data=None):
     #     print(i)
     #     print( msg[i])
     usb_cdc.data.write(msg)
-    # print(msg)
+    print(msg)

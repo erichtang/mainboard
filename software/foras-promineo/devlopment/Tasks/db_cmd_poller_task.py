@@ -81,7 +81,7 @@ class task(Task):
                     # execute cmd with no args
                     if rx is None:
                         try:
-                            # self.debug(db_cmds.rx[header[0:1]])
+                            self.debug(db_cmds.rx[header[0:1]])
                             self.dispatch[db_cmds.rx[header[0:1]]](self)
                             
                         except Exception as e:
