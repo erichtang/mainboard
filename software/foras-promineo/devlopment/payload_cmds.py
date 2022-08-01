@@ -142,6 +142,24 @@ def request_photo_size(self):
 
 ################################################################
 
+def wait4response(self):
+    """
+    helper functiopn to wait for a response
+    """
+    i = 0
+    while True:
+        #header = self.cubesat.uart4.read(3)
+        #if header is not None
+        #   return header
+        if self.cubesat.uart4.in_waiting() >= 3:
+            return self.cubesat.uart4.read(3)
+
+        else:
+            time.sleep(.01)
+            i += 0
+        if i >= 25:
+            return False
+
 def write(self, cmd, data=None):
     """
     helper function to write to the payload.
