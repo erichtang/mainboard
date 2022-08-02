@@ -16,11 +16,22 @@ import time
 """
 rx = {
     b"\x8eb" : "no_op",
-    b'\xd4\x9f': 'hreset',
-    b'\x12\x06': 'shutdown',
-    b'8\x93': 'query',
-    b'\x96\xa2': 'exec_cmd',
+    b'\xd4': 'hreset',
+    b'\x12': 'shutdown',
+    b'\x93': 'query',
+    b'\x96': 'exec_cmd',
     b'\xf0' : 'connect',
+    b'\xf1' : 'disconnect',
+    b'\xa2': 'print_telemetry',
+    b'\xc4': 'download_log',
+    b'\xd1': 'payload_start',
+    b'\x8a': 'pl_cmd_arm',
+    b'\x8b': 'pl_cmd_photo',
+    b'\x8c': 'pl_cmd_download_photo',
+    b'\x60': 'download_file',
+    b'\x61': 'upload_file',
+    b'\x91': 'download_configs'
+    b'\x92': 'upload_configs'
     b'ab' : 'burst_test'
 }
 
@@ -28,10 +39,10 @@ tx = {
     """
     2-byte command codes of transmitted commands here
     """
-    "NACK" : b"\xFF\xFF",
-    "ACK"  : b"\xAA\xC1",
-    "ERROR": b"\xEE\xEE",
-    "BEACON": b"\xbe\xac",
+    "NACK" : b"\xFF",
+    "ACK"  : b"\xAA",
+    "ERROR": b"\xEE",
+    "BEACON": b"\xbe",
     "BRST_ST": b"BS",
     "BRST_END": b"BE",
 }
