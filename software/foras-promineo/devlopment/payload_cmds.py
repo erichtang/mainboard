@@ -30,10 +30,12 @@ def noop(self):
 
     write(self, 'noop')
     # look for a resonse
-    self.cubesat.uart4.timeout = 6
+    self.cubesat.uart4.timeout = 0.01
     response = bytearray(3)
     
-    response = self.cubesat.uart4.read(3)    
+    # response = self.cubesat.uart4.read(3)    
+    response = wait4response(self)
+
     # print(response)
     # response = self.cubesat.uart4.read(3) 
     # self.debug(time.time()*1000.0)    
@@ -156,8 +158,9 @@ def request_photo_chunk(self, chunk_i):
     
     write(self, 'req_next_chunk', ind)
     # look for a resonse
-    self.cubesat.uart4.timeout = 6
-    response = self.cubesat.uart4.read(3)        #ERROR
+    self.cubesat.uart4.timeout = 0.01
+    # response = self.cubesat.uart4.read(3)        #ERROR
+    response = wait4response(self)
 
     
     self.debug(response)
@@ -174,11 +177,13 @@ def request_photo_chunk(self, chunk_i):
 
     self.debug(response[0:1])
 
+    self.cubesat.send_buff[10:10+len] = msg
+
     try:
         if rx[response[0:1]] == 'CMD_RESPONSE':
             self.debug('chunk_resp')
             
-            return msg
+            return len
         else:
             return None
     except Exception as e:
@@ -187,13 +192,16 @@ def request_photo_chunk(self, chunk_i):
 def request_photo_size(self):
     write(self, 'req_size')
     # look for a resonse
-    self.cubesat.uart4.timeout = 6
+    self.cubesat.uart4.timeout = 0.01
 
     self.debug('reqsize')
 
     
 
-    response = self.cubesat.uart4.read(3)        #ERROR
+    # response = self.cubesat.uart4.read(3)        #ERROR
+
+    response = wait4response(self)
+    
 
     self.debug(response)
 
@@ -203,14 +211,18 @@ def request_photo_size(self):
     self.debug('msg')
     self.debug(msg)
 
+    self.cubesat.updateChunk_t(msg)
+    self.debug(self.cubesat.chunk_t)
+
     self.debug(response[0:1])
     try:
         if rx[response[0:1]] == 'CMD_RESPONSE':
-            
+            self.debug('good resp!')
             return msg
         else:
             return None
     except Exception as e:
+        self.debug('big bug!!!!!!!!!!!!!!!!!!!!!!')
         return False
 
     
@@ -226,10 +238,13 @@ def wait4response(self):
         #header = self.cubesat.uart4.read(3)
         #if header is not None
         #   return header
-        if self.cubesat.uart4.in_waiting() >= 3:
+        
+        if self.cubesat.uart4.in_waiting >= 3:
+            
             return self.cubesat.uart4.read(3)
 
         else:
+            
             time.sleep(.01)
             i += 0
         if i >= 25:
@@ -254,4 +269,4 @@ def write(self, cmd, data=None):
     if length > 0:
         msg[3:] = data
     self.cubesat.uart4.write(msg)
-    # self.debug(msg)
+    self.debug(msg)

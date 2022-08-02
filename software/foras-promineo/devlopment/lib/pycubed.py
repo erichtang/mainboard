@@ -64,21 +64,35 @@ class Satellite:
     #Foras Promineo flags
     f_deployed = bitFlag(register=_FLAG, bit=6)
 
+
+    burst_f = False
+    buffer_ready_f = False
+    chunk_i = 0
+    chunk_t = 0
+    source_size = 0
+    buffer_size = 0 # number of bytes filled in the buffer. 
+    source = ""
+    destination = ""
+    source_path = "" # only used for sd card source / destinations
+    destination_path = "" # only used for sd card source / destinations
+    t0 = 0
+    t1 = 0
+
     def __init__(self):
 
         #temp burst transfer task flags
-        self.burst_f = False
-        self.buffer_ready_f = False
-        self.chunk_i = 0
-        self.chunk_t = 0
-        self.source_size = 0
-        self.buffer_size = 0 # number of bytes filled in the buffer. 
-        self.source = ""
-        self.destination = ""
-        self.source_path = "" # only used for sd card source / destinations
-        self.destination_path = "" # only used for sd card source / destinations
-        self.t0 = 0
-        self.t1 = 0
+        # self.burst_f = False
+        # self.buffer_ready_f = False
+        # self.chunk_i = 0
+        # self.chunk_t = 0
+        # self.source_size = 0
+        # self.buffer_size = 0 # number of bytes filled in the buffer. 
+        # self.source = ""
+        # self.destination = ""
+        # self.source_path = "" # only used for sd card source / destinations
+        # self.destination_path = "" # only used for sd card source / destinations
+        # self.t0 = 0
+        # self.t1 = 0
 
 
 
@@ -141,7 +155,7 @@ class Satellite:
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
         self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000, receiver_buffer_size=256) # payload UART              #TODO DEBUG THIS
         self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
-        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.1, baudrate=9600, receiver_buffer_size=256) # startracker UART          #TODO GET RID OF STUFF AFTER RX4
+        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.01, baudrate=9600) # startracker UART  removed: , receiver_buffer_size=256       #TODO GET RID OF STUFF AFTER RX4
 
         # Define filesystem stuff
         #self.logfile="/log.txt"
@@ -580,7 +594,11 @@ class Satellite:
 
         elif 'startup' in mode:
             pass
-        
+    
+
+    def updateChunk_t(self, newval):
+        self.chunk_t = newval
+
     def new_file(self,substring,binary=False):
         '''
         substring something like '/data/DATA_'
