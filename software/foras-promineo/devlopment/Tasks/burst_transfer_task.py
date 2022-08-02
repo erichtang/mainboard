@@ -52,8 +52,8 @@ class task(Task):
     async def main_task(self):
         self.debug('asyn main')
 
-        self.debug(self.cubesat.burst_f)
-        self.debug(self.cubesat.buffer_ready_f)      
+        # self.debug(self.cubesat.burst_f)
+        # self.debug(self.cubesat.buffer_ready_f)      
         self.debug(self.cubesat.source + 'srcs')         
 
         """
@@ -116,6 +116,9 @@ class task(Task):
         self.cubesat.buffer_size = bytes2read 
 
     def payload_source(self):
+        self.debug('sdfghjkjhgfdsfghjk')
+        
+        self.debug(self.cubesat.chunk_t)
 
         self.debug('plsrs')
 
@@ -128,14 +131,14 @@ class task(Task):
             # self.cubesat.source_size = pl_cmds.request_photo_size(self)
 
             # calculate chunks
-            self.chunk_calc()
+            # self.chunk_calc()
 
         
 
         # request chunk from payload
         self.cubesat.buffer_size = pl_cmds.request_photo_chunk(self, self.cubesat.chunk_i) # this function will return the size of the data it puts in the buffer
 
-        
+        # self.debug(self.cubesat.buffer_size)
 
         # flag that the buffer is ready to send on the next call of this task
         self.cubesat.buffer_ready_f = True
@@ -160,25 +163,36 @@ class task(Task):
     def usb_destination(self):
 
         self.debug('usbdst')
-
+        self.debug(self.cubesat.chunk_i)
+        self.debug(self.cubesat.chunk_t)
         # if this is the first burst 
         if self.cubesat.chunk_i == 0:
+            self.debug(self.cubesat.chunk_t)
             # call usb_cmds.write('BURST_START', self.cubesat.source_size)
             db_cmds.write('BURST_ST', self.cubesat.chunk_t.to_bytes(3,'big'))
+            self.debug('chunk_i if pass')
+            self.debug(self.cubesat.chunk_t)
             pass
 
         # send chunk 
         # call usb_cmds.write('BURST', self.cubesat.send_buff[:self.cubesat.buffer_size])
+        self.debug(self.cubesat.buffer_size)
+        self.debug(self.cubesat.send_buff[:self.cubesat.buffer_size])
+
         db_cmds.write('BURST_DATA', self.cubesat.send_buff[:self.cubesat.buffer_size])
+
+        time.sleep(2)
         #reset flags for next chunk
 
         self.cubesat.buffer_ready_f = False     #is this the right flag?
         
         # if that was the last chunk
         if(self.cubesat.chunk_i == self.cubesat.chunk_t - 1):
-            self.burst_f = False
+            self.cubesat.burst_f = False
             self.cubesat.buffer_ready_f = False
             db_cmds.write('BURST_END')
+
+            self.debug('7666666666666666666666666666666666666666666666666666666666666666666666666666666666666')
         self.cubesat.chunk_i += 1
         
 

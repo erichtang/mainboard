@@ -8,6 +8,8 @@ Author: C. Hillis
 """
 import time
 import os
+
+# from numpy import isin
 import usb_cdc
 from debugcolor import co
 import payload_cmds
@@ -471,6 +473,10 @@ def usb_cmd_payload_photo_burst(self):
     self.cubesat.chunk_i = 0
     self.cubesat.buffer_ready_f = False
     self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
+
+    self.debug('98kkkkkkkhkjbkb')
+    self.debug(self.cubesat.chunk_t)
+
     # self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
     self.cubesat.scheduled_tasks['burst_transfer'].start()
 
@@ -574,7 +580,7 @@ def write(cmd, data=None):
     msg[1] = length
     msg[2] = 0
     if length > 0:
-        if not isinstance(data, bytearray) and not isinstance(data, bytes):         #why needed?
+        if not isinstance(data, bytearray) and not isinstance(data, bytes) and not isinstance(data, memoryview):         #why needed?
             data = data.encode('utf-8')
         msg[3:] = data
     #     print(data)
