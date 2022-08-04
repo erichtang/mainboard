@@ -14,7 +14,7 @@ import db_cmds
 
 class task(Task):
     
-    priority = 2
+    priority = 1
     frequency = 50
     name='burst_transfer'
     color = 'blue'
@@ -177,11 +177,11 @@ class task(Task):
         # send chunk 
         # call usb_cmds.write('BURST', self.cubesat.send_buff[:self.cubesat.buffer_size])
         self.debug(self.cubesat.buffer_size)
-        self.debug(self.cubesat.send_buff[:self.cubesat.buffer_size])
+        # self.debug(self.cubesat.send_buff[10:10+self.cubesat.buffer_size])
 
-        db_cmds.write('BURST_DATA', self.cubesat.send_buff[:self.cubesat.buffer_size])
+        db_cmds.write('BURST_DATA', self.cubesat.send_buff[10:10+self.cubesat.buffer_size])
 
-        time.sleep(2)
+        # time.sleep(6)
         #reset flags for next chunk
 
         self.cubesat.buffer_ready_f = False     #is this the right flag?

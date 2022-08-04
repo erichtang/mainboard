@@ -173,9 +173,11 @@ def request_photo_chunk(self, chunk_i):
 
     msg = self.cubesat.uart4.read(len)
 
-    self.debug(msg)
+    # self.debug(msg)
 
     self.debug(response[0:1])
+
+    # self.cubesat.send_buff[10:10+len] = msg
 
     self.cubesat.send_buff[10:10+len] = msg
 
@@ -209,7 +211,7 @@ def request_photo_size(self):
     self.debug(len)
     msg = int.from_bytes(self.cubesat.uart4.read(len), 'big')
     self.debug('msg')
-    self.debug(msg)
+    # self.debug(msg)
 
     self.cubesat.updateChunk_t(msg)
     self.debug(self.cubesat.chunk_t)
@@ -223,6 +225,7 @@ def request_photo_size(self):
             return None
     except Exception as e:
         self.debug('big bug!!!!!!!!!!!!!!!!!!!!!!')
+        self.debug(e)
         return False
 
     
@@ -238,6 +241,7 @@ def wait4response(self):
         #header = self.cubesat.uart4.read(3)
         #if header is not None
         #   return header
+        self.debug('````````````````````````````````````` waiting')
         
         if self.cubesat.uart4.in_waiting >= 3:
             
@@ -246,7 +250,7 @@ def wait4response(self):
         else:
             
             time.sleep(.01)
-            i += 0
+            i += 1
         if i >= 25:
             return False
 
@@ -269,4 +273,4 @@ def write(self, cmd, data=None):
     if length > 0:
         msg[3:] = data
     self.cubesat.uart4.write(msg)
-    self.debug(msg)
+    # self.debug(msg)

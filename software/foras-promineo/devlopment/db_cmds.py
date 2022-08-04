@@ -481,7 +481,6 @@ def usb_cmd_payload_photo_burst(self):
     self.cubesat.scheduled_tasks['burst_transfer'].start()
 
 
-    write('BURST_ST' )
 
     
 
@@ -589,4 +588,5 @@ def write(cmd, data=None):
     #     print(i)
     #     print( msg[i])
     usb_cdc.data.write(msg)
-    print(msg)
+    # print('write !!!!!!!!!!!!!!!!!!!!!!!!:')
+    # print(msg)
