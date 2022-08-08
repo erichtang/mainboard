@@ -116,7 +116,6 @@ class task(Task):
         self.cubesat.buffer_size = bytes2read 
 
     def payload_source(self):
-        self.debug('sdfghjkjhgfdsfghjk')
         
         self.debug(self.cubesat.chunk_t)
 
@@ -167,7 +166,7 @@ class task(Task):
         self.debug(self.cubesat.chunk_t)
         # if this is the first burst 
         if self.cubesat.chunk_i == 0:
-            self.debug(self.cubesat.chunk_t)
+            # self.debug(self.cubesat.chunk_t)
             # call usb_cmds.write('BURST_START', self.cubesat.source_size)
             db_cmds.write('BURST_ST', self.cubesat.chunk_t.to_bytes(3,'big'))
             self.debug('chunk_i if pass')
@@ -192,7 +191,7 @@ class task(Task):
             self.cubesat.buffer_ready_f = False
             db_cmds.write('BURST_END')
 
-            self.debug('7666666666666666666666666666666666666666666666666666666666666666666666666666666666666')
+            self.debug('burst end `````````````````````````````````````````````````````````````````````````````````````````')
         self.cubesat.chunk_i += 1
         
 

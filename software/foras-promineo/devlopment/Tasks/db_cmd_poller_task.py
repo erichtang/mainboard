@@ -47,6 +47,8 @@ class task(Task):
         'simulate':             db_cmds.simulate,
         'pl_noop' :             db_cmds.pl_noop,
         'pl_cmd_photo' :            db_cmds.usb_cmd_payload_photo_burst,
+        'pl_cmd_hreset':        db_cmds.pl_cmd_hreset,
+        'pl_cmd_sreset':        db_cmds.pl_cmd_sreset,
     }
 
     async def main_task(self):

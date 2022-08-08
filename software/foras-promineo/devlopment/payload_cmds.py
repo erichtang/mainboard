@@ -16,6 +16,8 @@ tx = { # transmitted to payload
     'noop'          : b'\x00',
     'req_size'      : b'\xfe',
     'req_next_chunk': b'\xfd',
+    'hreset'         : b'\xe5' ,
+    'sreset'         : b'\xe4' ,
 }
 
 ########### commands without arguments ###########
@@ -96,10 +98,33 @@ def testnoop(self):
         return False
 
 def hreset(self):
-    pass
+    self.payload_rst.switch_to_output(value = False)
+    time.sleep(0.1)
+    self.payload_rst.switch_to_output(value = True)
+
+    return True
 
 def sreset(self):
-    pass
+    
+    write(self, 'sreset')
+    # look for a resonse
+    self.cubesat.uart4.timeout = 0.01
+    response = bytearray(3)
+    
+    # response = self.cubesat.uart4.read(3)    
+    response = wait4response(self)
+
+
+    print(response)
+
+    try:
+        if rx[response[0:1]] == 'ACK':
+            self.debug('ack')
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
 
 def read_servo_ctrl_status(self, args):
     pass
@@ -224,7 +249,7 @@ def request_photo_size(self):
         else:
             return None
     except Exception as e:
-        self.debug('big bug!!!!!!!!!!!!!!!!!!!!!!')
+        self.debug(' bug!!!!!!!!!!!!!!!!!!!!!!')
         self.debug(e)
         return False
 
@@ -251,7 +276,7 @@ def wait4response(self):
             
             time.sleep(.01)
             i += 1
-        if i >= 25:
+        if i >= 250:
             return False
 
 def write(self, cmd, data=None):
