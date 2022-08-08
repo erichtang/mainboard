@@ -53,7 +53,8 @@ rx = { # recieved codes from host PC
     b'\x23' : 'radio_cmd',
     b'\x24' : 'deploy_antenna',
     b'\x25' : 'write'
-
+    b'\x26' : 'pl_cmd_hreset' ,
+    b'\x27' : 'pl_cmd_sreset' ,
 }
 
 tx = { # transmitted to host PC
@@ -469,7 +470,44 @@ def pl_noop(self):
     # else:
         
     #     write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+
+def pl_cmd_hreset(self):
+    if payload_cmds.hreset(self):
+        #TOD write code here to respond ACK
+        
+        
+        write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    else:
+        
+        write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+
+def pl_cmd_sreset(self):
+    """
+    TODO -- WIP psudeocode only
+    sends soft reset command to payload, waits for ACK, then sends ACK to host PC, if no ACK is rx'd in 1 second, this command will send NACK to the host pc.
     
+    Returns ACK or NACK
+    """
+    if payload_cmds.sreset(self):
+        #TOD write code here to respond ACK
+        
+        
+        write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    else:
+        
+        write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    # time.sleep(2)
+    # if payload_cmds.testnoop(self):
+    #     #TOD write code here to respond ACK
+        
+        
+    #     write('ACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+    # else:
+        
+    #     write('NACK') # THIS NEEDS TO CONFORM TO NEW HEADER STRUCTURE
+
+
+
 def pl_cmd_arm(self, *args):
     """
     TODO -- not implimented
@@ -487,15 +525,8 @@ def pl_cmd_arm(self, *args):
 
 def usb_cmd_payload_photo_burst(self):
 
-    self.debug('usbcmdpldhtpbrsty')
+    self.debug('usbcmdpldphbrst')
 
-    # self.cubesat.scheduled_tasks['burst_transfer'].source = 'payload'
-    # self.cubesat.scheduled_tasks['burst_transfer'].destination = 'usb'
-    # self.cubesat.scheduled_tasks['burst_transfer'].burst_f = True
-    # self.cubesat.scheduled_tasks['burst_transfer'].chunk_i = 0
-    # self.cubesat.scheduled_tasks['burst_transfer'].buffer_ready_f = False
-    # # self.cubesat.scheduled_tasks['burst_transfer'].chunk_t = payload_cmds.request_photo_size(self)    #????\
-    # self.cubesat.scheduled_tasks['burst_transfer'].start()
 
     self.cubesat.source = 'payload'
     self.cubesat.destination = 'usb'
@@ -504,14 +535,12 @@ def usb_cmd_payload_photo_burst(self):
     self.cubesat.buffer_ready_f = False
     self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
 
-    self.debug('98kkkkkkkhkjbkb')
     self.debug(self.cubesat.chunk_t)
 
     # self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
     self.cubesat.scheduled_tasks['burst_transfer'].start()
 
 
-    write('BURST_ST' )
 
     
 
@@ -619,4 +648,5 @@ def write(cmd, data=None):
     #     print(i)
     #     print( msg[i])
     usb_cdc.data.write(msg)
-    print(msg)
+    # print('write !!!!!!!!!!!!!!!!!!!!!!!!:')
+    # print(msg)

@@ -38,7 +38,7 @@ for file in os.listdir('Tasks'):
 
     # ignore these files
     if file in ("template_task", "pib_tester_task", "lora_task",
-                        "irridium_task", "payload_task", "adcs_task" ): #add "db_cmd_poller_task", "burst_transfer_task", "temperature_task", "test_radio_file_transfer"
+                        "irridium_task", "payload_task", "adcs_task",  'startup_task'): #add "db_cmd_poller_task", "burst_transfer_task", "temperature_task", "test_radio_file_transfer"
         continue
 
     print(f"importing {file}")

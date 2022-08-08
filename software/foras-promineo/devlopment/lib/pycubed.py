@@ -155,7 +155,7 @@ class Satellite:
         self.uart1 = busio.UART(board.TX,board.RX) # radio1 UART
         self.uart2 = busio.UART(board.TX2,board.RX2, timeout=.1, baudrate=256000, receiver_buffer_size=256) # payload UART              #TODO DEBUG THIS
         self.uart3 = busio.UART(board.TX3,board.RX3) # rockblock UART
-        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.01, baudrate=9600) # startracker UART  removed: , receiver_buffer_size=256       #TODO GET RID OF STUFF AFTER RX4
+        self.uart4 = busio.UART(board.TX4,board.RX4, timeout=.01, baudrate=19200) # startracker UART  removed: , receiver_buffer_size=256       #TODO GET RID OF STUFF AFTER RX4
 
         # Define filesystem stuff
         #self.logfile="/log.txt"
