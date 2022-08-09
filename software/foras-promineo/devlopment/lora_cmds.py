@@ -30,9 +30,9 @@ rx = {
     b'\x8c': 'pl_cmd_download_photo',
     b'\x60': 'download_file',
     b'\x61': 'upload_file',
-    b'\x91': 'download_configs'
-    b'\x92': 'upload_configs'
-    b'ab' : 'burst_test'
+    b'\x91': 'download_configs',
+    b'\x92': 'upload_configs',
+    b'ab' : 'burst_test',
 }
 
 tx = {

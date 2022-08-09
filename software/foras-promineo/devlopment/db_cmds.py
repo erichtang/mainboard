@@ -52,7 +52,7 @@ rx = { # recieved codes from host PC
     b'\x22' : 'crc_file',
     b'\x23' : 'radio_cmd',
     b'\x24' : 'deploy_antenna',
-    b'\x25' : 'write'
+    b'\x25' : 'write',
     b'\x26' : 'pl_cmd_hreset' ,
     b'\x27' : 'pl_cmd_sreset' ,
 }
