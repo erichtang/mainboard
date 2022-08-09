@@ -118,8 +118,8 @@ def sreset(self):
     print(response)
 
     try:
-        if rx[response[0:1]] == 'ACK':
-            self.debug('ack')
+        if rx[response[0:1]] == 'CMD_RESPONSE':
+            self.debug('CMD_RESPONSE')
             return True
         else:
             return False
