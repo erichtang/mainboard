@@ -78,6 +78,11 @@ def noop(self):
     Returns:
         'ACK'
     """
+
+    # f = open('Tasks/testfile.txt', "w")
+    # f.write("This is a test")
+    # f.close()
+
     write('ACK')
 
 def hreset(self):
