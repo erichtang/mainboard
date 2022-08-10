@@ -6,6 +6,7 @@ Commands to and from the Foras Promineo Payload
 """
 
 import time
+import supervisor
 
 
 rx = { # recieved codes from payload 
@@ -95,16 +96,20 @@ def testnoop(self):
         else:
             return False
     except Exception as e:
+        self.debug('plnoop exception')
         return False
 
-def hreset(self):
-    self.payload_rst.switch_to_output(value = False)
+def hreset(self):       #not working
+    self.debug('hreset')
+
+    self.cubesat.payload_rst.switch_to_output(value = False)
     time.sleep(0.1)
-    self.payload_rst.switch_to_output(value = True)
+    
+    self.cubesat.payload_rst.switch_to_output(value = True)
 
     return True
 
-def sreset(self):
+def sreset(self): #soft resets openmv
     
     write(self, 'sreset')
     # look for a resonse
@@ -174,6 +179,9 @@ def take_photo(self, args):
     pass
 
 def request_photo_chunk(self, chunk_i):
+
+    # start = supervisor.ticks_ms()
+
     self.debug('reqchunk')
 #CONVERT INT TO BYTES
 
@@ -185,7 +193,9 @@ def request_photo_chunk(self, chunk_i):
     # look for a resonse
     self.cubesat.uart4.timeout = 0.01
     # response = self.cubesat.uart4.read(3)        #ERROR
+    
     response = wait4response(self)
+
 
     
     self.debug(response)
@@ -206,6 +216,9 @@ def request_photo_chunk(self, chunk_i):
 
     self.cubesat.send_buff[10:10+len] = msg
 
+    # end = supervisor.ticks_ms()
+    # self.debug('end-start:')
+    # self.debug(end-start)
     try:
         if rx[response[0:1]] == 'CMD_RESPONSE':
             self.debug('chunk_resp')

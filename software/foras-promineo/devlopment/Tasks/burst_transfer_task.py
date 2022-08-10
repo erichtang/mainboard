@@ -10,16 +10,19 @@ import time
 import os
 import payload_cmds as pl_cmds
 import lora_cmds
+import supervisor
 import db_cmds
 
 class task(Task):
     
     priority = 1
-    frequency = 50
+    frequency = 1
     name='burst_transfer'
     color = 'blue'
 
     chunk_size = 238
+    pyto45 = 0
+
 
     
 
@@ -63,6 +66,9 @@ class task(Task):
             self.debug('bursting')
 
             if self.cubesat.buffer_ready_f:
+                end = supervisor.ticks_ms()
+                self.debug('switching time  end-start:')
+                self.debug(end-self.pyto45)
                 self.debug('usb dest')
                 # send the buffer to the destination
                 # this should be put in a try - except clause when it is working sufficiently!!!!
@@ -71,11 +77,22 @@ class task(Task):
             else:
 
                 self.debug('payload source')
+                
 
                 # fill the buffer from the source
                 # this should be put in a try - except clause when it is working sufficiently!!!!
+                # while(self.cubesat.burst_f):
                 self.source_func_map[self.cubesat.source]()
+                #     lstart = supervisor.ticks_ms()
 
+                #     self.source_func_map[self.cubesat.source]()
+                #     self.destination_func_map[self.cubesat.destination]()
+                    
+                #     end = supervisor.ticks_ms()
+                #     self.debug('looooooooooooooop  end-start:')
+                #     self.debug(end-lstart)
+                
+                self.pyto45 = supervisor.ticks_ms()
         else:
             self.debug('elsing')
             # after init, this task stops itself since it is only needed when a command is recieved.
@@ -116,7 +133,14 @@ class task(Task):
         self.cubesat.buffer_size = bytes2read 
 
     def payload_source(self):
-        
+        # global start
+        start = supervisor.ticks_ms()
+
+        if  self.cubesat.chunk_i > 0:
+            self.debug('send to load switch time  end-start:')
+            self.debug(start-usbst)
+
+
         self.debug(self.cubesat.chunk_t)
 
         self.debug('plsrs')
@@ -141,8 +165,12 @@ class task(Task):
 
         # flag that the buffer is ready to send on the next call of this task
         self.cubesat.buffer_ready_f = True
-        
+        end = supervisor.ticks_ms()
+        self.debug('payload source  end-start:')
+        self.debug(end-start)
         # other flags and counters are altered at the end of the destination functions...
+        global bts
+        bts = supervisor.ticks_ms()
 
     def usb_source(self):
         pass
@@ -160,6 +188,10 @@ class task(Task):
         pass
 
     def usb_destination(self):
+        bte = supervisor.ticks_ms()
+        self.debug('between time  end-start:')
+        self.debug(bte-bts)
+        start = supervisor.ticks_ms()
 
         self.debug('usbdst')
         self.debug(self.cubesat.chunk_i)
@@ -171,6 +203,7 @@ class task(Task):
             db_cmds.write('BURST_ST', self.cubesat.chunk_t.to_bytes(3,'big'))
             self.debug('chunk_i if pass')
             self.debug(self.cubesat.chunk_t)
+            
             pass
 
         # send chunk 
@@ -192,7 +225,14 @@ class task(Task):
             db_cmds.write('BURST_END')
 
             self.debug('burst end `````````````````````````````````````````````````````````````````````````````````````````')
+
+        end = supervisor.ticks_ms()
+        self.debug('usb destinatiopn  end-start:')
+        self.debug(end-start)
         self.cubesat.chunk_i += 1
+
+        global usbst
+        usbst = supervisor.ticks_ms()
         
 
     def lora_destination(self):
