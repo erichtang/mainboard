@@ -79,9 +79,7 @@ def noop(self):
         'ACK'
     """
 
-    # f = open('Tasks/testfile.txt', "w")
-    # f.write("This is a test")
-    # f.close()
+
 
     write('ACK')
 
@@ -538,7 +536,7 @@ def usb_cmd_payload_photo_burst(self):
     self.cubesat.burst_f = True
     self.cubesat.chunk_i = 0
     self.cubesat.buffer_ready_f = False
-    self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #????\
+    self.cubesat.chunk_t = payload_cmds.request_photo_size(self)    #total chunks in photo
 
     self.debug(self.cubesat.chunk_t)
 

@@ -16,18 +16,21 @@ import db_cmds
 class task(Task):
     
     priority = 1
-    frequency = 1
+    frequency = 100
     name='burst_transfer'
     color = 'blue'
 
     chunk_size = 238
     pyto45 = 0
 
-
+    # d_cfg = {
+    #     'priority' : 2,
+    #     'frequency' : 100,
+    # }
     
 
     def __init__(self, satellite):
-        super().__init__(satellite)
+        # super().__init__(satellite)
 
         # self.burst_f = False
         # self.buffer_ready_f = False
@@ -51,6 +54,7 @@ class task(Task):
             # fill me in !
             'usb' : self.usb_destination
         }
+        super().__init__(satellite)
 
     async def main_task(self):
         self.debug('asyn main')
