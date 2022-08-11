@@ -18,10 +18,10 @@ class Task:
     name = 'template'
     color = 'gray'
 
-    d_cfg = {
-        'priority' : 10,
-        'frequency' : 1,
-    }
+    # d_cfg = {
+    #     'priority' : 10,
+    #     'frequency' : 1,
+    # }
 
     def __init__(self, satellite):
         """
@@ -33,8 +33,8 @@ class Task:
         """
         self.cubesat = satellite
 
-        self.cfg = self.d_cfg
-        self.load_cfg(self.cfg, self.name)
+        # self.cfg = self.d_cfg
+        # self.load_cfg(self.cfg, self.name)
         
     def debug(self,msg,level=1,log=False):
         """

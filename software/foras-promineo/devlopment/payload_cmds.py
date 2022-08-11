@@ -206,15 +206,14 @@ def request_photo_chunk(self, chunk_i):
 
     self.debug(len)
 
-    msg = self.cubesat.uart4.read(len)
-
+    # msg = self.cubesat.uart4.read(len)
+    self.cubesat.uart4.readinto(self.cubesat.send_buff[10:])
     # self.debug(msg)
 
     self.debug(response[0:1])
 
     # self.cubesat.send_buff[10:10+len] = msg
 
-    self.cubesat.send_buff[10:10+len] = msg
 
     # end = supervisor.ticks_ms()
     # self.debug('end-start:')

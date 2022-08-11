@@ -21,7 +21,7 @@ def get_loop(debug=tasko_logging):
     """Returns the singleton event loop"""
     global __global_event_loop
     if __global_event_loop is None:
-        __global_event_loop = Loop(debug=debug)
+        __global_event_loop = Loop(debug=True)
     return __global_event_loop
 
 
