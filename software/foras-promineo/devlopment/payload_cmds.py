@@ -287,7 +287,7 @@ def wait4response(self):
 
         else:
             
-            time.sleep(.01)
+            time.sleep(.01)  #needs to be reworked in the future. removiing it now would break the whole function
             i += 1
         if i >= 250:
             return False
